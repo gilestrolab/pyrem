@@ -1,3 +1,10 @@
+_site/
+.idea
+*.pdf
+*.png
+*.txt
+*.pickle
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
