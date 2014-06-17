@@ -1,7 +1,7 @@
 """
 
 """
-from matplotlib.pyplot import title
+import datetime
 
 __author__ = 'quentin'
 
@@ -10,12 +10,21 @@ import numpy as np
 SIGNALY_DPI = 328
 SIGNAL_FIGSIZE = (30, 5)
 
+def _normalise(obj):
+    out = (obj - np.mean(obj)) / np.std(obj)
+    return out
+
+
 class Signal(np.ndarray):
-    def __new__(cls, input, sampling_freq):
+    def __new__(cls, input, sampling_freq, normalised=True):
 
         obj = np.asarray(input).view(cls)
+        if normalised:"
+            obj = _normalise(obj)
         # add the new attribute to the created instance
+        obj.__normalised = normalised
         obj.__sampling_freq = float(sampling_freq)
+
         # Finally, we must return the newly created object:
         return obj
 
@@ -23,16 +32,34 @@ class Signal(np.ndarray):
         # see InfoArray.__array_finalize__ for comments
         if obj is None:
             return
+
+        self.__normalised = getattr(obj, 'normalised', None)
         self.__sampling_freq = getattr(obj, 'sampling_freq', None)
+
+
+
+    def __array_wrap__(self, out_arr, context=None):
+        return np.ndarray.__array_wrap__(self, out_arr, context)
+
+
 
     @property
     def sampling_freq(self):
-        return float(self.__sampling_freq)
+        return self.__sampling_freq
+
+    @property
+    def normalised(self):
+        return self.__normalised
+
+    @property
+    def duration(self):
+        return self._time_from_idx(float(self.size))
 
 
-    def _time_from_idx(self, idx, format="seconds"):
-        multipliers = {"seconds":1.0, "minutes":60.0, "hours":60*60.0}
-        return  idx * self.sampling_freq * multipliers[format]
+    def _time_from_idx(self, idx):
+        start = datetime.datetime.fromtimestamp(0)
+        end = datetime.datetime.fromtimestamp(idx / self.sampling_freq)
+        return  str(end - start)
 
 
     def resample(self, new_sampling_freq):
@@ -69,12 +96,14 @@ class Signal(np.ndarray):
 
     def _create_plot(self, *args, **kwargs):
         from matplotlib import pyplot as plt
+        title = "Duration = %s; at = %fHz" % (self.duration , self.sampling_freq)
 
-        length = self.size
-        time_points = self._time_from_idx(np.arange(0,length,1))
+        out = plt.plot(self, *args, **kwargs)
+        location, _ = plt.xticks()
+        plt.xticks(location, [self._time_from_idx(l) for l in location], rotation=45)
 
-        title = "Length = %is; sampling frequency = %f" % (self._time_from_idx(length), self.sampling_freq)
-        return plt.plot( time_points, self, *args, **kwargs)
+
+        return out
 
     def plot(self, *args, **kwargs):
         """
@@ -99,3 +128,5 @@ class Signal(np.ndarray):
     def png(self):
         from IPython.display import Image
         return Image(self._repr_png_(), embed=True)
+
+
