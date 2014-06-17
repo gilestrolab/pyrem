@@ -16,6 +16,6 @@ class PowerFeatures(FeatureGroup):
         out["skew"] = stats.skew(powers)
         out["kurtosis"] = stats.kurtosis(powers)
         return out
-    
+
 
 
