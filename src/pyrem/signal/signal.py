@@ -11,11 +11,11 @@ SIGNALY_DPI = 328
 SIGNAL_FIGSIZE = (30, 5)
 
 class Signal(np.ndarray):
-    def __new__(cls, input, sampling_freq=None):
+    def __new__(cls, input, sampling_freq):
 
         obj = np.asarray(input).view(cls)
         # add the new attribute to the created instance
-        obj.__sampling_freq = sampling_freq
+        obj.__sampling_freq = float(sampling_freq)
         # Finally, we must return the newly created object:
         return obj
 
@@ -35,6 +35,13 @@ class Signal(np.ndarray):
         return  idx * self.sampling_freq * multipliers[format]
 
 
+    def resample(self, new_sampling_freq):
+        # new_size = self.size * float(new_sampling_freq) /self.sampling_freq
+        new_step = self.sampling_freq / float(new_sampling_freq)
+        new_t = np.arange(0, self.size, new_step)
+        new_t = new_t[new_t <= self.size -1]
+        old_t= np.arange(0, self.size)
+        return Signal(np.interp(new_t, old_t, self), new_sampling_freq)
 
     def embed_seq(self, length, lag):
         """
