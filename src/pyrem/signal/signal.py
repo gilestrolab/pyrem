@@ -55,7 +55,10 @@ class Signal(np.ndarray):
         for i in np.arange(0, self.size - length, lag):
             out = self[i:i+length]
             centre = i + float(out.size)/2.0
+            if out.size < length:
+                return
             yield centre, out
+
 
     def _create_plot(self, *args, **kwargs):
         from matplotlib import pyplot as plt
