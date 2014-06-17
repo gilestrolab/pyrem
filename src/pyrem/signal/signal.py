@@ -19,7 +19,7 @@ class Signal(np.ndarray):
     def __new__(cls, input, sampling_freq, normalised=True):
 
         obj = np.asarray(input).view(cls)
-        if normalised:"
+        if normalised:
             obj = _normalise(obj)
         # add the new attribute to the created instance
         obj.__normalised = normalised
