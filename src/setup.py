@@ -20,5 +20,6 @@ setup(
         "matplotlib>=1.1.0",
         "scipy>=0.10.1",
         "pandas>=0.14.0",
+        "pywavelets>=0.2.2",
     ],
 )

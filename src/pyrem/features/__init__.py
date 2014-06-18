@@ -1,2 +1,2 @@
 __author__ = 'quentin'
-from summary import *
+from feature_factory import *

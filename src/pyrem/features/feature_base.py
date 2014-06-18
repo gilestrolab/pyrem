@@ -2,18 +2,23 @@ __author__ = 'quentin'
 
 import pandas as pd
 
-class FeatureGroup(pd.DataFrame):
+
+
+
+class FeatureGroup(object):
     prefix = None
-    def __init__(self, signal):
+    def __call__(self, t, signal):
         feature_dict = self._make_feature_vec(signal)
 
-        super(FeatureGroup,self).__init__(data=feature_dict, index=[0])
+        data_frame = pd.DataFrame(feature_dict, index=[t])
+
 
         if len(feature_dict) > 1 and self.prefix is None:
             raise Exception("More than one features in this group. You need a prefix to identify this group")
 
         if self.prefix:
-            self.columns = [self.prefix + "_" + c for c in self.columns]
+            data_frame .columns = [self.prefix + "_" + c for c in data_frame .columns]
+        return data_frame
 
     def _make_feature_vec(self,signal):
         raise NotImplementedError

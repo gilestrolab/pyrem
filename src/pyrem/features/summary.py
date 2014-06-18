@@ -12,9 +12,11 @@ class PowerFeatures(FeatureGroup):
         out  = dict()
         powers = signal ** 2
         out["mean"] = np.mean(powers)
+        out["sd"] = np.std(powers)
         out["median"] = np.median(powers)
         out["skew"] = stats.skew(powers)
         out["kurtosis"] = stats.kurtosis(powers)
+
         return out
 
 
