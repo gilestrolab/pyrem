@@ -3,12 +3,13 @@ __author__ = 'quentin'
 import pandas as pd
 from summary import PowerFeatures
 from periodogram import *
-# from wavelets import *
+from entropy import *
 
 class FeatureFactory(object):
     def __init__(self):
         self.feature_groups = [
             PowerFeatures(),
+            EntropyFeatures(),
             # WaveletsFeaturesDB1(),
             # WaveletsFeaturesDB2(),
             # WaveletsFeaturesDB3(),

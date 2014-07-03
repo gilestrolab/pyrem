@@ -2,7 +2,6 @@ __author__ = 'quentin'
 
 import numpy as np
 import scipy.stats as stats
-
 from feature_base import FeatureGroup
 
 

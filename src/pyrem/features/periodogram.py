@@ -9,11 +9,7 @@ from pyrem.features.feature_base import FeatureGroup
 class PeriodFeatures(FeatureGroup):
     prefix = "welch"
 
-    # _window =  ""
-    # def __init__(self):
-    #     if self._window is None:
-    #         raise NotImplementedError
-    #     self.prefix = self.prefix + "." + self._wavelet
+
     def _make_feature_vec(self,signal):
 
         freqs, pow = sig.welch(signal, signal.sampling_freq)
@@ -29,10 +25,5 @@ class PeriodFeatures(FeatureGroup):
         out["median"] = np.median(pow_f)  * freqs.size
         out["skew"] = stats.skew(pow_f)  * freqs.size
         out["kurtosis"] = stats.kurtosis(pow_f)  * freqs.size
-
-
-
-
-
 
         return out
