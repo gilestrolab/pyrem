@@ -36,6 +36,10 @@ class EntropyFeatures(FeatureGroup):
 
 
     def svd_entropy(self, signal, lag_s):
+        """
+        Code adapted from Forrest Sheng Bao's pyeeg
+        """
+
         lag = lag_s * signal.sampling_freq
         mat = np.array([s for _,s in signal.embed_seq(lag*2,lag)])
         W = np.linalg.svd(mat, compute_uv = 0)
