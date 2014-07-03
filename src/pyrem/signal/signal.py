@@ -7,13 +7,13 @@ __author__ = 'quentin'
 
 import numpy as np
 
+# for plotting signals in ipn:
 SIGNALY_DPI = 328
 SIGNAL_FIGSIZE = (30, 5)
 
 def _normalise(obj):
     out = (obj - np.mean(obj)) / np.std(obj)
     return out
-
 
 class Signal(np.ndarray):
     def __new__(cls, input, sampling_freq, normalised=True):
@@ -27,6 +27,25 @@ class Signal(np.ndarray):
 
         # Finally, we must return the newly created object:
         return obj
+    def __deepcopy__(self):
+        return Signal(self, self.sampling_freq, self.normalised)
+
+    def __reduce__(self):
+        state = list(np.ndarray.__reduce__(self))
+        new_state = list(state[-1])
+        new_state.append(self.__normalised)
+        new_state.append(self.__sampling_freq)
+        state[-1] = tuple(new_state)
+
+        return tuple(state)
+
+    def __setstate__(self, state):
+        list_state = list(state)
+        self.__sampling_freq = list_state.pop()
+        self.__normalised = list_state.pop()
+
+        return np.ndarray.__setstate__(self,tuple(list_state))
+
 
     def __array_finalize__(self, obj):
         # see InfoArray.__array_finalize__ for comments
@@ -72,24 +91,30 @@ class Signal(np.ndarray):
 
     def embed_seq(self, length, lag):
         """
-        Iterate through an array by successive (typically overlapping) slices.
+        Iterate through an array by successive overlapping slices.
         Also returns the center of the slice
 
-        :param lag:
-        :param length:
-        :return:
+        :param lag: the ratio of overlap (0 = no overlap, 100 = completely overlapped)
+        :param length:of the epoch (in second)
+        :return: a signal
         """
 
-        if lag<1:
-            raise Exception("lag has to be at least 1")
+        if lag<=0 or lag>1:
+            raise Exception("lag has to be between 0 and 1")
+
+
+
+        n_points = int(self.sampling_freq * length)
+
+        lag_in_points = int(n_points * lag)
 
 
         margin = (lag-1)/2
 
-        for i in np.arange(0, self.size - length, lag):
-            out = self[i:i+length]
+        for i in np.arange(0, self.size - n_points, lag_in_points):
+            out = self[i:i+n_points]
             centre = i + float(out.size)/2.0
-            if out.size < length:
+            if out.size < n_points:
                 return
             yield centre, out
 
