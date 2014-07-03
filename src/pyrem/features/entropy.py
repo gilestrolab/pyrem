@@ -40,8 +40,8 @@ class EntropyFeatures(FeatureGroup):
         Code adapted from Forrest Sheng Bao's pyeeg
         """
 
-        lag = lag_s * signal.sampling_freq
-        mat = np.array([s for _,s in signal.embed_seq(lag*2,lag)])
+
+        mat = np.array([s for _,s in signal.embed_seq(2, 0.5)])
         W = np.linalg.svd(mat, compute_uv = 0)
         W /= sum(W) # normalize singular values
 
