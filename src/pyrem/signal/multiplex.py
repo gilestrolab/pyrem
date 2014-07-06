@@ -23,8 +23,8 @@ def parse_signal(filename, sampling_rate=200, resampling=256):
 
 class Multiplex(list):
 
-    def __init__(self):
-        super(Multiplex, self).__init__()
+    def __init__(self,signals):
+        super(Multiplex, self).__init__(signals)
         self._annotations = []
 
     def save(self, filename):

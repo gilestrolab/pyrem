@@ -130,7 +130,7 @@ class Signal(np.recarray):
 
         out = np.recarray((new_t.size,),self.dtype)
 
-        for channel, name in self.channel_iter():
+        for name, channel in self.channel_iter():
 
             if channel.dtype==float:
                 kind="linear"
@@ -155,8 +155,6 @@ class Signal(np.recarray):
         if lag<=0 or lag>1:
             raise Exception("lag has to be between 0 and 1")
 
-
-
         n_points = int(self.sampling_freq * length)
 
         lag_in_points = int(n_points * lag)
@@ -169,11 +167,11 @@ class Signal(np.recarray):
             yield centre, out
 #
 #
-    def _create_plot(self, *args, **kwargs):
+    def _create_fig(self, *args, **kwargs):
         from matplotlib import pyplot as plt
 
         title = "Duration = %s; at = %fHz" % (self.duration , self.sampling_freq)
-
+        
         f, axarr = plt.subplots(self.nsignals , sharex=True, sharey=True)
 
         axarr[0].set_title(title)
@@ -199,8 +197,8 @@ class Signal(np.recarray):
     def _repr_png_(self):
         from IPython.core.pylabtools import print_figure
         from matplotlib import pyplot as plt
-        fig = plt.figure(figsize=SIGNAL_FIGSIZE, dpi=SIGNALY_DPI)
-        ax = self._create_plot()
+
+        fig = self._create_fig()
         data = print_figure(fig, 'png')
         plt.close(fig)
         return data
