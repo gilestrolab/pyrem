@@ -1,32 +1,48 @@
-"""
+__author__ = 'quentin'
 
-"""
+import numpy as np
+from datetime import timedelta
+import pandas as pd
+
 import datetime
 
 __author__ = 'quentin'
 
 import numpy as np
-
+from scipy.interpolate import interp1d
+import pandas as pd
 # for plotting signals in ipn:
 SIGNALY_DPI = 328
 SIGNAL_FIGSIZE = (30, 5)
 
-def _normalise(obj):
-    out = (obj - np.mean(obj)) / np.std(obj)
+def _normalise(mat):
+    out = (mat - np.mean(mat,0)) / np.std(mat,0)
     return out
 
-class Signal(np.ndarray):
-    def __new__(cls, input, sampling_freq, normalised=True):
+class Signal(np.recarray):
+    def __new__(cls, input, sampling_freq, normalise=True):
+        if not isinstance(input,np.recarray):
+            data = np.asarray(input)
+            # force array to be 2d
 
-        obj = np.asarray(input).view(cls)
-        if normalised:
-            obj = _normalise(obj)
+            if data.ndim != 2:
+                data = np.reshape(data, (1,-1))
+
+            if normalise:
+                data = _normalise(data)
+            types = [("c%i" %(i),np.float) for i in range(data.shape[1])]
+            obj = np.recarray((data.shape[0],),types).view(cls)
+            for i,(c,t) in enumerate(types):
+                obj[c] = data[:,i]
+        else:
+            obj = np.copy(input).view(cls)
         # add the new attribute to the created instance
-        obj.__normalised = normalised
+        obj.__normalised = normalise
         obj.__sampling_freq = float(sampling_freq)
 
         # Finally, we must return the newly created object:
         return obj
+
     def __deepcopy__(self):
         return Signal(self, self.sampling_freq, self.normalised)
 
@@ -55,12 +71,16 @@ class Signal(np.ndarray):
         self.__normalised = getattr(obj, 'normalised', None)
         self.__sampling_freq = getattr(obj, 'sampling_freq', None)
 
-
-
     def __array_wrap__(self, out_arr, context=None):
         return np.ndarray.__array_wrap__(self, out_arr, context)
 
+    @property
+    def nchannels(self):
+        return len(self.dtype)
 
+    @property
+    def nsignals(self):
+        return len([True for n in self.dtype.names if n.startswith('c')])
 
     @property
     def sampling_freq(self):
@@ -71,8 +91,12 @@ class Signal(np.ndarray):
         return self.__normalised
 
     @property
+    def ntimepoints(self):
+        return self.shape[0]
+
+    @property
     def duration(self):
-        return self._time_from_idx(float(self.size))
+        return self._time_from_idx(float(self.ntimepoints))
 
 
     def _time_from_idx(self, idx):
@@ -81,20 +105,49 @@ class Signal(np.ndarray):
         return  str(end - start)
 
 
+    def signal_iter(self):
+         for c_name in self.dtype.names:
+             if c_name.startswith('c'):
+                 yield  c_name, self[c_name]
+
+    def annot_iter(self):
+     for c_name in self.dtype.names:
+         if c_name.startswith('a'):
+             yield  c_name, self[c_name]
+
+    def channel_iter(self):
+        for s in self.signal_iter():
+            yield s
+
+        for a in self.annot_iter():
+            yield a
     def resample(self, new_sampling_freq):
-        # new_size = self.size * float(new_sampling_freq) /self.sampling_freq
+
         new_step = self.sampling_freq / float(new_sampling_freq)
-        new_t = np.arange(0, self.size, new_step)
-        new_t = new_t[new_t <= self.size -1]
-        old_t= np.arange(0, self.size)
-        return Signal(np.interp(new_t, old_t, self), new_sampling_freq)
+        new_t = np.arange(0, self.ntimepoints, new_step)
+        new_t = new_t[new_t <= self.ntimepoints -1]
+        old_t= np.arange(0, self.ntimepoints)
+
+        out = np.recarray((new_t.size,),self.dtype)
+
+        for channel, name in self.channel_iter():
+
+            if channel.dtype==float:
+                kind="linear"
+            else:
+                kind="nearest"
+
+            f = interp1d(old_t, channel, assume_sorted=True, kind=kind)
+            out[name] = f(new_t)
+        return Signal(out, new_sampling_freq)
+
 
     def embed_seq(self, length, lag):
         """
         Iterate through an array by successive overlapping slices.
         Also returns the center of the slice
 
-        :param lag: the ratio of overlap (0 = no overlap, 100 = completely overlapped)
+        :param lag: the ratio of overlap (1= no overlap, 0= completely overlapped)
         :param length:of the epoch (in second)
         :return: a signal
         """
@@ -108,25 +161,28 @@ class Signal(np.ndarray):
 
         lag_in_points = int(n_points * lag)
 
-
-        margin = (lag-1)/2
-
-        for i in np.arange(0, self.size - n_points, lag_in_points):
+        for i in np.arange(0, self.ntimepoints - n_points, lag_in_points):
             out = self[i:i+n_points]
-            centre = i + float(out.size)/2.0
-            if out.size < n_points:
+            centre = ( i + float(out.ntimepoints)/2.0) / self.sampling_freq
+            if out.ntimepoints < n_points:
                 return
             yield centre, out
-
-
+#
+#
     def _create_plot(self, *args, **kwargs):
         from matplotlib import pyplot as plt
+
         title = "Duration = %s; at = %fHz" % (self.duration , self.sampling_freq)
 
-        out = plt.plot(self, *args, **kwargs)
+        f, axarr = plt.subplots(self.nsignals , sharex=True, sharey=True)
+
+        axarr[0].set_title(title)
+        for i,(name,s) in enumerate(self.signal_iter()):
+            axarr[i].plot(s, *args, **kwargs)
+        out = plt
+
         location, _ = plt.xticks()
         plt.xticks(location, [self._time_from_idx(l) for l in location], rotation=45)
-
 
         return out
 
