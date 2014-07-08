@@ -22,5 +22,6 @@ setup(
         "scipy>=0.10.1",
         "pandas>=0.14.0",
         "pywavelets>=0.2.2",
+        "scikit-learn>=0.14.1",
     ],
 )
