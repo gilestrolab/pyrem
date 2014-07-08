@@ -12,6 +12,7 @@ setup(
     license="GPL3",
     description='todo', #TODO
     long_description=open('README').read(),
+    package_data={'pyrem': ['data/classifiers/*.pkl']},
 #    extras_require={
 #        'pipes': ['luigi>=1.0.13'],
 #    },

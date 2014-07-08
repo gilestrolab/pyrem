@@ -7,9 +7,10 @@ from feature_base import FeatureGroup
 
 class PowerFeatures(FeatureGroup):
     prefix = "power"
-    def _make_feature_vec(self,signal):
+    def _make_feature_vec(self, data, parent_signal):
         out  = dict()
-        powers = signal ** 2
+
+        powers = data ** 2
         out["mean"] = np.mean(powers)
         out["sd"] = np.std(powers)
         out["median"] = np.median(powers)

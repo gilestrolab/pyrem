@@ -9,18 +9,30 @@ import datetime
 __author__ = 'quentin'
 
 import numpy as np
+import cPickle
 from scipy.interpolate import interp1d
 import pandas as pd
 # for plotting signals in ipn:
 SIGNALY_DPI = 328
 SIGNAL_FIGSIZE = (30, 5)
 
+
+def signal_from_csv(file_name, sampling_freq):
+    data = pd.read_csv(file_name, engine="c", header=None, dtype=np.float32)
+    return Signal(data, sampling_freq)
+
+
 def _normalise(mat):
     out = (mat - np.mean(mat,0)) / np.std(mat,0)
     return out
 
+
+def load_signal(filename):
+    return cPickle.load(open(filename))
+
+
 class Signal(np.recarray):
-    def __new__(cls, input, sampling_freq, normalise=True):
+    def __new__(cls, input, sampling_freq, normalise=True, channel_types=[],metadata=None):
         if not isinstance(input,np.recarray):
             data = np.asarray(input)
             # force array to be 2d
@@ -39,6 +51,8 @@ class Signal(np.recarray):
         # add the new attribute to the created instance
         obj.__normalised = normalise
         obj.__sampling_freq = float(sampling_freq)
+        obj.__metadata = metadata
+        obj.__channel_types = channel_types
 
         # Finally, we must return the newly created object:
         return obj
@@ -51,17 +65,24 @@ class Signal(np.recarray):
         new_state = list(state[-1])
         new_state.append(self.__normalised)
         new_state.append(self.__sampling_freq)
+        new_state.append(self.__metadata)
+        new_state.append(self.__channel_types)
         state[-1] = tuple(new_state)
 
         return tuple(state)
 
     def __setstate__(self, state):
         list_state = list(state)
+        self.__channel_types = list_state.pop()
+        self.__metadata = list_state.pop()
         self.__sampling_freq = list_state.pop()
         self.__normalised = list_state.pop()
 
         return np.ndarray.__setstate__(self,tuple(list_state))
 
+    def save(self, filename):
+        with open(filename, "w") as f:
+            cPickle.dump(self,f, cPickle.HIGHEST_PROTOCOL)
 
     def __array_finalize__(self, obj):
         # see InfoArray.__array_finalize__ for comments
@@ -70,6 +91,8 @@ class Signal(np.recarray):
 
         self.__normalised = getattr(obj, 'normalised', None)
         self.__sampling_freq = getattr(obj, 'sampling_freq', None)
+        self.__metadata = getattr(obj, 'metadata', None)
+        self.__channel_types = getattr(obj, 'channel_types', None)
 
     def __array_wrap__(self, out_arr, context=None):
         return np.ndarray.__array_wrap__(self, out_arr, context)
@@ -81,6 +104,13 @@ class Signal(np.recarray):
     @property
     def nsignals(self):
         return len([True for n in self.dtype.names if n.startswith('c')])
+
+    @property
+    def metadata(self):
+        return self.__metadata
+    @property
+    def channel_types(self):
+        return self.__channel_types
 
     @property
     def sampling_freq(self):
@@ -105,15 +135,21 @@ class Signal(np.recarray):
         return  str(end - start)
 
 
-    def signal_iter(self):
+    def signal_iter(self, return_names=False):
          for c_name in self.dtype.names:
              if c_name.startswith('c'):
-                 yield  c_name, self[c_name]
+                 if return_names:
+                    yield  c_name, self[c_name]
+                 else:
+                     yield  self[c_name]
 
-    def annot_iter(self):
-     for c_name in self.dtype.names:
-         if c_name.startswith('a'):
-             yield  c_name, self[c_name]
+    def annot_iter(self, return_names=False):
+        for c_name in self.dtype.names:
+            if c_name.startswith('a'):
+                if return_names:
+                    yield  c_name, self[c_name]
+                else:
+                    yield  self[c_name]
 
     def channel_iter(self):
         for s in self.signal_iter():
@@ -121,6 +157,7 @@ class Signal(np.recarray):
 
         for a in self.annot_iter():
             yield a
+
     def resample(self, new_sampling_freq):
 
         new_step = self.sampling_freq / float(new_sampling_freq)
