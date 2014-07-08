@@ -48,7 +48,7 @@ class EEGsvEMG(object):
         return  features
 
     def save(self, filename):
-        cPickle.dump(self, Popen(filename, "w"), cPickle.HIGHEST_PROTOCOL)
+        cPickle.dump(self, open(filename, "w"), cPickle.HIGHEST_PROTOCOL)
 
     def train(self, labels, data_iterator, data):
         new_features_df = self.make_features(data_iterator, data)
