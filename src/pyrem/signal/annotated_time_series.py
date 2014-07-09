@@ -1,7 +1,17 @@
 __author__ = 'quentin'
 
-import numpy as np
 import datetime
+import cPickle as pkl
+import numpy as np
+import pandas as pd
+from scipy.interpolate import interp1d
+
+
+
+def ats_from_csv(file_name, sampling_freq):
+    data = pd.read_csv(file_name, engine="c", header=None, dtype=np.float32)
+    return AnnotatedTimeSeries(data, sampling_freq)
+
 
 class AnnotatedTimeSeries(object):
     def __init__(self,
@@ -9,19 +19,28 @@ class AnnotatedTimeSeries(object):
                  sampling_rate,
                  annotations=None,
                  channel_types=None,
-                 metadata=None
+                 annotation_types=None,
+                 metadata=None,
                 ):
         self.data = np.asarray(data)
+        #todo force 2d array for annot and data
+        #self.data.reshape((self.ntimepoints,1))
 
         if annotations is None:
-            self.annotations = None
+            self._annotations = None
         else:
-            #todo check size should be equal to the number of rows
-            self.annotations = np.asarray(annotations)
+
+            self._annotations = np.asarray(annotations)
+            if annotations.shape[0] != self.ntimepoints:
+                raise Exception("The length of the provided annotations does not match the length of the data")
+            if len(annotation_types) != annotations.shape[1]:
+                raise Exception("the number of annotations does not match the number of elements in annotation types")
+
+
         if channel_types is None:
-            channel_types = ["NaN"] * self.nchannels
+            channel_types = ["NaN"] * self.n_channels
         else:
-            if len(channel_types) != self.nchannels:
+            if len(channel_types) != self.n_channels:
                 raise Exception("the number of channels does not match the number of elements in channel types")
 
         if not metadata:
@@ -31,6 +50,24 @@ class AnnotatedTimeSeries(object):
 
         self._sampling_freq = sampling_rate
         self._channel_types= channel_types
+        self._annotation_types= annotation_types
+
+
+    def apply_channels(self, function, *args, **kwargs):
+        new_data = []
+
+        for c in self.channels():
+            new_data.append(function(c.data.flatten(),*args, **kwargs))
+
+        new_data = np.array(new_data).T
+        return self._soft_copy(new_data)
+
+
+
+
+
+    def normalise(self):
+        return self.apply_channels( lambda x : (x - np.mean(x)) / np.std(x))
 
     @property
     def sampling_freq(self):
@@ -39,10 +76,14 @@ class AnnotatedTimeSeries(object):
     @property
     def channel_types(self):
         return self._channel_types
+    @property
+    def annotation_types(self):
+        return self._annotation_types
 
     @property
     def ntimepoints(self):
         return self.data.shape[0]
+
     @property
     def metadata(self):
         return self._metadata
@@ -51,13 +92,23 @@ class AnnotatedTimeSeries(object):
         self.data = new_data
 
     @property
-    def nchannels(self):
+    def n_channels(self):
         return self.data.shape[1]
+
+    @property
+    def annotation_data(self):
+        return self._annotations
+
+    @property
+    def n_annotations(self):
+        return self._annotations.shape[1]
+
+
 
 
     def _soft_copy(self,new_data,new_annotations=None, new_channel_types=None):
         if new_annotations is None:
-            annotations = self.annotations
+            annotations = self._annotations
         else:
             annotations = new_annotations
 
@@ -66,23 +117,38 @@ class AnnotatedTimeSeries(object):
         else:
             new_channel_types = new_channel_types
 
-        return AnnotatedTimeSeries(new_data, self.sampling_freq, annotations = annotations, channel_types=new_channel_types, metadata = self.metadata)
+        return AnnotatedTimeSeries(new_data, self.sampling_freq, annotations = annotations,
+                                   channel_types = new_channel_types,
+                                   annotation_types = self.annotation_types,
+                                   metadata = self.metadata)
+
 
 
     def channels(self):
-        for i in range(self.nchannels):
+        for i in range(self.n_channels):
             yield self[i]
+
+    def annotations(self):
+        for i in range(self.n_annotations):
+            yield self._annotations[i]
+
 
     def __getitem__( self, key ) :
 
         # slice -> time chunk
         if isinstance( key, slice ) :
 
-            sub_data = self.data[key]
-            if self.annotations is None:
-                sub_annotations =None
+            if isinstance(key.start, int):
+                sub_data = self.data[key]
+                if self._annotations is None:
+                    sub_annotations = None
+                else:
+                    sub_annotations = self._annotations[key]
+            #time string slices ;)
+
             else:
-                sub_annotations = self.annotations[key]
+                raise NotImplementedError("TODO")
+                pass
 
 
             return self._soft_copy(sub_data, sub_annotations)
@@ -141,27 +207,136 @@ class AnnotatedTimeSeries(object):
         end = datetime.datetime.fromtimestamp(idx / self.sampling_freq)
         return  end - start
 
+    # def _idx_from_time(self, time):
+    #     ref = datetime.datetime.fromtimestamp(0)
+    #
+    #     end = datetime.datetime.fromtimestamp(idx / self.sampling_freq)
+    #     return  end - start
+
+
+    def resample(self, new_sampling_freq):
+
+        new_step = self.sampling_freq / float(new_sampling_freq)
+        new_t = np.arange(0, self.ntimepoints, new_step)
+        new_t = new_t[new_t <= self.ntimepoints -1]
+        old_t= np.arange(0, self.ntimepoints)
+
+
+
+        new_data = []
+        for c in self.channels():
+            f = interp1d(old_t, c.data.flatten(), assume_sorted=True, kind="linear")
+            new_data.append(f(new_t))
+
+        new_data = np.array(new_data).T
+
+        if not self._annotations:
+            new_annotations = None
+        else:
+            new_annotations = []
+            for c in self.channels():
+                f = interp1d(old_t, c.data.flatten(), assume_sorted=True, kind="linear")
+                new_annotations.append(f(new_t))
+
+            new_annotations= np.array(new_annotations).T
+
+
+        return AnnotatedTimeSeries(new_data,  new_sampling_freq, channel_types=self.channel_types,
+                                   annotations=new_annotations, metadata=self.metadata)
+
 
     def __repr__(self):
         metadata = "\n".join(["\t\t%s:\t%s" % (k, str(v)) for k,v in self.metadata.items()])
 
         out = ["\n" + type(self).__name__ + "\n",
-               "N channels:\t%i" % (self.nchannels),
+               "N channels:\t%i" % (self.n_channels),
                "duration:\t%s (HH:mm:ss)" % (str(self.duration)),
                "sampling freq:\t%f Hz" % (self.sampling_freq),
                "Channel types:\t%s" % (str(self.channel_types)),
-
+               "N points:\t%i" % (self.ntimepoints),
                "metadata:\n%s" % (metadata),
                ]
+
         return "\n".join(out)
 
+    def summary(self):
+        first = self[0:10]
+        last = self[-10:]
+        channels_f = pd.DataFrame(first.data, columns=self.channel_types)
+        channels_l = pd.DataFrame(last.data, index=range(self.ntimepoints - 10, self.ntimepoints),
+                                                columns=self.channel_types)
+
+        annotation_f = pd.DataFrame(first.annotation_data, columns=self.annotation_types)
+        annotation_l = pd.DataFrame(last.annotation_data, index=range(self.ntimepoints - 10, self.ntimepoints),
+                                                columns=self.annotation_types)
+
+        out = pd.concat([pd.concat([channels_f, channels_l]), pd.concat([annotation_f, annotation_l])], axis=1)
+
+        return out
+
+        # return  pd.concat([channels, annotations], axis=1)
 
 
 
-a = AnnotatedTimeSeries(np.reshape(np.arange(0,1200),(300,4)),10, channel_types=["EEG","EMG","NaN","EEG"],metadata={"a":1,"b":"yoyo"})
-#print a.data
-b = a[0:2]
-#print b.data
+#
+    def _create_fig(self, *args, **kwargs):
+        from matplotlib import pyplot as plt
 
-c = a[1]
-print c
+        title = "Duration = %s; at = %fHz" % (str(self.duration) , self.sampling_freq)
+
+        f, axarr = plt.subplots(self.n_channels , sharex=True)
+
+        axarr[0].set_title(title)
+        for i, (c,ty) in enumerate(zip(self.channels(), self.channel_types)):
+            axarr[i].plot(c.data.flatten(), *args, **kwargs)
+            axarr[i].set_ylabel('Channel #%i\n (%s)' % (i + 1, ty))
+        out = plt
+
+        location, _ = plt.xticks()
+        plt.xticks(location, [self._time_from_idx(l) for l in location], rotation=45)
+
+        return out
+
+    def show(self, *args, **kwargs):
+        self.plot( *args, **kwargs).show()
+    def plot(self, *args, **kwargs):
+        """
+        Plots the signal using :mod:`matplotlib.pyplot`.
+
+        :param args: arguments to pass to :func:`~matplotlib.pyplot.plot`
+        :param kwargs: keyword arguments to pass to :func:`~matplotlib.pyplot.plot`
+        :return: the result of the :func:`matplotlib.pyplot.plot` function.
+        """
+        return self._create_fig(*args, **kwargs)
+
+
+    def _repr_png_(self):
+        from IPython.core.pylabtools import print_figure
+        from matplotlib import pyplot as plt
+
+        fig = self._create_fig()
+        data = print_figure(fig, 'png')
+        plt.close(fig)
+        return data
+
+    @property
+    def png(self):
+        from IPython.display import Image
+        return Image(self._repr_png_(), embed=True)
+
+    def save(self, filename):
+        with open(filename, "w") as f:
+            pkl.dump(self,f, pkl.HIGHEST_PROTOCOL)
+
+
+
+class Annotation(object):
+    value = None
+    proba = None
+    def __repr__(self):
+        str((self.value, self.proba))
+
+
+annotations = np.random.normal(10,10,(100000,2)) + 1j
+
+a = AnnotatedTimeSeries( np.random.normal(10,100,(100000,4)),256, annotations = annotations, channel_types=["EEG","EMG","NaN","EEG"], annotation_types=["a", "b"] ,metadata={"a":1,"b":"yoyo"})
