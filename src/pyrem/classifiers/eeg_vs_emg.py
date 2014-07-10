@@ -4,12 +4,13 @@ __author__ = 'quentin'
 import numpy as np
 import pandas as pd
 import glob
-import cPickle
+# import cPickle as pkl
+from sklearn.externals import joblib as pkl
 from sklearn.preprocessing import LabelEncoder
-from scipy.stats import mode
+
 from pyrem.features.summary import PowerFeatures
 from pyrem.features.periodogram import PeriodFeatures
-from pyrem.signal.signal import load_signal
+from pyrem.signal.polygraph import polygraph_from_pkl
 from sklearn.ensemble import RandomForestClassifier
 
 class EEGsvEMG(object):
@@ -19,41 +20,45 @@ class EEGsvEMG(object):
         ]
 
 
-    def __init__(self, data_file_pattern):
+    def __init__(self):
         self._features = pd.DataFrame()
-        self.classifier = RandomForestClassifier(oob_score=True, n_estimators=500, n_jobs=8)
+        self.classifier = RandomForestClassifier(oob_score=True, n_estimators=500, n_jobs=8, max_depth=25)
         self.label_encoder = LabelEncoder()
+        self._is_complete = False
         self.n_chunks_for_predict = 25
+        self._EPOCH_LENGTH = 30 # seconds
+
+    def train_from_polygraph_file_list(self, data_file_pattern):
         files = glob.glob(data_file_pattern)
         for f in sorted(files):
-            print "Processing: " + f
+            print "Training with: " + f
 
-            signal = load_signal(f)
-            labels = signal.channel_types
+            polygraph = polygraph_from_pkl(f)
 
-            for t,subsignal in signal.embed_seq(30,1):
-                self.train(labels, subsignal.signal_iter(), subsignal)
+            self.train(polygraph)
 
         self.complete_training()
 
 
-    def make_features(self, data_iterator, data, processes=1):
-        all_dfs = []
-        for  channel  in data_iterator:
-            groups_dfs = [group(channel, data) for group in self.__FEATURE_GROUPS]
-            all_dfs.append(pd.concat(groups_dfs, axis=1))
-
-        features = pd.concat(all_dfs)
-
+    def make_features(self,epoch):
+        groups_dfs = [group(epoch) for group in self.__FEATURE_GROUPS]
+        features = pd.concat(groups_dfs, axis=1)
         return  features
 
     def save(self, filename):
-        cPickle.dump(self, open(filename, "w"), cPickle.HIGHEST_PROTOCOL)
+        if not self._is_complete:
+            raise Exception("Trainning not complete. Call `complete_training()' method")
+        pkl.dump(self, filename, compress=9)
 
-    def train(self, labels, data_iterator, data):
-        new_features_df = self.make_features(data_iterator, data)
-        new_features_df.index = labels
-        self._features = pd.concat([self._features, new_features_df])
+    def train(self, polygraph):
+
+        for lab, channel in zip(polygraph.channel_types, polygraph.channels()):
+            for _, epoch in channel.embed_seq(self._EPOCH_LENGTH,7): # fixme magic number
+                feature_row = self.make_features(epoch)
+                feature_row.index = [lab]
+
+                self._features = pd.concat([self._features, feature_row])
+
         #todo append = cleanner
 
     def complete_training(self):
@@ -62,34 +67,61 @@ class EEGsvEMG(object):
         # drop features to save memory ;)
         self._features = None
         self.classifier.fit(x,y)
+        self._is_complete = True
 
-    def predict (self,  data_iterator, data):
-        x = self.make_features(data_iterator, data)
-        y = self.classifier.predict(x)
-        return y
+    def predict (self,  polygraph):
+        idxs = []
+        features = []
+        for channel_idx, channel in enumerate(polygraph.channels()):
+            for _, epoch in channel.embed_seq(self._EPOCH_LENGTH,10): # fixme magic number
+                features.append(self.make_features(epoch))
+                idxs.append(channel_idx)
+
+        features = pd.concat(features)
+        features.index = idxs
+
+        y_pred = self.classifier.predict(features)
+        y_pred = self.label_encoder.inverse_transform(y_pred)
+
+        df = pd.DataFrame({"channel":idxs, "label":y_pred})
+
+        a = pd.pivot_table(df, index="channel", cols="label", aggfunc=len).fillna(0)
+        labels_pr = a.apply(lambda x: pd.Series({"pr": x[np.argmax(x)]/ float(np.sum(x)), "label":np.argmax(x)}), 1)
+        labels = labels_pr.apply(lambda x : x["label"] if x["pr"] > 0.75 else "NaN" ,1)
+
+
+        return list(labels), list(labels_pr["pr"])
+
+    # def predict (self,  data_iterator, data):
+    #     x = self.make_features(data_iterator, data)
+    #     y = self.classifier.predict(x)
+    #     return y
         #return self.label_encoder.inverse_transform(y)
-
-    def predict_samples(self, signal):
-        predictions = []
-        n_chunks = float(signal.ntimepoints) / signal.sampling_freq / 30.0
-        p =  n_chunks / self.n_chunks_for_predict
-        if p < 1:
-            p = 1
-        else:
-            p = int(p)
-        for i,(t,subsignal) in enumerate(signal.embed_seq(30,1)):
-            if i % p == 0:
-                predictions.append(self.predict(subsignal.signal_iter(), subsignal))
-        all_predicts = np.array(predictions)
-        mo, n = mode(all_predicts)
-        prop = n / all_predicts.shape[0]
-
-        annots = []
-
-        for p,m in zip(prop.flatten(), mo.flatten()):
-            if p > 0.75: #fixme magic number
-                annots.append(self.label_encoder.inverse_transform(int(m)))
-            else:
-                annots.append(None)
-
-        return annots
+    #
+    # def predict_samples(self, channel):
+    #     predictions = []
+    #
+    #     n_chunks = float(channel.ntimepoints) / channel.sampling_freq / 30.0
+    #
+    #     p =  n_chunks / self.n_chunks_for_predict
+    #     if p < 1:
+    #         p = 1
+    #     else:
+    #         p = int(p)
+    #
+    #     for i,(_,epoch) in enumerate(channel.embed_seq(30,11)):
+    #         if i % p == 0:
+    #             predictions.append(self.predict(subsignal.signal_iter(), subsignal))
+    #     all_predicts = np.array(predictions)
+    #     mo, n = mode(all_predicts)
+    #     prop = n / all_predicts.shape[0]
+    #
+    #     annots = []
+    #
+    #     for p,m in zip(prop.flatten(), mo.flatten()):
+    #         if p > 0.75: #fixme magic number
+    #             annots.append(self.label_encoder.inverse_transform(int(m)))
+    #         else:
+    #             annots.append(None)
+    #
+    #     return annots

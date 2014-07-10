@@ -10,9 +10,10 @@ class PeriodFeatures(FeatureGroup):
     prefix = "welch"
 
 
-    def _make_feature_vec(self, data, parent_signal):
+    def _make_feature_vec(self, channel):
+        data = channel.data.flatten()
 
-        freqs, pow = sig.welch(data, parent_signal.sampling_freq)
+        freqs, pow = sig.welch(data, channel.sampling_freq)
 
         pow_f = freqs * pow/np.sum(pow)
 

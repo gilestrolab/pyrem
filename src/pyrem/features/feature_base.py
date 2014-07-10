@@ -7,8 +7,8 @@ import pandas as pd
 
 class FeatureGroup(object):
     prefix = None
-    def __call__(self, data, parent_signal):
-        feature_dict = self._make_feature_vec(data, parent_signal)
+    def __call__(self, data):
+        feature_dict = self._make_feature_vec(data)
 
         data_frame = pd.DataFrame(feature_dict, index=[None])
 
@@ -17,8 +17,8 @@ class FeatureGroup(object):
             raise Exception("More than one features in this group. You need a prefix to identify this group")
 
         if self.prefix:
-            data_frame .columns = [self.prefix + "_" + c for c in data_frame .columns]
+            data_frame.columns = [self.prefix + "_" + c for c in data_frame .columns]
         return data_frame
 
-    def _make_feature_vec(self,data, parent_signal):
+    def _make_feature_vec(self,data):
         raise NotImplementedError

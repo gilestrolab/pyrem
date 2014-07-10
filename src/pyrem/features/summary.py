@@ -7,7 +7,8 @@ from feature_base import FeatureGroup
 
 class PowerFeatures(FeatureGroup):
     prefix = "power"
-    def _make_feature_vec(self, data, parent_signal):
+    def _make_feature_vec(self, channel):
+        data = channel.data.flatten()
         out  = dict()
 
         powers = data ** 2

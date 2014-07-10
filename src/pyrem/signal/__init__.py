@@ -1,2 +1,2 @@
 from signal import *
-from multiplex import *
+from polygraph import *

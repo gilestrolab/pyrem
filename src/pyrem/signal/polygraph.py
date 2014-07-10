@@ -1,19 +1,22 @@
 __author__ = 'quentin'
 
 import datetime
-import cPickle as pkl
+#import cPickle as pkl
+from sklearn.externals import joblib as pkl
 import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 
+def polygraph_from_pkl(filename):
+    return pkl.load(filename)
 
 
-def ats_from_csv(file_name, sampling_freq):
+def polygraph_from_csv(file_name, sampling_freq):
     data = pd.read_csv(file_name, engine="c", header=None, dtype=np.float32)
-    return AnnotatedTimeSeries(data, sampling_freq)
+    return Polygraph(data, sampling_freq)
 
 
-class AnnotatedTimeSeries(object):
+class Polygraph(object):
     def __init__(self,
                  data,
                  sampling_rate,
@@ -29,11 +32,11 @@ class AnnotatedTimeSeries(object):
         if annotations is None:
             self._annotations = None
         else:
-
             self._annotations = np.asarray(annotations)
             if annotations.shape[0] != self.ntimepoints:
                 raise Exception("The length of the provided annotations does not match the length of the data")
             if len(annotation_types) != annotations.shape[1]:
+                print len(annotation_types), annotations
                 raise Exception("the number of annotations does not match the number of elements in annotation types")
 
 
@@ -117,7 +120,7 @@ class AnnotatedTimeSeries(object):
         else:
             new_channel_types = new_channel_types
 
-        return AnnotatedTimeSeries(new_data, self.sampling_freq, annotations = annotations,
+        return Polygraph(new_data, self.sampling_freq, annotations = annotations,
                                    channel_types = new_channel_types,
                                    annotation_types = self.annotation_types,
                                    metadata = self.metadata)
@@ -130,7 +133,7 @@ class AnnotatedTimeSeries(object):
 
     def annotations(self):
         for i in range(self.n_annotations):
-            yield self._annotations[i]
+            yield self._annotations[:,i]
 
 
     def __getitem__( self, key ) :
@@ -177,13 +180,13 @@ class AnnotatedTimeSeries(object):
         Iterate through an array by successive overlapping slices.
         Also returns the center of the slice
 
-        :param lag: the ratio of overlap (1= no overlap, 0= completely overlapped)
+        :param lag: the ratio of overlap (e.g. 1= no overlap, 0= completely overlapped, 10= 9 * length between end of e and start of e+1)
         :param length:of the epoch (in second)
         :return: a signal
         """
 
-        if lag<=0 or lag>1:
-            raise Exception("lag has to be between 0 and 1")
+        if lag<=0:
+            raise Exception("lag has to be  greater than one")
 
         n_points = int(self.sampling_freq * length)
 
@@ -230,19 +233,19 @@ class AnnotatedTimeSeries(object):
 
         new_data = np.array(new_data).T
 
-        if not self._annotations:
+        if self._annotations is None:
             new_annotations = None
         else:
             new_annotations = []
-            for c in self.channels():
-                f = interp1d(old_t, c.data.flatten(), assume_sorted=True, kind="linear")
+            for c in self.annotations():
+                f = interp1d(old_t, c.flatten(), assume_sorted=True, kind="nearest")
                 new_annotations.append(f(new_t))
 
             new_annotations= np.array(new_annotations).T
 
 
-        return AnnotatedTimeSeries(new_data,  new_sampling_freq, channel_types=self.channel_types,
-                                   annotations=new_annotations, metadata=self.metadata)
+        return Polygraph(new_data,  new_sampling_freq, channel_types=self.channel_types,
+                                   annotations=new_annotations, metadata=self.metadata, annotation_types=self.annotation_types)
 
 
     def __repr__(self):
@@ -273,9 +276,6 @@ class AnnotatedTimeSeries(object):
         out = pd.concat([pd.concat([channels_f, channels_l]), pd.concat([annotation_f, annotation_l])], axis=1)
 
         return out
-
-        # return  pd.concat([channels, annotations], axis=1)
-
 
 
 #
@@ -324,19 +324,9 @@ class AnnotatedTimeSeries(object):
         from IPython.display import Image
         return Image(self._repr_png_(), embed=True)
 
-    def save(self, filename):
-        with open(filename, "w") as f:
-            pkl.dump(self,f, pkl.HIGHEST_PROTOCOL)
+    def save(self, filename, compression_level=5):
+        pkl.dump(self,filename, compress=compression_level)
 
 
-
-class Annotation(object):
-    value = None
-    proba = None
-    def __repr__(self):
-        str((self.value, self.proba))
-
-
-annotations = np.random.normal(10,10,(100000,2)) + 1j
-
-a = AnnotatedTimeSeries( np.random.normal(10,100,(100000,4)),256, annotations = annotations, channel_types=["EEG","EMG","NaN","EEG"], annotation_types=["a", "b"] ,metadata={"a":1,"b":"yoyo"})
+# annotations = np.random.normal(10,10,(100000,2)) + 1j
+# a = AnnotatedTimeSeries( np.random.normal(10,100,(100000,4)),256, annotations = annotations, channel_types=["EEG","EMG","NaN","EEG"], annotation_types=["a", "b"] ,metadata={"a":1,"b":"yoyo"})

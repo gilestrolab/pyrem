@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pyrem as pr
 
-CHANNELS = ['e','e','m','m']
+CHANNELS = ['eeg','eeg','emg','emg']
 METADATA = {"organism":"Mus musculus", "sex":"M", "author":"Valentina Ferretti"}
 SAMPLING_FREQ = 200
 
@@ -16,5 +16,5 @@ if __name__ == "__main__":
     df = np.array(df.drop("Time",axis=1).dropna())
     met = METADATA
     met["raw_file_name"] = input
-    sig = pr.Signal(df,SAMPLING_FREQ, metadata=METADATA, channel_types=CHANNELS, normalise=False)
+    sig = pr.Polygraph(df,SAMPLING_FREQ, metadata=METADATA, channel_types=CHANNELS)
     sig.save(output)
