@@ -65,72 +65,117 @@ def hjorth(X):
 
 
 
-def svd_entropy(self, X, lag):
-
-
-    mat = np.array([s for _,s in x.embed_seq(2, 0.5)])
-    W = np.linalg.svd(mat, compute_uv = 0)
+def svd_entropy(X, Tau, DE):
+    mat =  embed_seq(X, Tau, DE)
+    W = np.linalg.svd(mat, compute_uv = False)
     W /= sum(W) # normalize singular values
-
     return -1*sum(W * np.log(W))
 
 
+def fisher_info(X, Tau, DE):
+    mat =  embed_seq(X, Tau, DE)
+    W = np.linalg.svd(mat, compute_uv = False)
+    W /= sum(W) # normalize singular values
+    FI_v = (W[1:] - W[:-1]) **2 / W[:-1]
+
+    return np.sum(FI_v)
 
 
+def make_cm(Em,ij_arr,N,M, R):
+    i_idxs = ij_arr[:,0]
+    j_idxs = ij_arr[:,1]
+    dif =  np.abs(Em[i_idxs] - Em[j_idxs])
+    max_dist = np.max(dif, 1)
+    inrange_cm = max_dist <= R
+
+    in_range_ij_arr = ij_arr[inrange_cm,:]
+    Cm = np.bincount(in_range_ij_arr.flatten(), minlength=N-M+1)
 
 
+    inrange_last = np.max(np.abs(Em[:-1] - Em[-1]),1) <= R
+    Cm[inrange_last] += 1
+    # all matches + self match
+    Cm[-1] += np.sum(inrange_last) + 1
+    return Cm, in_range_ij_arr
 
+def make_cmp():
+    pass
 
+def ap_entropy(X, M, R):
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def hfd_new(X, Kmax):
-    """ Compute Higuchi Fractal Dimension of a time series X, kmax
-     is an HFD parameter
-    """
-    L = []
-    x = []
     N = len(X)
-    for k in range(1,Kmax):
-        Lk = []
-        for m in range(k):
-            max = int((N-m)/k)
 
-            diffs = X[m+k:len(X)-k+1:k]
-            #print np.sum(np.abs(diffs))
-            # print len(ar[m: :k])
+    Em = embed_seq(X, 1, M)
 
 
-            print k,m,len(diffs)
+    ij_list = []
+    for i in xrange(0, N - M):
+        for j in xrange(i, N - M):
+            ij_list.append((i, j))
 
-            Lmk = np.sum(np.abs(diffs))*(N - 1)/np.floor((N - m) / float(k)) / k
-            #print k,m, np.sum(np.abs(diffs)) / float(len(diffs))
-            Lk.append(Lmk)
+
+    ij_arr = np.array(ij_list)
 
 
 
-        L.append(np.log(np.mean(Lk)))
-        x.append([np.log(float(1) / k), 1])
+    Cm, in_range_ij_arr  = make_cm(Em, ij_arr,N,M,R)
+    a,b = in_range_ij_arr[:,0], in_range_ij_arr[:,1]
+    Emp = embed_seq(X, 1, M + 1) #    try to only build Emp to save time
+    inrange_cmp = np.abs(Emp[a,-1] - Emp[b,-1]) <= R
+    c, d = a[inrange_cmp], b[inrange_cmp]
+    Cmp = np.bincount(np.concatenate([c,d]), minlength=N-M)
 
-    # print L,x
-    (p, r1, r2, s)=np.linalg.lstsq(x, L)
-    return p[0]
 
 
+    Cm, Cmp = Cm.astype(np.float), Cmp.astype(np.float)
+
+    Cm /= float((N - M +1 ))
+    Cmp /= float(N - M)
+    Phi_m, Phi_mp = sum(np.log(Cm)),  sum(np.log(Cmp))
+    Ap_En = (Phi_m - Phi_mp) / (N - M)
+    return Ap_En
+
+
+
+
+
+
+
+#
+#
+# def hfd_new(X, Kmax):
+#     """ Compute Higuchi Fractal Dimension of a time series X, kmax
+#      is an HFD parameter
+#     """
+#     L = []
+#     x = []
+#     N = len(X)
+#     for k in range(1,Kmax):
+#         Lk = []
+#         for m in range(k):
+#             max = int((N-m)/k)
+#
+#             diffs = X[m+k:len(X)-k+1:k]
+#             #print np.sum(np.abs(diffs))
+#             # print len(ar[m: :k])
+#
+#
+#             print k,m,len(diffs)
+#
+#             Lmk = np.sum(np.abs(diffs))*(N - 1)/np.floor((N - m) / float(k)) / k
+#             #print k,m, np.sum(np.abs(diffs)) / float(len(diffs))
+#             Lk.append(Lmk)
+#
+#
+#
+#         L.append(np.log(np.mean(Lk)))
+#         x.append([np.log(float(1) / k), 1])
+#
+#     # print L,x
+#     (p, r1, r2, s)=np.linalg.lstsq(x, L)
+#     return p[0]
+#
+#
 
 
 
@@ -163,11 +208,11 @@ def hfd(X, Kmax):
     (p, r1, r2, s)=np.linalg.lstsq(x, L)
     return p[0]
 
-
-ar = np.arange(100)
-hfd(ar, 10)
-print "==================="
-hfd_new(ar, 10)
+#
+# ar = np.arange(100)
+# hfd(ar, 10)
+# print "==================="
+# hfd_new(ar, 10)
 
 # def hfd_exple(pow=10):
 #     start = 1000
@@ -180,4 +225,12 @@ hfd_new(ar, 10)
 #     return out
 #
 # a = hfd_exple(15)
+
+
 # hfd(a, 4)
+
+
+
+
+
+

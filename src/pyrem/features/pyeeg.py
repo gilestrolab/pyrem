@@ -499,7 +499,7 @@ def svd_entropy(X, Tau, DE, W = None):
     """
 
     if W is None:
-        Y = embed_seq(X, tau, dE)
+        Y = embed_seq(X, Tau, DE)
         W = svd(Y, compute_uv = 0)
         W /= sum(W) # normalize singular values
 
