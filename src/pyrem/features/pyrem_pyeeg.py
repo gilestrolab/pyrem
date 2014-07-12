@@ -81,57 +81,53 @@ def fisher_info(X, Tau, DE):
     return np.sum(FI_v)
 
 
-def make_cm(Em,ij_arr,N,M, R):
-    i_idxs = ij_arr[:,0]
-    j_idxs = ij_arr[:,1]
-    dif =  np.abs(Em[i_idxs] - Em[j_idxs])
+def make_cmp(X, M, R, in_range_i, in_range_j):
+     #Then we make Cmp
+    Emp = embed_seq(X, 1, M + 1)
+    inrange_cmp = np.abs(Emp[in_range_i,-1] - Emp[in_range_j,-1]) <= R
+    # inrange_cmp_ij_arr = in_range_ij_arr[inrange_cmp]
+    in_range_cmp_i = in_range_i[inrange_cmp]
+    in_range_cmp_j = in_range_j[inrange_cmp]
+    # Cmp = np.bincount(inrange_cmp_ij_arr.flatten(), minlength=N-M)
+    Cmp = np.bincount(in_range_cmp_i, minlength=N-M)
+    Cmp += np.bincount(in_range_cmp_j, minlength=N-M)
+    return Cmp.astype(np.float)
+
+def make_cm(X,M,R):
+    N = len(X)
+
+    # we pregenerate all indices
+    i_idx,j_idx  = np.triu_indices(N - M)
+
+    # We start by making Cm
+    Em = embed_seq(X, 1, M)
+    dif =  np.abs(Em[i_idx] - Em[j_idx])
     max_dist = np.max(dif, 1)
     inrange_cm = max_dist <= R
 
-    in_range_ij_arr = ij_arr[inrange_cm,:]
-    Cm = np.bincount(in_range_ij_arr.flatten(), minlength=N-M+1)
 
+    in_range_i = i_idx[inrange_cm]
+    in_range_j = j_idx[inrange_cm]
+
+    Cm = np.bincount(in_range_i, minlength=N-M+1)
+    Cm += np.bincount(in_range_j, minlength=N-M+1)
 
     inrange_last = np.max(np.abs(Em[:-1] - Em[-1]),1) <= R
     Cm[inrange_last] += 1
     # all matches + self match
     Cm[-1] += np.sum(inrange_last) + 1
-    return Cm, in_range_ij_arr
 
-def make_cmp():
-    pass
+    return Cm.astype(np.float), in_range_i, in_range_j
 
 def ap_entropy(X, M, R):
 
-    N = len(X)
+    Cm, in_range_i, in_range_j = make_cm(X,M,R)
 
-    Em = embed_seq(X, 1, M)
-
-
-    ij_list = []
-    for i in xrange(0, N - M):
-        for j in xrange(i, N - M):
-            ij_list.append((i, j))
-
-
-    ij_arr = np.array(ij_list)
-
-
-
-    Cm, in_range_ij_arr  = make_cm(Em, ij_arr,N,M,R)
-    a,b = in_range_ij_arr[:,0], in_range_ij_arr[:,1]
-    Emp = embed_seq(X, 1, M + 1) #    try to only build Emp to save time
-    inrange_cmp = np.abs(Emp[a,-1] - Emp[b,-1]) <= R
-    c, d = a[inrange_cmp], b[inrange_cmp]
-    Cmp = np.bincount(np.concatenate([c,d]), minlength=N-M)
-
-
-
-    Cm, Cmp = Cm.astype(np.float), Cmp.astype(np.float)
+    Cmp = make_cmp(X, M, R, in_range_i, in_range_j)
 
     Cm /= float((N - M +1 ))
     Cmp /= float(N - M)
-    Phi_m, Phi_mp = sum(np.log(Cm)),  sum(np.log(Cmp))
+    Phi_m, Phi_mp = np.sum(np.log(Cm)),  np.sum(np.log(Cmp))
     Ap_En = (Phi_m - Phi_mp) / (N - M)
     return Ap_En
 

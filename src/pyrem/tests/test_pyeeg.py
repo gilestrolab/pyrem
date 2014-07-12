@@ -12,11 +12,24 @@ import numpy as np
 class TestFeatures(unittest.TestCase):
     random_walk = np.cumsum(np.random.normal(0,1,(int(1e4))))
 
-    # def test_pfd(self):
-    #     ref = pyeeg.pfd(self.random_walk)
-    #     ans = pyrem_pyeeg.pfd(self.random_walk)
-    #
-    #     self.assertAlmostEqual(ref, ans)
+    def test_pfd(self):
+        ref = pyeeg.pfd(self.random_walk)
+        ans = pyrem_pyeeg.pfd(self.random_walk)
+
+        self.assertAlmostEqual(ref, ans)
+
+
+    def test_svd_entropy(self):
+        ref = pyeeg.svd_entropy(self.random_walk,10,10)
+        ans = pyrem_pyeeg.svd_entropy(self.random_walk,10,10)
+
+        self.assertAlmostEqual(ref, ans)
+
+    def test_fisher_information(self):
+        ref = pyeeg.fisher_info(self.random_walk,10,10)
+        ans = pyrem_pyeeg.fisher_info(self.random_walk,10,10)
+
+        self.assertAlmostEqual(ref, ans)
 
 
     def test_hjorth(self):

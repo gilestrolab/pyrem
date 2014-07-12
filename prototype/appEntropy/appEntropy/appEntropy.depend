@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1405171216 source:/home/quentin/comput/pyrem-git/prototype/appEntropy/appEntropy/main.c
+	<stdio.h>
+	<stdlib.h>
+

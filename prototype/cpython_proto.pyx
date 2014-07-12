@@ -55,7 +55,7 @@ def ap_entropy(np.ndarray X, int M, float R):
     cdef np.ndarray Cmp = np.zeros(N - M, dtype=DTYPE)
 
 #     # in case there is 0 after counting. Log(0) is undefined.
-    cdef int i,j, k
+    cdef int i,j
     for i in xrange(0, N - M):
         for j in xrange(i, N - M): # start from i, self-match counts in ApEn
 #             print i,j
