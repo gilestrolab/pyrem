@@ -4,19 +4,17 @@ __author__ = 'quentin'
 import numpy as np
 import pandas as pd
 import glob
-# import cPickle as pkl
 from sklearn.externals import joblib as pkl
 from sklearn.preprocessing import LabelEncoder
+from pyrem.features.feature_families import *
 
-from pyrem.features.summary import PowerFeatures
-from pyrem.features.periodogram import PeriodFeatures
 from pyrem.signal.polygraph import polygraph_from_pkl
 from sklearn.ensemble import RandomForestClassifier
 
 class EEGsvEMG(object):
     __FEATURE_GROUPS = [
             PowerFeatures(),
-            PeriodFeatures()
+            HjorthFeatures()
         ]
 
 
@@ -85,43 +83,9 @@ class EEGsvEMG(object):
 
         df = pd.DataFrame({"channel":idxs, "label":y_pred})
 
-        a = pd.pivot_table(df, index="channel", cols="label", aggfunc=len).fillna(0)
+        a = pd.pivot_table(df, index="channel", columns="label", aggfunc=len).fillna(0)
         labels_pr = a.apply(lambda x: pd.Series({"pr": x[np.argmax(x)]/ float(np.sum(x)), "label":np.argmax(x)}), 1)
         labels = labels_pr.apply(lambda x : x["label"] if x["pr"] > 0.75 else "NaN" ,1)
 
 
         return list(labels), list(labels_pr["pr"])
-
-    # def predict (self,  data_iterator, data):
-    #     x = self.make_features(data_iterator, data)
-    #     y = self.classifier.predict(x)
-    #     return y
-        #return self.label_encoder.inverse_transform(y)
-    #
-    # def predict_samples(self, channel):
-    #     predictions = []
-    #
-    #     n_chunks = float(channel.ntimepoints) / channel.sampling_freq / 30.0
-    #
-    #     p =  n_chunks / self.n_chunks_for_predict
-    #     if p < 1:
-    #         p = 1
-    #     else:
-    #         p = int(p)
-    #
-    #     for i,(_,epoch) in enumerate(channel.embed_seq(30,11)):
-    #         if i % p == 0:
-    #             predictions.append(self.predict(subsignal.signal_iter(), subsignal))
-    #     all_predicts = np.array(predictions)
-    #     mo, n = mode(all_predicts)
-    #     prop = n / all_predicts.shape[0]
-    #
-    #     annots = []
-    #
-    #     for p,m in zip(prop.flatten(), mo.flatten()):
-    #         if p > 0.75: #fixme magic number
-    #             annots.append(self.label_encoder.inverse_transform(int(m)))
-    #         else:
-    #             annots.append(None)
-    #
-    #     return annots

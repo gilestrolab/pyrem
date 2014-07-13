@@ -1,44 +1,30 @@
 __author__ = 'quentin'
 
 import pandas as pd
-from summary import PowerFeatures
-from periodogram import *
-from entropy import *
-from non_linear import *
-from hjorth import *
-import multiprocessing as mp
-
-__FEATURE_GROUPS = [
-        PowerFeatures(),
-        EntropyFeatures(),
-        NonLinearFeatures(),
-        Hjorth(),
-        # WaveletsFeaturesDB1(),
-        # WaveletsFeaturesDB2(),
-        # WaveletsFeaturesDB3(),
-        PeriodFeatures()
-    ]
-
-def _make_features(t_signal):
-    t, signal = t_signal
-    dfs = [ group(t,signal) for group in __FEATURE_GROUPS]
-    return pd.concat(dfs, axis=1)
-
+import numpy as np
 
 class FeatureFactory(object):
 
+    def __init__(self, feature_groups):
+        self._feature_group = feature_groups
+
+    def _make_features(self,signal):
+
+        dfs = [ group(signal) for group in self._feature_group]
+        return pd.concat(dfs, axis=1)
+
 
     def __call__(self, signal, t=np.NaN):
-        return _make_features((t,signal))
+        return self._make_features(signal)
 
     def make_features_for_epochs(self,signal, length, lag, processes=1):
-        time_signals = [(t,s) for t, s in signal.embed_seq(length, lag)]
-        if processes == 1:
-            dfs = map(_make_features, time_signals)
-        else:
-            pool = mp.Pool(processes)
-            dfs = pool.map(_make_features, time_signals)
+        rows = []
+        for t, s in signal.embed_seq(length, lag):
+            for c in s.channels():
+                row = self._make_features(c)
 
-        features = pd.concat(dfs)
-
+                row["channel"] = [c.channel_types[0]]
+                row.index = [t]
+                rows.append(row)
+        features = pd.concat(rows)
         return features

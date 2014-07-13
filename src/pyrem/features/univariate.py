@@ -3,7 +3,7 @@ __author__ = 'quentin'
 import numpy as np
 
 
-def embed_seq(X,Tau,D):
+def _embed_seq(X,Tau,D):
 
     N =len(X)
 
@@ -27,26 +27,21 @@ def pfd(X):
     Vectorised/optimised version of the eponymous function from PyEEG (https://code.google.com/p/pyeeg/).
 
     :param X: a one dimensional array representing a time series
-    :type X: np.array
-    :return: the Petrosian Fractal Dimension; a scalar
+    :type X: np.ndarray
+    :return: the Petrosian Fractal Dimension; a scalar.
     :rtype: float
-
     """
-
-
     diff = np.diff(X)
-
     # x[i] * x[i-1] for i in t0 -> tmax
     prod = diff[1:-1] * diff[0:-2]
 
-    #number of sign changes in derivative of the signal
+    # number of sign changes in derivative of the signal
     N_delta = np.sum(prod < 0)
-
     n = len(X)
     return np.log10(n)/(np.log10(n)+np.log10(n/n+0.4*N_delta))
 
-
 def hjorth(X):
+
 
     first_deriv = np.diff(X)
     second_deriv = np.diff(X,2)
@@ -63,29 +58,25 @@ def hjorth(X):
     return activity, morbidity, complexity
 
 
-
-
 def svd_entropy(X, Tau, DE):
-    mat =  embed_seq(X, Tau, DE)
+    mat =  _embed_seq(X, Tau, DE)
     W = np.linalg.svd(mat, compute_uv = False)
     W /= sum(W) # normalize singular values
     return -1*sum(W * np.log(W))
 
-
 def fisher_info(X, Tau, DE):
-    mat =  embed_seq(X, Tau, DE)
+    mat =  _embed_seq(X, Tau, DE)
     W = np.linalg.svd(mat, compute_uv = False)
     W /= sum(W) # normalize singular values
     FI_v = (W[1:] - W[:-1]) **2 / W[:-1]
 
     return np.sum(FI_v)
 
-
 def _make_cmp(X, M, R, in_range_i, in_range_j, ap_ent=True):
      #Then we make Cmp
     N = len(X)
 
-    Emp = embed_seq(X, 1, M + 1)
+    Emp = _embed_seq(X, 1, M + 1)
     inrange_cmp = np.abs(Emp[in_range_i,-1] - Emp[in_range_j,-1]) <= R
 
     in_range_cmp_i = in_range_i[inrange_cmp]
@@ -112,7 +103,7 @@ def _make_cm(X,M,R,ap_ent=True):
     #i_idx,j_idx = i_idx.astype(np.uint16), j_idx.astype(np.uint16)
 
     # We start by making Cm
-    Em = embed_seq(X, 1, M)
+    Em = _embed_seq(X, 1, M)
     dif =  np.abs(Em[i_idx] - Em[j_idx])
     max_dist = np.max(dif, 1)
     inrange_cm = max_dist <= R
@@ -149,7 +140,6 @@ def ap_entropy(X, M, R):
     return Ap_En
 
 
-
 def samp_entropy(X, M, R):
 
     Cm, in_range_i, in_range_j = _make_cm(X,M,R, False)
@@ -160,44 +150,87 @@ def samp_entropy(X, M, R):
     return Samp_En
 
 
-
-
-def dfa_old(X, Ave = None, L = None):
-
-
+def dfa(X, Ave = None, L = None, sampling= 1):
     X = np.array(X)
-
     if Ave is None:
         Ave = np.mean(X)
-
     Y = np.cumsum(X)
     Y -= Ave
-
-    if L is None:
-        L = np.floor(len(X)*1/(2**np.array(range(4,int(np.log2(len(X)))-4))))
-
-    print L
-
+    if not L:
+        max_power = np.int(np.log2(len(X)))-4
+        L = X.size / 2 ** np.arange(4,max_power)
     F = np.zeros(len(L)) # F(n) of different given box length n
 
-    for i in xrange(0,len(L)):
-        n = int(L[i])                        # for each box length L[i]
-        if n==0:
-            print "time series is too short while the box length is too big"
-            print "abort"
-            exit()
-        for j in xrange(0,len(X),n): # for each box
-            if j+n < len(X):
-                c = range(j,j+n)
-                c = np.vstack([c, np.ones(n)]).T # coordinates of time in the box
-                y = Y[j:j+n]                # the value of data in the box
-                F[i] += np.linalg.lstsq(c,y)[1]    # add residue in this box
-        F[i] /= ((len(X)/n)*n)
-    F = np.sqrt(F)
+    for i,n in enumerate(L):
+        sampled = 0
+        for j in xrange(0,len(X) -n ,n):
 
-    Alpha = np.linalg.lstsq(np.vstack([np.log(L), np.ones(len(L))]).T,np.log(F))[0][0]
+            if np.random.rand() < sampling:
+                F[i] += np.polyfit(np.arange(j,j+n), Y[j:j+n],1, full=True)[1]
+                sampled += 1
+        if sampled > 0:
+            F[i] /= float(sampled)
 
+    LF = np.array([(l,f) for l,f in zip(L,F) if l>0]).T
+
+    F = np.sqrt(LF[1])
+
+    Alpha = np.polyfit(np.log(LF[0]), np.log(F),1)[0]
     return Alpha
+
+
+def spectral_entropy(signal, Band, sampling_freq):
+        """
+        Code adapted from Forrest Sheng Bao's pyeeg
+        """
+        X = signal
+        Fs = sampling_freq
+        C = np.fft.fft(X)
+        C = abs(C)
+        Power = np.zeros(len(Band)-1);
+        for Freq_Index in xrange(0,len(Band)-1):
+            Freq = float(Band[Freq_Index])                                        ## Xin Liu
+            Next_Freq = float(Band[Freq_Index+1])
+            Power[Freq_Index] = sum(C[int(Freq / Fs*len(X)):int(Next_Freq / Fs*len(X))])
+
+
+        Power_Ratio = Power/float(np.sum(Power))
+
+        Spectral_Entropy = 0
+        for i in xrange(0, len(Power_Ratio) - 1):
+            Spectral_Entropy += Power_Ratio[i] * np.log(Power_Ratio[i])
+        Spectral_Entropy /= np.log(len(Power_Ratio))    # to save time, minus one is omitted
+        return -1 * Spectral_Entropy
+
+
+
+def hurst(signal):
+    """
+    from:
+    http://drtomstarke.com/index.php/calculation-of-the-hurst-exponent-to-test-for-trend-and-mean-reversion/
+    """
+    tau = []; lagvec = []
+
+    #  Step through the different lags
+    for lag in range(2,20):
+
+    #  produce price difference with lag
+        pp = np.subtract(signal[lag:],signal[:-lag])
+
+    #  Write the different lags into a vector
+        lagvec.append(lag)
+
+    #  Calculate the variance of the difference vector
+        tau.append(np.std(pp))
+
+    #  linear fit to double-log graph (gives power)
+    m = np.polyfit(np.log10(lagvec),np.log10(tau),1)
+
+    # calculate hurst
+    hurst = m[0]
+
+    return hurst
+
 
 
 #

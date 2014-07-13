@@ -9,17 +9,17 @@ if __name__ == "__main__":
 
     classif = EEGsvEMG()
     classif.train_from_polygraph_file_list(DATA_FILE_PATTERN)
-    classif.save("EEGsvEMG.pkl")
+    classif.save("EEGvsEMG.pkl")
 
-    # # prediction verification:
+    #prediction verification:
+    classif = joblib.load("EEGvsEMG.pkl")
+    files = glob.glob(DATA_FILE_PATTERN)
+    for f in sorted(files):
+        print "Predicting: " + f
 
-    # files = glob.glob(DATA_FILE_PATTERN)
-    # for f in sorted(files):
-    #     print "Predicting: " + f
-    #
-    #     polyg = pr.polygraph_from_pkl(f)
-    #     a, proba = classif.predict(polyg)
-    #     print a, proba
+        polyg = pr.polygraph_from_pkl(f)
+        a, proba = classif.predict(polyg)
+        print a, proba
     # #
 
 
