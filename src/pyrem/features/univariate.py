@@ -1,3 +1,24 @@
+r"""
+====
+Features for univariate time series
+====
+
+This sub module provides routines for computing features on univariate time series.
+Many functions are improved version of functions present in PyEEG [PYEEG]_.
+
+
+.. [PET95]  A. Petrosian, Kolmogorov complexity of finite sequences and recognition of different preictal EEG patterns, in ,
+    Proceedings of the Eighth IEEE Symposium on Computer-Based Medical Systems, 1995, 1995, pp. 212-217.
+
+.. [PYEEG] F. S. Bao, X. Liu, and C. Zhang, PyEEG: An Open Source Python Module for EEG/MEG Feature Extraction,
+    Computational Intelligence and Neuroscience, vol. 2011, p. e406391, Mar. 2011.
+
+.. [HJO70] B. Hjorth, EEG analysis based on time domain properties,
+    Electroencephalography and Clinical Neurophysiology, vol. 29, no. 3, pp. 306-310, Sep. 1970.
+
+"""
+
+
 __author__ = 'quentin'
 import numpy as np
 
@@ -91,11 +112,6 @@ def pfd(a):
     :math:`N_{\delta}` is the number of sign changes.
 
 
-    .. [PET95]  A. Petrosian, Kolmogorov complexity of finite sequences and recognition of different preictal EEG patterns, in ,
-        Proceedings of the Eighth IEEE Symposium on Computer-Based Medical Systems, 1995, 1995, pp. 212-217.
-
-
-
     :param a: a one dimensional array representing a time series
     :type a: np.ndarray
     :return: the Petrosian Fractal Dimension; a scalar.
@@ -134,8 +150,6 @@ def hjorth(X):
     :math:`a`, :math:`d` and :math:`dd` represent the original signal, its first and second derivatives, respectively.
 
 
-    .. [HJO70] B. Hjorth, EEG analysis based on time domain properties,
-        Electroencephalography and Clinical Neurophysiology, vol. 29, no. 3, pp. 306-310, Sep. 1970.
 
     :param a: a one dimensional array representing a time series
     :type a: np.ndarray
@@ -162,8 +176,6 @@ def svd_entropy(a, tau, de):
     Compute the Single Value Decomposition entropy of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
     The result differs from PyEEG implementation because :math:`log_2` is used, according to the definition in the paper.
 
-    .. [PYEEG] F. S. Bao, X. Liu, and C. Zhang, PyEEG: An Open Source Python Module for EEG/MEG Feature Extraction,
-    Computational Intelligence and Neuroscience, vol. 2011, p. e406391, Mar. 2011.
 
     :param a: a one dimensional array representing a time series
     :type a: np.ndarray
@@ -184,9 +196,6 @@ def fisher_info(a, tau, de):
     r"""
     Compute the Fisher information of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
     Vectorised version of the PyEEG function.
-
-    .. [PYEEG] F. S. Bao, X. Liu, and C. Zhang, PyEEG: An Open Source Python Module for EEG/MEG Feature Extraction,
-    Computational Intelligence and Neuroscience, vol. 2011, p. e406391, Mar. 2011.
 
     :param a: a one dimensional array representing a time series
     :type a: np.ndarray
@@ -209,9 +218,6 @@ def ap_entropy(a, m, R):
     r"""
     Compute the approximate entropy of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
     Vectorised version of the PyEEG function. Faster than PyEEG, but still critically slow.
-
-    .. [PYEEG] F. S. Bao, X. Liu, and C. Zhang, PyEEG: An Open Source Python Module for EEG/MEG Feature Extraction,
-    Computational Intelligence and Neuroscience, vol. 2011, p. e406391, Mar. 2011.
 
     :param a: a one dimensional array representing a time series
     :type a: np.ndarray
@@ -240,8 +246,6 @@ def samp_entropy(a, m, R):
     Compute the sample entropy of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
     Vectorised version of the PyEEG function. Faster than PyEEG, but still critically slow.
 
-    .. [PYEEG] F. S. Bao, X. Liu, and C. Zhang, PyEEG: An Open Source Python Module for EEG/MEG Feature Extraction,
-    Computational Intelligence and Neuroscience, vol. 2011, p. e406391, Mar. 2011.
 
     :param a: a one dimensional array representing a time series
     :type a: np.ndarray
@@ -260,7 +264,6 @@ def samp_entropy(a, m, R):
     Samp_En = np.log(sum(Cm)/sum(Cmp))
 
     return Samp_En
-
 
 def spectral_entropy(a, sampling_freq, bands=None):
 
@@ -307,7 +310,6 @@ def spectral_entropy(a, sampling_freq, bands=None):
         power_per_band= power_per_band[ power_per_band > 0]
 
     return - np.sum(power_per_band * np.log2(power_per_band))
-
 
 def dfa(X, Ave = None, L = None, sampling= 1):
     X = np.array(X)
@@ -366,8 +368,6 @@ def hurst(signal):
 
 
 
-#
-#
 # def hfd_new(X, Kmax):
 #     """ Compute Higuchi Fractal Dimension of a time series X, kmax
 #      is an HFD parameter

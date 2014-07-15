@@ -1,9 +1,10 @@
+from prototype import pyeeg
+
 __author__ = 'quentin'
 
 
 import unittest
 
-from pyrem.features import pyeeg
 from pyrem.features import univariate
 import numpy as np
 
