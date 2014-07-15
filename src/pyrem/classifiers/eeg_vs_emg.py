@@ -1,8 +1,6 @@
 __author__ = 'quentin'
 
 
-import numpy as np
-import pandas as pd
 import glob
 from sklearn.externals import joblib as pkl
 from sklearn.preprocessing import LabelEncoder

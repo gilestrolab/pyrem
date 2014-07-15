@@ -21,16 +21,29 @@ class FeatureFactory(object):
         self._feature_group = feature_groups
 
     def _make_features(self,signal):
-        dfs = [ group(signal) for group in self._feature_group]
+        dfs = [ group.make_vector(signal) for group in self._feature_group]
         return pd.concat(dfs, axis=1)
 
 
-    def __call__(self, signal, t=np.NaN):
+    def make_vector(self, signal, t=np.NaN):
         return self._make_features(signal)
 
-    def make_features_for_epochs(self,signal, length, lag, processes=1):
+    def make_features_for_epochs(self, data, length, lag, processes=1):
+        r"""
+        Compute features, for all channels and all epochs, of a polygraph.
+
+        :param data: A polygraph
+        :type data: :class:`~pyrem.signal.polygraph.Polygraph`
+
+        :param length: the length of the epoch in seconds (see :meth:`~pyrem.signal.polygraph.Polygraph.embed_seq`)
+        :type length: float
+        :param lag: the lag of the epoch in seconds (see :meth:`~pyrem.signal.polygraph.Polygraph.embed_seq`)
+        :type lag: float
+        :return: a dataframe
+        :rtype: :class:`~pandas.DataFrame`
+        """
         rows = []
-        for t, s in signal.embed_seq(length, lag):
+        for t, s in data.embed_seq(length, lag):
             for c in s.channels():
                 row = self._make_features(c)
 
@@ -41,23 +54,26 @@ class FeatureFactory(object):
         return features
 
 class FeatureFamilyBase(object):
-    """
+    r"""
     A feature family object is a process returning a vector of features upon analysis of some data.
     Features are returned as a pandas DataFrame object, with column names for features. Each feature name is prefixed by the name of the
     feature family. This is an abstract class designed to be derived by:
 
+    1. Defining a ``prefix`` attribute. It will add the name of the family to the name of the features.
+    2. Overriding the ``_make_feature_vec`` method. It should return a dictionary of scalars, each being a feature.
+
     """
     prefix = None
-    def __call__(self, data):
+    def make_vector(self, data):
         """
         Compute one vector of features from polygraph.
 
-        :param data : A polygraph
-        :type data : :class:`~pyrem.signal.polygraph.Polygraph`
+        :param data: A polygraph
+        :type data: :class:`~pyrem.signal.polygraph.Polygraph`
         :return: a one-row dataframe
         :rtype: :class:`~pandas.DataFrame`
         """
-        if data.nchannels != 1:
+        if data.n_channels != 1:
             raise NotImplementedError("Only data with one channel can be analysed")
         feature_dict = self._make_feature_vec(data)
 
@@ -78,7 +94,7 @@ class PowerFeatures(FeatureFamilyBase):
     prefix = "power"
     def _make_feature_vec(self, channel):
         data = channel.data.flatten()
-        out  = dict()
+        out = dict()
 
         powers = data ** 2
         out["mean"] = np.mean(powers)
@@ -96,6 +112,7 @@ class NonLinearFeatures(FeatureFamilyBase):
         data = channel.data.flatten()
         out = dict()
         out["hurst"] = hurst(data)
+        #out["dfa"] = dfa(data)
         return out
 
 
@@ -114,8 +131,20 @@ class EntropyFeatures(FeatureFamilyBase):
     def _make_feature_vec(self,channel):
         data = channel.data.flatten()
         out = dict()
-        out["spectral"] = spectral_entropy(data,np.arange(0,50), channel.sampling_freq) # fixme magic number here
+        #out["spectral"] = spectral_entropy(data,np.arange(0,50), channel.sampling_freq) # fixme magic number here
         out["svd"] = svd_entropy(data, 3,3) # fixme magic number here
+        out["fisher"] = fisher_info(data, 3,3)
+        #out["apent"] = ap_entropy(data, 2,5000)
+        out["sample_2_1000"] = samp_entropy(data, 2, 1000)
+        out["sample_2_2000"] = samp_entropy(data, 2, 2000)
+        out["sample_2_5000"] = samp_entropy(data, 2, 5000)
+        out["sample_3_1000"] = samp_entropy(data, 3, 1000)
+        out["sample_3_2000"] = samp_entropy(data, 3, 2000)
+        out["sample_3_5000"] = samp_entropy(data, 3, 5000)
+        out["sample_4_1000"] = samp_entropy(data, 4, 1000)
+        out["sample_4_2000"] = samp_entropy(data, 4, 2000)
+        out["sample_4_5000"] = samp_entropy(data, 4, 5000)
+
         return out
 
 class WaveletsFeaturesBase(FeatureFamilyBase):
@@ -168,5 +197,6 @@ class PeriodFeatures(FeatureFamilyBase):
         out["median"] = np.median(pow_f)  * freqs.size
         out["skew"] = stats.skew(pow_f)  * freqs.size
         out["kurtosis"] = stats.kurtosis(pow_f)  * freqs.size
+        # out["entropy"] = stats.entropy(pow_f)  * freqs.size #TODO
 
         return out

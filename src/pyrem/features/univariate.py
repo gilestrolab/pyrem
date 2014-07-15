@@ -320,6 +320,8 @@ def dfa(X, Ave = None, L = None, sampling= 1):
     if not L:
         max_power = np.int(np.log2(len(X)))-4
         L = X.size / 2 ** np.arange(4,max_power)
+    if len(L)<2:
+        raise Exception("Two few values for L. Time series too short?")
     F = np.zeros(len(L)) # F(n) of different given box length n
 
     for i,n in enumerate(L):
@@ -335,7 +337,8 @@ def dfa(X, Ave = None, L = None, sampling= 1):
     LF = np.array([(l,f) for l,f in zip(L,F) if l>0]).T
 
     F = np.sqrt(LF[1])
-
+    print LF
+    print F
     Alpha = np.polyfit(np.log(LF[0]), np.log(F),1)[0]
     return Alpha
 

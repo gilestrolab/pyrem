@@ -1,7 +1,6 @@
 __author__ = 'quentin'
 
 import datetime
-#import cPickle as pkl
 from sklearn.externals import joblib as pkl
 import numpy as np
 import pandas as pd
@@ -11,12 +10,14 @@ def polygraph_from_pkl(filename):
     return pkl.load(filename)
 
 
-def polygraph_from_csv(file_name, sampling_freq):
-    data = pd.read_csv(file_name, engine="c", header=None, dtype=np.float32)
+def polygraph_from_csv(file_name, sampling_freq, comment= "#"):
+    #todo
+    data = pd.read_csv(file_name, engine="c", header=None, dtype=np.float32, comment=comment)
     return Polygraph(data, sampling_freq)
 
 
 class Polygraph(object):
+
     def __init__(self,
                  data,
                  sampling_rate,
@@ -26,6 +27,7 @@ class Polygraph(object):
                  metadata=None,
                 ):
         self.data = np.asarray(data)
+
         #todo force 2d array for annot and data
         #self.data.reshape((self.ntimepoints,1))
 
@@ -64,10 +66,6 @@ class Polygraph(object):
 
         new_data = np.array(new_data).T
         return self._soft_copy(new_data)
-
-
-
-
 
     def normalise(self):
         return self.apply_channels( lambda x : (x - np.mean(x)) / np.std(x))

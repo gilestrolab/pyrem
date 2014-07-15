@@ -36,18 +36,14 @@ extensions = [
     'sphinx.ext.viewcode',
 ]
 
-
 intersphinx_mapping = {
     'python':('http://docs.python.org/2.7',None),
     'matplotlib':('http://matplotlib.sourceforge.net', None),
     'numpy':('http://docs.scipy.org/doc/numpy',None),
     'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
-    'sklearn': ('http://scikit-learn.org/stable/documentation.html', None),
+    #'sklearn': ('http://scikit-learn.org/stable/documentation.html', None),
 }
-
-
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
