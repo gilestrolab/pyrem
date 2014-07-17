@@ -63,9 +63,7 @@ dfA <- subset(df, animal=="A")
 dfB <- subset(df, animal=="B")
 
 
-rfA = randomForest(dose ~ ., dfA,
-                #xtest = subset(dfB, select=-c(dose)), ytest=dfB$dose,
-                ntree=1000)
+rfA = randomForest(dose ~ ., dfA, ntree=1000)
 
 rfB = randomForest(dose ~ .,dfB,
                 #xtest = subset(dfA, select=-c(dose)), ytest=dfA$dose,
