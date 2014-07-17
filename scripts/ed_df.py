@@ -55,7 +55,7 @@ library("randomForest")
 df = read.csv("/tmp/test.csv")
 df <- subset(df, power_kurtosis != Inf)
 df$X <- NULL; df$channel <- NULL
-df$rand <- rnorm(nrow(df))
+#df$rand <- rnorm(nrow(df))
 #df$dose <- as.factor(df$dose)
 
 dfC <- subset(df, animal=="C")
@@ -73,14 +73,35 @@ rf = randomForest(dose ~ .,na.omit(df),
                 ntree=1000)
 
 
+pdf("/tmp/out.pdf", w=12, h=9)
 
+# plot(rfA$test$predicted ~ dfB$dose, pch=20)
+# plot(rfB$test$predicted ~ dfA$dose, pch=20)
 
-plot(rfA$test$predicted ~ dfB$dose, pch=20)
-plot(rfB$test$predicted ~ dfA$dose, pch=20)
 
 dfC <- subset(df, animal=="C" & is.na(dose), select=-dose)
 
 varImpPlot(rf)
+
+
+dff = subset(df, animal != "C")
+dff$animal <- as.character(dff$animal)
+par(mfrow=c(2,1))
+boxplot(power_mean ~ dose, dff,pch=20, ylab="mean power", xlab="dose o/oo")
+boxplot(power_mean ~ animal*dose, dff,pch=20, ylab="mean power", xlab="dose o/oo", col=c(grey(0.3),grey(0.7)))
+
+boxplot(welch_median ~ dose, dff,pch=20, ylab="median frequency", xlab="dose o/oo")
+boxplot(welch_median ~ animal*dose, dff,pch=20, ylab="median frequency", xlab="dose o/oo", col=c(grey(0.3),grey(0.7)))
+
+
+boxplot(entropy_sample_2_1000 ~  dose,dff ,pch=20, ylab="Sample entropy (m=2, tau=1, r = 1000)", xlab="dose o/oo")
+boxplot(entropy_sample_2_1000 ~ animal*dose, dff,pch=20, ylab="Sample entropy (m=2, tau=1, r = 1000)", xlab="dose o/oo", col=c(grey(0.3),grey(0.7)))
+
+
+boxplot(power_sd ~  dose,dff ,pch=20, ylab="sd of power", xlab="dose o/oo")
+boxplot(power_sd~ animal*dose, dff,pch=20, ylab="sd of power", xlab="dose o/oo", col=c(grey(0.3),grey(0.7)))
+dev.off()
+
 #plot(entropy_sample_2_1000 ~ dose, df)
-plot (predict(rfB, dfA) ~ dfA$dose)
+#plot (predict(rfB, dfA) ~ dfA$dose)
 """

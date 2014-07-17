@@ -275,44 +275,69 @@ def ap_entropy(a, m, R):
 #     Samp_En = np.log(sum(Cm)/sum(Cmp))
 #
 #     return Samp_En
+def _coarse_grainning(a, tau):
+    if tau ==1:
+        return a
+    length_out = a.size / tau
 
-def samp_entropy(a, m, r):
+    n_dropped = a.size % tau
+    mat = a[0:a.size - n_dropped].reshape((tau, length_out))
+    return np.mean(mat, axis=0)
 
-    embs = _embed_seq(a,1,m)
-    embsp = _embed_seq(a,1,m + 1)[:]
-    embs_mini = embs[:-1]
 
-    # print embsp
+def samp_entropy(a, m, r, tau=1):
 
-    Cm = np.zeros(len(a) - m - 1)
+    #embs = _embed_seq(a,1,m)
+    coarse_a = _coarse_grainning(a, tau)
+    embsp = _embed_seq(coarse_a, 1 , m + 1)
+    embsp_last = embsp[:,-1]
+    embs_mini = embsp[:, :-1]
+
+
+
 
     # Buffers are preallocated chunks of memory storing temporary results.
     # see the `out` argument in numpy *ufun* documentation
 
-    dist_buffer = np.zeros_like(Cm, dtype=np.float32)
-    subtract_buffer = np.zeros((Cm.size ,m), dtype=np.float32)
-    in_range_buffer = np.zeros_like(Cm, dtype=np.bool)
-    sum_cm, sum_cmp = 0, 0
-    # print embs_mini.shape, Cm.shape, dist_buffer.shape, subtract_buffer.shape
-    for i,emi in enumerate(embs_mini[:-1]):
-        # these are just views to the buffer arrrays.
+    dist_buffer = np.zeros(embsp.shape[0] - 1, dtype=np.float32)
+    subtract_buffer = np.zeros((dist_buffer.size ,m), dtype=np.float32)
+    in_range_buffer = np.zeros_like(dist_buffer, dtype=np.bool)
+    sum_cm, sum_cmp = 0.0, 0.0
+
+    # we iterate through all templates (rows), except last one.
+    for i,template in enumerate(embs_mini[:-1]):
+
+        # these are just views to the buffer arrays. to store intermediary matrices
         dist_b_view = dist_buffer[i:]
         sub_b_view = subtract_buffer[i:]
         range_b_view = in_range_buffer[i:]
-        embsp_view = embsp[i+1:]
-        # print embsp[i:].shape, range_b_view.shape
-        np.subtract(embs_mini[i+1:],  emi, out=sub_b_view)
-        np.abs(sub_b_view, out=sub_b_view)
-        np.max(sub_b_view, axis=1, out=dist_b_view)
-        np.less_equal(dist_b_view, r, out= range_b_view)
-        Cm[i] += np.sum(range_b_view)
-        sum_cm  += np.sum(range_b_view)
-        #if i >0:
-        sum_cmp += sum(abs(embsp_view[range_b_view, -1] - embsp[i, -1]) <= r)
-        # print embsp[i, -1], i, embsp_view[range_b_view, -1] - embsp[i, -1]
+        embsp_view = embsp_last[i+1:]
 
+        # substract the template from each subsequent row of the embedded matrix
+        np.subtract(embs_mini[i+1:],  template, out=sub_b_view)
+        # Absolute distance
+        np.abs(sub_b_view, out=sub_b_view)
+        # Maximal absolute difference between a scroll and a template is the distance
+        np.max(sub_b_view, axis=1, out=dist_b_view)
+        # we compare this distance to a tolerance r
+        np.less_equal(dist_b_view, r, out= range_b_view)
+        # score one for this template for each match
+        in_range_sum = np.sum(range_b_view)
+        sum_cm  += in_range_sum
+
+        ### reuse the buffers for last column
+        dist_b_view = dist_buffer[:in_range_sum]
+
+        where = np.flatnonzero(range_b_view)
+        dist_b_view= np.take(embsp_view,where,out=dist_b_view)
+        range_b_view = in_range_buffer[range_b_view]
+        # score one to TODO for each match of the last element
+        dist_b_view -= embsp_last[i]
+        np.abs(dist_b_view, out=dist_b_view)
+        np.less_equal(dist_b_view, r, out=range_b_view)
+        sum_cmp += np.sum(range_b_view)
     # print float(sum_cm), float(sum_cmp)
-    return np.log(float(sum_cm)/float(sum_cmp))
+    return np.log(sum_cm/sum_cmp)
     #return Cmp
 
 
