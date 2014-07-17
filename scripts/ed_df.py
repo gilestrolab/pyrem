@@ -19,7 +19,7 @@ def features_one_file(f):
 
     pol = pr.polygraph_from_csv(f,SAMPLING_RATE)
 
-    tmp_df = feature_feactory.make_features_for_epochs(pol,5,1)
+    tmp_df = feature_factory.make_features_for_epochs(pol,5,1)
 
     tmp_df["animal"] = animal
     try:
@@ -33,13 +33,14 @@ if __name__ == "__main__":
 
     files = glob.glob(DATA_FILE_PATTERN)
 
-    feature_feactory = pr.features.FeatureFactory([
-        pr.features.PeriodFeatures(),
-        pr.features.PowerFeatures(),
-        pr.features.NonLinearFeatures(),
-        pr.features.EntropyFeatures(),
-        pr.features.HjorthFeatures(),
-        pr.features.WaveletsFeaturesDB4(),
+    feature_factory = pr.features.FeatureFactory([
+        # pr.features.PeriodFeatures(),
+        # pr.features.PowerFeatures(),
+        # pr.features.NonLinearFeatures(),
+        # pr.features.EntropyFeatures(),
+        # pr.features.HjorthFeatures(),
+        # pr.features.WaveletsFeaturesDB4(),
+        pr.features.MSEFeatures(),
 
 
     ])
@@ -52,7 +53,7 @@ if __name__ == "__main__":
 
 """ R>
 library("randomForest")
-df = read.csv("/tmp/test.csv")
+df = read.csv("/tmp/test.csv", na.string="NaN")
 df <- subset(df, power_kurtosis != Inf)
 df$X <- NULL; df$channel <- NULL
 #df$rand <- rnorm(nrow(df))

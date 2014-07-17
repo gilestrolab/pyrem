@@ -249,32 +249,7 @@ def ap_entropy(a, m, R):
     Phi_m, Phi_mp = np.sum(np.log(Cm)),  np.sum(np.log(Cmp))
     Ap_En = (Phi_m - Phi_mp) / (N - m)
     return Ap_En
-#
-# def samp_entropy(a, m, R):
-#     r"""
-#     Compute the sample entropy of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
-#     Vectorised version of the PyEEG function. Faster than PyEEG, but still critically slow.
-#
-#
-#     :param a: a one dimensional array representing a time series
-#     :type a: np.ndarray
-#     :param m: the scale
-#     :type m: int
-#     :param R: The tolerance
-#     :type R: float`
-#     :return: the approximate entropy, a scalar
-#     :rtype: float
-#     """
-#
-#
-#     Cm, in_range_i, in_range_j = _make_cm(a,m,R, False)
-#
-#
-#     Cmp = _make_cmp(a, m, R, in_range_i, in_range_j, False)
-#
-#     Samp_En = np.log(sum(Cm)/sum(Cmp))
-#
-#     return Samp_En
+
 def _coarse_grainning(a, tau):
     if tau ==1:
         return a
@@ -285,10 +260,26 @@ def _coarse_grainning(a, tau):
     return np.mean(mat, axis=0)
 
 
-def samp_entropy(a, m, r, tau=1):
+def samp_entropy(a, m, r, tau=1, relative_r=True):
+    r"""
+    Compute the sample entropy of a signal with embedding dimension `de` and delay `tau` [PYEEG]_.
+    Vectorised version of the PyEEG function. Faster than PyEEG, but still critically slow.
 
-    #embs = _embed_seq(a,1,m)
+
+    :param a: a one dimensional array representing a time series
+    :type a: np.ndarray
+    :param m: the scale
+    :type m: int
+    :param R: The tolerance
+    :type R: float`
+    :return: the approximate entropy, a scalar
+    :rtype: float
+    """
+
+
     coarse_a = _coarse_grainning(a, tau)
+    if relative_r:
+        coarse_a /= np.std(coarse_a)
     embsp = _embed_seq(coarse_a, 1 , m + 1)
     embsp_last = embsp[:,-1]
     embs_mini = embsp[:, :-1]
@@ -336,7 +327,9 @@ def samp_entropy(a, m, r, tau=1):
         np.abs(dist_b_view, out=dist_b_view)
         np.less_equal(dist_b_view, r, out=range_b_view)
         sum_cmp += np.sum(range_b_view)
-    # print float(sum_cm), float(sum_cmp)
+    
+    if sum_cm == 0 or sum_cmp ==0:
+        return np.NaN
     return np.log(sum_cm/sum_cmp)
     #return Cmp
 
