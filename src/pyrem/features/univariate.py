@@ -82,6 +82,7 @@ def _make_cm(X,M,R,ap_ent=True):
 
     if not ap_ent:
         Cm = np.bincount(in_range_i, minlength=N-M-1)
+
         return Cm.astype(np.float), in_range_i, in_range_j
     else:
         Cm = np.bincount(in_range_i, minlength=N-M+1)
@@ -94,6 +95,13 @@ def _make_cm(X,M,R,ap_ent=True):
 
         return Cm.astype(np.float), in_range_i, in_range_j
 
+
+
+def in_range(Template, Scroll, Distance):
+    for i in range(0,  len(Template)):
+            if abs(Template[i] - Scroll[i]) > Distance:
+                 return False
+    return True
 def pfd(a):
     r"""
     Compute Petrosian Fractal Dimension of a time series [PET95]_.
@@ -124,6 +132,7 @@ def pfd(a):
     # Number of sign changes in derivative of the signal
     N_delta = np.sum(prod < 0)
     n = len(a)
+
     return np.log(n)/(np.log(n)+np.log(n/(n+0.4*N_delta)))
 
 def hjorth(X):
@@ -240,30 +249,73 @@ def ap_entropy(a, m, R):
     Phi_m, Phi_mp = np.sum(np.log(Cm)),  np.sum(np.log(Cmp))
     Ap_En = (Phi_m - Phi_mp) / (N - m)
     return Ap_En
+#
+# def samp_entropy(a, m, R):
+#     r"""
+#     Compute the sample entropy of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
+#     Vectorised version of the PyEEG function. Faster than PyEEG, but still critically slow.
+#
+#
+#     :param a: a one dimensional array representing a time series
+#     :type a: np.ndarray
+#     :param m: the scale
+#     :type m: int
+#     :param R: The tolerance
+#     :type R: float`
+#     :return: the approximate entropy, a scalar
+#     :rtype: float
+#     """
+#
+#
+#     Cm, in_range_i, in_range_j = _make_cm(a,m,R, False)
+#
+#
+#     Cmp = _make_cmp(a, m, R, in_range_i, in_range_j, False)
+#
+#     Samp_En = np.log(sum(Cm)/sum(Cmp))
+#
+#     return Samp_En
 
-def samp_entropy(a, m, R):
-    r"""
-    Compute the sample entropy of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
-    Vectorised version of the PyEEG function. Faster than PyEEG, but still critically slow.
+def samp_entropy(a, m, r):
+
+    embs = _embed_seq(a,1,m)
+    embsp = _embed_seq(a,1,m + 1)[:]
+    embs_mini = embs[:-1]
+
+    # print embsp
+
+    Cm = np.zeros(len(a) - m - 1)
+
+    # Buffers are preallocated chunks of memory storing temporary results.
+    # see the `out` argument in numpy *ufun* documentation
+
+    dist_buffer = np.zeros_like(Cm, dtype=np.float32)
+    subtract_buffer = np.zeros((Cm.size ,m), dtype=np.float32)
+    in_range_buffer = np.zeros_like(Cm, dtype=np.bool)
+    sum_cm, sum_cmp = 0, 0
+    # print embs_mini.shape, Cm.shape, dist_buffer.shape, subtract_buffer.shape
+    for i,emi in enumerate(embs_mini[:-1]):
+        # these are just views to the buffer arrrays.
+        dist_b_view = dist_buffer[i:]
+        sub_b_view = subtract_buffer[i:]
+        range_b_view = in_range_buffer[i:]
+        embsp_view = embsp[i+1:]
+        # print embsp[i:].shape, range_b_view.shape
+        np.subtract(embs_mini[i+1:],  emi, out=sub_b_view)
+        np.abs(sub_b_view, out=sub_b_view)
+        np.max(sub_b_view, axis=1, out=dist_b_view)
+        np.less_equal(dist_b_view, r, out= range_b_view)
+        Cm[i] += np.sum(range_b_view)
+        sum_cm  += np.sum(range_b_view)
+        #if i >0:
+        sum_cmp += sum(abs(embsp_view[range_b_view, -1] - embsp[i, -1]) <= r)
+        # print embsp[i, -1], i, embsp_view[range_b_view, -1] - embsp[i, -1]
+
+    # print float(sum_cm), float(sum_cmp)
+    return np.log(float(sum_cm)/float(sum_cmp))
+    #return Cmp
 
 
-    :param a: a one dimensional array representing a time series
-    :type a: np.ndarray
-    :param m: the scale
-    :type m: int
-    :param R: The tolerance
-    :type R: float`
-    :return: the approximate entropy, a scalar
-    :rtype: float
-    """
-
-
-    Cm, in_range_i, in_range_j = _make_cm(a,m,R, False)
-    Cmp = _make_cmp(a, m, R, in_range_i, in_range_j, False)
-
-    Samp_En = np.log(sum(Cm)/sum(Cmp))
-
-    return Samp_En
 
 def spectral_entropy(a, sampling_freq, bands=None):
 
