@@ -36,12 +36,12 @@ class TestFeatures(unittest.TestCase):
 
     def test_samp_entropy(self):
         ref = pyeeg.samp_entropy(self.random_walk[0:500], 2, 1.5)
-        ans = univariate.samp_entropy(self.random_walk[0:500], 2, 1.5)
+        ans = univariate.samp_entropy(self.random_walk[0:500], 2, 1.5, 1,False)
 
         self.assertAlmostEqual(ref, ans)
 
         ref = pyeeg.samp_entropy(self.random_walk[0:500], 3, 1.5)
-        ans = univariate.samp_entropy(self.random_walk[0:500], 3, 1.5)
+        ans = univariate.samp_entropy(self.random_walk[0:500], 3, 1.5, 1, False)
 
         self.assertAlmostEqual(ref, ans)
 
