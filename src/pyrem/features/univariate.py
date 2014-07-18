@@ -327,7 +327,7 @@ def samp_entropy(a, m, r, tau=1, relative_r=True):
         np.abs(dist_b_view, out=dist_b_view)
         np.less_equal(dist_b_view, r, out=range_b_view)
         sum_cmp += np.sum(range_b_view)
-    
+
     if sum_cm == 0 or sum_cmp ==0:
         return np.NaN
     return np.log(sum_cm/sum_cmp)

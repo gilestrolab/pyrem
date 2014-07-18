@@ -25,7 +25,7 @@ def features_one_file(f):
     try:
         tmp_df["dose"] = float(dose)
     except:
-        tmp_df["dose"] = "NA"
+        tmp_df["dose"] = "NaN"
 
     return tmp_df
 
@@ -34,12 +34,12 @@ if __name__ == "__main__":
     files = glob.glob(DATA_FILE_PATTERN)
 
     feature_factory = pr.features.FeatureFactory([
-        # pr.features.PeriodFeatures(),
-        # pr.features.PowerFeatures(),
-        # pr.features.NonLinearFeatures(),
+        pr.features.PeriodFeatures(),
+        pr.features.PowerFeatures(),
+        pr.features.NonLinearFeatures(),
         # pr.features.EntropyFeatures(),
-        # pr.features.HjorthFeatures(),
-        # pr.features.WaveletsFeaturesDB4(),
+        pr.features.HjorthFeatures(),
+        pr.features.WaveletsFeaturesDB4(),
         pr.features.MSEFeatures(),
 
 
@@ -57,7 +57,11 @@ df = read.csv("/tmp/test.csv", na.string="NaN")
 df <- subset(df, power_kurtosis != Inf)
 df$X <- NULL; df$channel <- NULL
 #df$rand <- rnorm(nrow(df))
-#df$dose <- as.factor(df$dose)
+
+#exclude NA cols
+dose <- df$dose
+df <- df[,!apply(df, 2, function(x) sum(is.na(x))) > 0]
+df$dose <- dose
 
 dfC <- subset(df, animal=="C")
 dfA <- subset(df, animal=="A")

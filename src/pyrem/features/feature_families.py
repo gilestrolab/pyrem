@@ -154,12 +154,12 @@ class MSEFeatures(FeatureFamilyBase):
         data = channel.data.flatten()
         out = dict()
         #out["spectral"] = spectral_entropy(data,np.arange(0,50), channel.sampling_freq) # fixme magic number here
-        for r in np.arange(0.04,0.5, 0.02):
-            for i in range(1,21):
+        r = 0.15
+        for i in range(1,4):
 
-                name = "%i_%i" %(i, int(r*100))
-                out[name] = samp_entropy(data,2,r,i)
-                print i, int(r*100), out[name]
+            name = "%i_%i" %(i, int(r*100))
+            out[name] = samp_entropy(data,2,r,i)
+            # print i, int(r*100), out[name]
 
         return out
 
