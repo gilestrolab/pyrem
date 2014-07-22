@@ -36,7 +36,13 @@ class Polygraph(object):
         else:
             self._annotations = np.asarray(annotations)
             if annotations.shape[0] != self.ntimepoints:
-                raise Exception("The length of the provided annotations does not match the length of the data")
+
+                raise Exception("The length of the provided annotations does not match the length of the data:\n %i != %i" %(
+                                                annotations.shape[0],self.ntimepoints))
+
+            if annotation_types is None:
+                annotation_types= ["NaN"] * self.n_annotations
+
             if len(annotation_types) != annotations.shape[1]:
                 print len(annotation_types), annotations
                 raise Exception("the number of annotations does not match the number of elements in annotation types")

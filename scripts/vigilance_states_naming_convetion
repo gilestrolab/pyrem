@@ -1,0 +1,24 @@
+annotation conventions:
+
+vigilance_state letter  value
+wake            w       119
+non-rem         n       110
+rem             r       114
+movement        m       109
+doubt           [d?]    0.0 + 1.0j
+
+d= {
+"w": ord("W") + 1j,
+"W": ord("W") + 1j,
+"n": ord("N") + 1j,
+"N": ord("N") + 1j,
+"r": ord("R") + 1j,
+"R": ord("R") + 1j,
+"m": ord("M") + 1j,
+"M": ord("M") + 1j,
+"d": 0 + 0j,
+"D": 0 + 0j,
+"?": 0 + 0j
+}
+
+
