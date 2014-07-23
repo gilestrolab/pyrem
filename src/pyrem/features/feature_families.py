@@ -28,7 +28,26 @@ class FeatureFactory(object):
     def make_vector(self, signal, t=np.NaN):
         return self._make_features(signal)
 
-    def make_features_for_epochs(self, data, length, lag, processes=1):
+    def major_annotations(self, annotations):
+        a = annotations.flatten()
+        r = np.real(a)
+        uniqs = np.unique(r)
+        i = np.imag(a)
+        probs = []
+        for u in uniqs:
+            eqs = (r == u)
+            probs.append(np.sum(i[eqs]))
+
+        probs = np.array(probs)
+        probs /= np.sum(i)
+
+
+        max_prob_idx =  np.argmax(probs)
+
+        return uniqs[max_prob_idx] + probs[max_prob_idx]* 1j
+
+
+    def make_features_for_epochs(self, data, length, lag, add_major_annotations=False, processes=1):
         r"""
         Compute features, for all channels and all epochs, of a polygraph.
 
@@ -44,12 +63,25 @@ class FeatureFactory(object):
         """
         rows = []
         for t, s in data.embed_seq(length, lag):
+            if add_major_annotations:
+                majors = [self.major_annotations(a) for a in s.annotations()]
+
+
+
+
             for c in s.channels():
                 row = self._make_features(c)
 
                 row["channel"] = [c.channel_types[0]]
+                if add_major_annotations:
+                    for ann, maj  in zip(s.annotation_types, majors):
+                        row[ann+"_value"] = np.real(maj)
+                        row[ann+"_prob"] = np.imag(maj)
+
+
                 row.index = [t]
                 rows.append(row)
+
         features = pd.concat(rows)
         return features
 

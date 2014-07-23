@@ -6,8 +6,19 @@ from scipy.interpolate import interp1d
 import pandas as pd
 import numpy as np
 import pyrem as pr
+import glob
+import os
 
 DOUBT_CHARS = {ord("?"), ord("D")}
+CHANNEL_ID_MAP = [
+                "EEG_parieral_cereb",
+                "EEG_parieral_frontal",
+                "EMG_1",
+                "EMG_2"
+                  ]
+INPUT_PATTERN = "/data/pyrem/Ellys/mats/*.mat"
+OUT_DIR = "/data/pyrem/Ellys/pkls"
+
 def load_from_mat(file_name,sampling_rate=200, metadata={}):
     """
     This function loads a matlab file exported by spike to
@@ -27,13 +38,26 @@ def load_from_mat(file_name,sampling_rate=200, metadata={}):
         if not k.startswith("__"):
 
             obj = matl[k]
-            channel_id = int(k.split("_")[-1][2:])
+            channel_number = int(k.split("_")[-1][2:])
+
+
             if "values" in dir(obj):
+                channel_id  = CHANNEL_ID_MAP[channel_number-1]
                 data_channels[channel_id] = obj.values
             elif "text" in dir(obj):
-                annotation_channels[channel_id] = obj.text
 
-    data = np.array(pd.DataFrame(data_channels))
+                annotation_channels["Stage_%i" % (channel_number-1)] = obj.text
+
+    crop_at = np.min([i.size for _,i in data_channels.items()])
+
+    for k,a in data_channels.items():
+        data_channels[k] = a[:crop_at]
+
+
+
+    df = pd.DataFrame(data_channels)
+
+    data = np.array(df)
     annotations = pd.DataFrame(annotation_channels)
 
     annotations = annotations[annotations[annotations.columns[0]] != ""]
@@ -48,7 +72,6 @@ def load_from_mat(file_name,sampling_rate=200, metadata={}):
     annot_values += 1.0j
 
     for d in DOUBT_CHARS:
-        print np.sum(np.real(annot_values) == d)
         annot_values[np.real(annot_values) == d] = 0.0+0.0j
 
     x = np.linspace(0,data.shape[0],annot_values.shape[0])
@@ -57,29 +80,45 @@ def load_from_mat(file_name,sampling_rate=200, metadata={}):
 
     metadata["input_file"] = file_name
 
-    polygraph =  pr.Polygraph(data,sampling_rate,annot_values,data_channels.keys(),annotation_types=None, metadata=metadata)
+    polygraph =  pr.Polygraph(data, sampling_rate,
+                              annot_values, df.columns,
+                              annotation_types=["vigil"], metadata=metadata)
 
 
     return polygraph
 
-data = load_from_mat("/stk/VM_SHARE_FOLDER/test2.mat")
+# data = load_from_mat("/data/pyrem/Ellys/mats/GFP_2.mat")
+# #
+if __name__== "__main__":
+    files = glob.glob(INPUT_PATTERN)
+    for f in sorted(files):
+
+        pol = load_from_mat(f)
+        new_file_name = os.path.basename(f).split(".")[0] + ".pkl"
+        out_path = os.path.join(OUT_DIR,new_file_name)
+        print "Converting: " + f + "\nInto: "+ out_path
+        pol.save(out_path)
 
 
-for t,d in data.embed_seq(5,1):
-    for a in d.annotations():
-        r = np.real(a)
-        uniqs = np.unique(r)
-        i = np.imag(a)
-        probs = []
-        for u in uniqs:
-            eqs = (r == u)
-            probs.append(np.sum(i[eqs]))
 
-        probs = np.array(probs)
-        probs /= np.sum(i)
-        # if len(uniqs) >1:
-        #     print uniqs
-        #     print probs
+    #
+    #
+    #
+    # for t,d in data.embed_seq(5,1):
+    #     for a in d.annotations():
+    #         r = np.real(a)
+    #         uniqs = np.unique(r)
+    #         i = np.imag(a)
+    #         probs = []
+    #         for u in uniqs:
+    #             eqs = (r == u)
+    #             probs.append(np.sum(i[eqs]))
+    #
+    #         probs = np.array(probs)
+    #         probs /= np.sum(i)
+            # if len(uniqs) >1:
+            #     print uniqs
+            #     print probs
 
 
 
