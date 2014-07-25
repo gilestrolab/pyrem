@@ -7,9 +7,15 @@ import pyrem as pr
 from multiprocessing import Pool
 import numpy as np
 
+
 DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/*.pkl"
 SAMPLING_RATE = 200
 OUT_CSV = "/data/pyrem/Ellys/all_features.csv"
+LAG_WINDOW = 100
+N_PROCESSES = 8
+
+# DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/GFP_*A*.pkl"
+# OUT_CSV = "/tmp/all_features.csv"
 
 
 
@@ -19,9 +25,11 @@ def features_one_file(f):
     treatment, animal = file_name.split("_")
 
     pol = pr.polygraph_from_pkl(f)
+    pol = pol.normalise()
+    pol = pr.preprocess_eegs(pol)
     print "processing " + f
 
-    tmp_df = feature_factory.make_features_for_epochs(pol,5,1, add_major_annotations=True)
+    tmp_df = feature_factory.make_features_for_epochs(pol,10,LAG_WINDOW, add_major_annotations=True)
 
     tmp_df["animal"] = animal
     tmp_df["treatment"] = treatment
@@ -44,73 +52,168 @@ if __name__ == "__main__":
 
 
     ])
+    if N_PROCESSES > 1 :
+        p = Pool(N_PROCESSES)
+        dfs = p.map(features_one_file, sorted(files))
+    else:
 
-    p = Pool(8)
-    dfs = p.map(features_one_file, sorted(files))
-    #files = [sorted(files)[1]]
-
-    #dfs = map(features_one_file, sorted(files))
+        dfs = map(features_one_file, sorted(files))
 
     out_df = pd.concat(dfs)
 
     out_df.to_csv(OUT_CSV, float_format="%e")
 
 """ R>
+
 library("randomForest")
-df = read.csv("/tmp/test.csv", na.string="NaN")
+# library("foreach")
+# library("doParallel")
+
+
+######################################################
+OUT_PREFIX<- "/data/pyrem/Ellys/all_features"
+
+filename <- paste(OUT_PREFIX,"rds",sep=".")
+
+tryCatch({
+
+    dfo <- readRDS(file=filename)
+
+}, error = function(e) {
+    csv_filename <- paste(OUT_PREFIX,"csv",sep=".")
+    dfo <- read.csv(csv_filename, na.string="NaN")
+    saveRDS(dfo, file=filename)
+}
+)
+
+df <- dfo
+
+# remove erroneous kurtosis
 df <- subset(df, power_kurtosis != Inf)
-df$X <- NULL; df$channel <- NULL
-#df$rand <- rnorm(nrow(df))
-
-#exclude NA cols
-dose <- df$dose
-df <- df[,!apply(df, 2, function(x) sum(is.na(x))) > 0]
-df$dose <- dose
-
-dfC <- subset(df, animal=="C")
-dfA <- subset(df, animal=="A")
-dfB <- subset(df, animal=="B")
+# remove ambiguous vigilance states
+df <- subset(df, vigil_prob == 1)
+df$vigil_prob <- NULL
 
 
-rfA = randomForest(dose ~ ., dfA, ntree=1000)
 
-rfB = randomForest(dose ~ .,dfB,
-                #xtest = subset(dfA, select=-c(dose)), ytest=dfA$dose,
-                ntree=1000)
-
-rf = randomForest(dose ~ .,na.omit(df),
-                ntree=1000)
+# use only eeg 2
+df <- subset(df, channel=="EEG_parietal_frontal")
 
 
-pdf("/tmp/out.pdf", w=12, h=9)
 
-# plot(rfA$test$predicted ~ dfB$dose, pch=20)
-# plot(rfB$test$predicted ~ dfA$dose, pch=20)
-
-
-dfC <- subset(df, animal=="C" & is.na(dose), select=-dose)
-
-varImpPlot(rf)
+df$animal <- sprintf("%s_%s", df$treatment, df$animal)
+df$animal  <- as.factor(df$animal)
 
 
-dff = subset(df, animal != "C")
-dff$animal <- as.character(dff$animal)
-par(mfrow=c(2,1))
-boxplot(power_mean ~ dose, dff,pch=20, ylab="mean power", xlab="dose o/oo")
-boxplot(power_mean ~ animal*dose, dff,pch=20, ylab="mean power", xlab="dose o/oo", col=c(grey(0.3),grey(0.7)))
 
-boxplot(welch_median ~ dose, dff,pch=20, ylab="median frequency", xlab="dose o/oo")
-boxplot(welch_median ~ animal*dose, dff,pch=20, ylab="median frequency", xlab="dose o/oo", col=c(grey(0.3),grey(0.7)))
+df$t <- df$X
+df$X <- NULL
+df$channel <- NULL;
+
+#df <- subset(df, df$vigil_value==87)
+#df$vigil_value <- NULL
+df$vigil_value <- as.factor(df$vigil_value)
+
+# crossval <- function(out_level, original_df){
+#         train_df <- subset(original_df, animal !=out_level)
+#         # train_df <- original_df
+#
+#         test_df <- subset(original_df, animal ==out_level)
+#
+#         # print(head(train_df))
+#         # print(head(test_df))
+#         # print(unique(train_df$treatment))
+#         # print(unique(test_df$treatment))
+#
+#         train_df$animal <- NULL
+#         test_df$animal <- NULL
+#         rf <- randomForest(treatment ~ ., train_df, ntree=50)
+#         varImpPlot(rf)
+#         votes <- predict(rf, test_df,type="prob")
+#
+#         votes <- matrix(votes, nrow=length(rownames(votes)),dimnames=list(NULL,colnames(votes)))
+#
+#         h_rows <- apply(votes, 1, entropy)
+#         weighted_votes <- colSums(votes * h_rows )
+#
+#
+#         #
+#         # weighted_votes = weighted_votes /sum(weighted_votes)
+#         #
+#         # # tab <- matrix(weighted_votes, nrow=1,dimnames=list(NULL,colnames(votes)))
+#         #
+#         out <- data.frame(pred = colnames(votes)[which.max(weighted_votes)], real=unique(test_df$treatment))
+#         # out$real <- unique(test_df$treatment)
+#         # out$animal <- out_level
+#         print(out)
+#         return(out)
+# }
+#
+# entropy <- function(v){
+#     v[v==0] <- 1e-100
+#     h <- 1 + sum(v * log2(v)) /log2(length(v))
+#     return(h)
+# }
+# set.seed(1)
+# l = lapply(levels(df$animal), crossval, original_df=df)
+# d = do.call("rbind",l)
+# predictions = do.call("rbind", l)
+# predictions <- within(predictions, pred <- ifelse(GFP > TelC, "GFP", "TelC"))
+#
+######################################################################################################
 
 
-boxplot(entropy_sample_2_1000 ~  dose,dff ,pch=20, ylab="Sample entropy (m=2, tau=1, r = 1000)", xlab="dose o/oo")
-boxplot(entropy_sample_2_1000 ~ animal*dose, dff,pch=20, ylab="Sample entropy (m=2, tau=1, r = 1000)", xlab="dose o/oo", col=c(grey(0.3),grey(0.7)))
+crossval_test <- function(out_level, original_df){
+        train_df <- subset(original_df, animal !=out_level)
+        test_df <- subset(original_df, animal ==out_level)
+        train_df$animal <- NULL
+        test_df$animal <- NULL
+        rf <- randomForest(vigil_value ~ ., train_df, ntree=50)
+        print(rf)
+        varImpPlot(rf)
+        preds <- predict(rf, test_df)
+
+        out <- data.frame(real = test_df$vigil_value, preds = preds)
+        out <- sum(test_df$vigil_value == preds) / length(preds)
+        return(out)
+}
+
+l = sapply(levels(df$animal), crossval_test, original_df=df)
 
 
-boxplot(power_sd ~  dose,dff ,pch=20, ylab="sd of power", xlab="dose o/oo")
-boxplot(power_sd~ animal*dose, dff,pch=20, ylab="sd of power", xlab="dose o/oo", col=c(grey(0.3),grey(0.7)))
-dev.off()
 
-#plot(entropy_sample_2_1000 ~ dose, df)
-#plot (predict(rfB, dfA) ~ dfA$dose)
+#
+#
+# dpdf("/tmp/test.pdf")
+# for (a in levels(df$animal)){
+#   sub_df <- subset(df, animal == a)
+#   plot( log10(power_median) ~ t,sub_df, pch=20, col=treatment,ylim=c(6,10),main=a)
+#   }
+# dev.off()
+
+
+
+
+#############
+set.seed(1)
+out_level <- "GFP_D"
+train_df <- subset(df, animal !=out_level)
+test_df <- subset(df, animal ==out_level)
+
+train_df$animal <- NULL
+test_df$animal <- NULL
+
+ytrain <- train_df$treatment
+ytest <- test_df$treatment
+
+xtrain<- train_df
+xtrain$treatment <- NULL
+xtest <- test_df
+xtest$treatment <- NULL
+
+rf <- randomForest(x = xtrain, y= ytrain, ntree=100)
+
+table(predict(rf, xtest))
+
+
 """

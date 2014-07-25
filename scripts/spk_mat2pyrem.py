@@ -11,12 +11,13 @@ import os
 
 DOUBT_CHARS = {ord("?"), ord("D")}
 CHANNEL_ID_MAP = [
-                "EEG_parieral_cereb",
-                "EEG_parieral_frontal",
+                "EEG_parietal_cereb",
+                "EEG_parietal_frontal",
                 "EMG_1",
                 "EMG_2"
                   ]
 INPUT_PATTERN = "/data/pyrem/Ellys/mats/*.mat"
+# INPUT_PATTERN = "/data/pyrem/Ellys/mats/GFP*A*.mat"
 OUT_DIR = "/data/pyrem/Ellys/pkls"
 
 def load_from_mat(file_name,sampling_rate=200, metadata={}):
@@ -59,13 +60,20 @@ def load_from_mat(file_name,sampling_rate=200, metadata={}):
 
     data = np.array(df)
     annotations = pd.DataFrame(annotation_channels)
+    # trick to remove every second annotation (they are unpredictibly rudundant)
+    annotations = annotations[1:annotations.shape[0]:2]
+    annotations2 = annotations[0:annotations.shape[0]:2]
+
+    # check we have removed the right (mainly empty) annotations
+    print annotations.shape[0] *5.0 / 60.0 / 60.0
+    print annotations2.shape[0] *5.0 / 60.0 / 60.0
 
     annotations = annotations[annotations[annotations.columns[0]] != ""]
-    #return annotations
+
     np_ord = np.vectorize(lambda x : ord(x.upper()))
 
     annot_values = np_ord(np.array(annotations))
-    # return annot_values
+
 
 
     annot_values = annot_values.astype(np.complex64)
@@ -75,7 +83,9 @@ def load_from_mat(file_name,sampling_rate=200, metadata={}):
         annot_values[np.real(annot_values) == d] = 0.0+0.0j
 
     x = np.linspace(0,data.shape[0],annot_values.shape[0])
+
     inter_f = interp1d(x, annot_values, "nearest", axis=0)
+
     annot_values = inter_f(np.arange(data.shape[0]))
 
     metadata["input_file"] = file_name
