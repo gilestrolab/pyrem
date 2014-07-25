@@ -71,7 +71,7 @@ class Polygraph(object):
             new_data.append(function(c.data.flatten(),*args, **kwargs))
 
         new_data = np.array(new_data).T
-        return self._soft_copy(new_data)
+        return self.copy(new_data)
 
     def normalise(self):
         return self.apply_channels( lambda x : (x - np.mean(x)) / np.std(x))
@@ -113,7 +113,7 @@ class Polygraph(object):
 
 
 
-    def _soft_copy(self,new_data,new_annotations=None, new_channel_types=None):
+    def copy(self,new_data,new_annotations=None, new_channel_types=None):
         if new_annotations is None:
             annotations = self._annotations
         else:
@@ -158,7 +158,7 @@ class Polygraph(object):
                 pass
 
 
-            return self._soft_copy(sub_data, sub_annotations)
+            return self.copy(sub_data, sub_annotations)
 
         else:
             # todo channel name indexation
@@ -173,7 +173,7 @@ class Polygraph(object):
 
                 sub_data = self.data[:,key].reshape((self.ntimepoints,1))
                 new_channel_types = [self.channel_types[key]]
-                return self._soft_copy(sub_data, new_channel_types = new_channel_types)
+                return self.copy(sub_data, new_channel_types = new_channel_types)
 
             else:
                 raise TypeError, "Invalid argument type."
@@ -303,6 +303,7 @@ class Polygraph(object):
 
     def show(self, *args, **kwargs):
         self.plot( *args, **kwargs).show()
+
     def plot(self, *args, **kwargs):
         """
         Plots the signal using :mod:`matplotlib.pyplot`.
