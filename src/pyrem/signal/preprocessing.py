@@ -1,18 +1,19 @@
 __author__ = 'quentin'
 
 import numpy as np
+import scipy.signal as sig
 
 def _butter_bandpass(lowcut, highcut, fs, order=5,typ="band"):
     nyq = 0.5 * fs
     low = lowcut / nyq
     high = highcut / nyq
-    b, a = butter(order, [low, high], btype=typ)
+    b, a = sig.butter(order, [low, high], btype=typ)
     return b, a
 
 
 def _butter_bandpass_filter(data, lowcut, highcut, fs, order=5, typ="band"):
-    b, a = butter_bandpass(lowcut, highcut, fs, order=order, typ=typ)
-    y = lfilter(b, a, data)
+    b, a = _butter_bandpass(lowcut, highcut, fs, order=order, typ=typ)
+    y = sig.lfilter(b, a, data)
     return y
 
 
