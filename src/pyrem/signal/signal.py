@@ -42,7 +42,7 @@ def str_to_time(str):
 
 def signal_from_csv(file_name, sampling_freq):
     data = pd.read_csv(file_name, engine="c", header=None, dtype=np.float32)
-    return Signal(data, sampling_freq)
+    return BiologicalTimeSeries(data, sampling_freq)
 
 
 def _normalise(mat):
@@ -54,10 +54,13 @@ def signal_from_pkl(filename):
     return pkl.load(filename)
 
 
-class Signal(np.ndarray):
-    def __new__(cls, input, fs, type=None, name=None, metadata=None):
+class BiologicalTimeSeries(np.ndarray):
+    def __new__(cls, data, fs, type=None, name=None, metadata=None):
 
-        obj = np.array(input,dtype=np.float32).view(Signal)
+        obj = np.array(data).view(cls)
+        # if len(obj.shape) != 1:
+        #     raise ValueError("A Signal object can only be build from a 1D array")
+
         # add the new attribute to the created instance
         obj.__type = type
         obj.__fs = float(fs)
@@ -127,7 +130,7 @@ class Signal(np.ndarray):
 #
 
     def _idx_from_time(self, time):
-        return  int(time.microseconds * 1e-6 * self.fs)
+        return  int(time.total_seconds() * self.fs)
 
 
     def _time_from_idx(self, idx):
@@ -145,19 +148,17 @@ class Signal(np.ndarray):
         "metadata":self.metadata,
         "name":self.name}
         dic =  dict(dic.items() + kwargs.items())
-        return Signal(a, **dic)
+        return BiologicalTimeSeries(a, **dic)
 
-    def resample(self, new_fs, type="fourier"):
-        if type == "fourier":
-            num = new_fs * self.size / self.fs
-            out = signal.resample(self, int(num))
-            out = self._copy_attrs_to_array(out, fs=new_fs)
-            return out
-        else:
-            raise NotImplementedError
+    def resample(self, new_fs):
+        raise NotImplementedError
 
     def __repr__(self):
-        metadata = "\n".join(["\t\t%s:\t%s" % (k, str(v)) for k,v in self.metadata.items()])
+        if self.metadata:
+
+            metadata = "\n".join(["\t\t%s:\t%s" % (k, str(v)) for k,v in self.metadata.items()])
+        else:
+            metadata = "None"
 
         out = ["\n" + type(self).__name__ + "\n",
                "Name:\t%s" % (self.name),
@@ -169,29 +170,6 @@ class Signal(np.ndarray):
                ]
 
         return "\n".join(out)
-        #
-        # new_step = self.sampling_freq / float(new_sampling_freq)
-        # new_t = np.arange(0, self.ntimepoints, new_step)
-        # new_t = new_t[new_t <= self.ntimepoints -1]
-        # old_t= np.arange(0, self.ntimepoints)
-        #
-        # out = np.recarray((new_t.size,),self.dtype)
-        #
-        # for name, channel in self.channel_iter():
-        #
-        #     if channel.dtype==float:
-        #         kind="linear"
-        #     else:
-        #         kind="nearest"
-        #
-        #     f = interp1d(old_t, channel, assume_sorted=True, kind=kind)
-        #     out[name] = f(new_t)
-        # return Signal(out, new_sampling_freq)
-
-
-    # def __getslice__(self, start, stop) :
-    #
-    #     return self.__getitem__(slice(start, stop))
 
     def _get_time_slice( self, key ):
 
@@ -199,7 +177,6 @@ class Signal(np.ndarray):
             start_idx = 0
         elif isinstance(key.start, str):
             start = str_to_time(key.start)
-            print start
             start_idx = self._idx_from_time(start)
 
         else:
@@ -215,7 +192,6 @@ class Signal(np.ndarray):
         else:
             raise NotImplementedError()
 
-
         if start_idx > stop_idx:
             raise Exception("The starting time(%s), MUST be before the end time(%s)" % (str(start),str(stop)))
 
@@ -223,7 +199,9 @@ class Signal(np.ndarray):
         return self[start_idx: stop_idx]
 
     def __getitem__( self, key ) :
+
         if isinstance( key, slice ):
+
             return self._get_time_slice(key)
         else:
             return np.ndarray.__getitem__(self,key)
@@ -252,50 +230,114 @@ class Signal(np.ndarray):
             if out.size < n_points:
                 return
             yield centre , out
-    def _represent_long_time_series(self,max_points=MAX_POINTS_AMPLITUDE_PLOT):
-        from matplotlib import pyplot as plt
-        winsize_npoints = float(self.size) / float(max_points)
-        secs = winsize_npoints / self.fs
-        print secs
-        mins, maxes, means, sds,xs = [],[],[],[],[]
-        for c, w in  self.iter_window(secs,1):
-            mins.append(np.min(w))
-            maxes.append(np.max(w))
-            means.append(np.mean(w))
-            sds.append(np.std(w))
-            xs.append(c)
 
-        means = np.array(means)
-        mean_plus_sd = means +sds
-        mean_minus_sd = means - sds
-        plt.figure()
-
-
-        plt.fill_between(xs,mins,maxes, facecolor=(0,0,1,0.6),edgecolor=(0,0,0,0.2), antialiased=True)
-        plt.fill_between(xs,mean_minus_sd, mean_plus_sd, facecolor=(1,0.5,0,0.9),edgecolor=(0,0,0,0), antialiased=True)
-        plt.plot(xs,means,"-", linewidth=1, color='k')
-        plt.show()
+    # def _create_fig(self, *args, **kwargs):
+    #     from matplotlib import pyplot as plt
+    #
+    #     title = "Duration = %s; at = %fHz" % (self.duration , self.sampling_freq)
+    #
+    #     f, axarr = plt.subplots(self.nsignals , sharex=True, sharey=True)
+    #
+    #     axarr[0].set_title(title)
+    #     for i,(name,s) in enumerate(self.signal_iter()):
+    #         axarr[i].plot(s, *args, **kwargs)
+    #     out = plt
+    #
+    #     location, _ = plt.xticks()
+    #     plt.xticks(location, [self._time_from_idx(l) for l in location], rotation=45)
+    #
+    #     return out
 
 
+class Signal(BiologicalTimeSeries):
+    def __new__(cls,data, fs, observation_probabilities=None, **kwargs):
+        try:
+            obj = np.array(data).view(cls).astype(np.float32)
+        except:
+            raise ValueError("Data could not be understood as an array of float32")
 
-#
-# #
-    def _create_fig(self, *args, **kwargs):
-        from matplotlib import pyplot as plt
+        if len(obj.shape) != 1:
+            raise ValueError("A Signal object can only be build from a 1D array")
 
-        title = "Duration = %s; at = %fHz" % (self.duration , self.sampling_freq)
+        return BiologicalTimeSeries.__new__(cls, data, fs, **kwargs)
 
-        f, axarr = plt.subplots(self.nsignals , sharex=True, sharey=True)
-
-        axarr[0].set_title(title)
-        for i,(name,s) in enumerate(self.signal_iter()):
-            axarr[i].plot(s, *args, **kwargs)
-        out = plt
-
-        location, _ = plt.xticks()
-        plt.xticks(location, [self._time_from_idx(l) for l in location], rotation=45)
-
+    def resample(self, new_fs):
+        num = new_fs * self.size / self.fs
+        out = signal.resample(self, int(num))
+        out = self._copy_attrs_to_array(out, fs=new_fs)
         return out
+
+    #
+    # def _represent_long_time_series(self,max_points=MAX_POINTS_AMPLITUDE_PLOT):
+    #     from matplotlib import pyplot as plt
+    #     winsize_npoints = float(self.size) / float(max_points)
+    #     secs = winsize_npoints / self.fs
+    #     print secs
+    #     mins, maxes, means, sds,xs = [],[],[],[],[]
+    #     for c, w in  self.iter_window(secs,1):
+    #         mins.append(np.min(w))
+    #         maxes.append(np.max(w))
+    #         means.append(np.mean(w))
+    #         sds.append(np.std(w))
+    #         xs.append(c)
+    #
+    #     means = np.array(means)
+    #     mean_plus_sd = means +sds
+    #     mean_minus_sd = means - sds
+    #
+    #     plt.figure()
+    #     title = "%s\nDuration = %s; at = %fHz" % (self.name, self.duration , self.fs)
+    #
+    #     plt.title(title)
+    #     plt.fill_between(xs,mins,maxes, facecolor=(0,0,1,0.6),edgecolor=(0,0,0,0.2), antialiased=True)
+    #     plt.fill_between(xs,mean_minus_sd, mean_plus_sd, facecolor=(1,0.5,0,0.9),edgecolor=(0,0,0,0), antialiased=True)
+    #     plt.plot(xs,means,"-", linewidth=2, color='k')
+    #
+    #     n_labels = 8 #fixme magic number
+    #
+    #     time_strings = [str(timedelta(seconds=s)) for s in xs]
+    #     if len(time_strings) > n_labels:
+    #         trimming = int(float(len(time_strings)) / float(n_labels))
+    #         xs = xs[::trimming]
+    #         time_strings = time_strings[::trimming]
+    #
+    #
+    #     plt.xticks(xs, time_strings, rotation=45)
+    #     plt.show()
+
+
+class Annotation(BiologicalTimeSeries):
+
+    def __new__(cls,data, fs, observation_probabilities=None, **kwargs):
+        try:
+            chars = np.array(data,dtype=np.uint8)
+        except:
+            raise ValueError("could not understand input as an array of uint8")
+
+        if len(chars.shape) != 1:
+            raise ValueError("An Annotation object can only be build from a 1D array")
+
+        if observation_probabilities is None:
+            observation_probabilities = np.array([1.0] * data.size, dtype=np.float32)
+
+        data = np.recarray((chars.size,),
+                          dtype=[("values", np.uint8), ("probas", np.float32)])
+        data["values"] = chars
+        data["probas"] = observation_probabilities
+
+        return BiologicalTimeSeries.__new__(cls, data, fs, **kwargs)
+
+    def resample(self, new_fs):
+        raise NotImplementedError #fixme
+
+    @property
+    def values(self):
+        return self["values"]
+
+    @property
+    def probas(self):
+        return self["probas"]
+
 
 #     def plot(self, *args, **kwargs):
 #         """

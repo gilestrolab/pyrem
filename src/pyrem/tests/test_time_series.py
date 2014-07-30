@@ -1,9 +1,5 @@
 __author__ = 'quentin'
 
-
-__author__ = 'quentin'
-
-
 import unittest
 from pyrem.signal.signal  import *
 import numpy as np
@@ -22,8 +18,22 @@ def compare_signals(a,b, test_values=True):
     return out
 
 
+def compare_annots(a,b, test_values=True):
+    out = True
+    if test_values:
+        out &= (a.values == b.values).all()
+        out &= np.allclose(a.probas, b.probas)
 
-class TestFeatures(unittest.TestCase):
+    out &= (a.type == b.type)
+    out &= (a.name == b.name)
+    out &= (a.fs == b.fs)
+    out &= (a.metadata == b.metadata)
+    return out
+
+
+
+
+class TestSignal(unittest.TestCase):
     np.random.seed(1)
     random_walk = np.cumsum(np.random.normal(0,1,(int(1e4))))
 
@@ -90,7 +100,8 @@ class TestFeatures(unittest.TestCase):
         self.assertEqual(a[:"201w"].size, 2)
         self.assertEqual(a[:"199w"].size, 1)
 
-    def test_indexing(self):
+
+    def test_windowing(self):
         a = Signal(self.random_walk, 10,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
         ws = [w for o,w in a.iter_window(1.3,1)]
         b = np.array(ws).flatten()
@@ -104,11 +115,26 @@ class TestFeatures(unittest.TestCase):
 
 
 
-    def test_dummy(self):
-        a = Signal(np.random.normal(size=int(1e6)), 10,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
-        a._represent_long_time_series()
+
+class TestAnnotation(unittest.TestCase):
+    np.random.seed(1)
+    probs = np.random.random_sample(int(1e4))
+    vals = (np.random.random_sample(int(1e4)) * 4 +1).astype(np.int)
 
 
+    def test_save_load(self):
 
+        file, path = tempfile.mkstemp(suffix=".pkl")
 
+        a = Annotation(self.vals,fs=10, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
+
+        a.save(path)
+        b = signal_from_pkl(path)
+        try:
+            os.remove(path)
+        except Exception as e:
+            print e
+            pass
+
+        self.assertTrue(compare_annots(a,b))
 
