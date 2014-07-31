@@ -16,15 +16,90 @@ class TestPolygram(unittest.TestCase):
     vals = (np.random.random_sample(1000) * 4 +1).astype(np.int)
 
     def test_init_sanity(self):
-        an = Annotation(self.vals,fs=10, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
-        c1 = Signal(self.rw1, fs=10,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
+        # an = Annotation(self.vals,fs=10, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
+        # c1 = Signal(self.rw1, fs=10,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
         #Polygram([an, c1])
 
 
         an = Annotation(self.vals,fs=1, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
         c1 = Signal(self.rw1, fs=100,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
 
-
+        # perfect match:
         Polygram([an[:10], c1[:1000]])
-        Polygram([an[:10], c1[:901]])
 
+        # tolerable match
+        Polygram([an[:10], c1[:1099]])
+        # intolerable match raises a value error
+        self.assertRaises(ValueError, lambda: Polygram([an[:10], c1[:1100]]))
+
+        # tolerable match
+        Polygram([an[:10], c1[:901]])
+        # intolerable match raises a value error
+        self.assertRaises(ValueError, lambda: Polygram([an[:10], c1[:900]]))
+
+        # channel with the same names (homonnymous) are forbidden !
+        c2 = Signal(self.rw1, fs=100,type="eeg", name="bar", metadata={"animal":"joe", "treatment":18})
+        self.assertRaises(ValueError, lambda: Polygram([an[:10], c2[:1000]]))
+
+
+
+    def test_slicing(self):
+        an = Annotation(self.vals,fs=1, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
+        c1 = Signal(self.rw1, fs=100,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
+
+        pol = Polygram([an[:19], c1[:1999]])
+
+        pol2 = pol["1s":"2s"]
+        pol2.channels[1] +=1
+        res = pol2.channels[1]
+        ans = c1["1s":"2s"]
+
+        self.assertTrue(np.allclose(res, ans))
+
+        self.assertTrue(pol2.channels[1] is pol2[1])
+        self.assertTrue(pol2.channels[1] is pol2["foo"])
+        self.assertRaises(ValueError, lambda :pol2["DUMMY_NAME"])
+
+
+    def test_copy(self):
+        an = Annotation(self.vals,fs=50, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
+        c1 = Signal(self.rw1, fs=100,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
+
+        pol = Polygram([an, c1])
+        pol2 = pol.copy()
+        pol2.channels[1] += 1
+
+        self.assertFalse(np.allclose(pol.channels[1], pol2.channels[1]))
+        self.assertFalse(np.allclose(c1, pol2.channels[1]))
+        self.assertTrue(c1 is pol.channels[1])
+
+    def test_windowing(self):
+        an = Annotation(self.vals,fs=.1, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
+        c1 = Signal(self.rw1, fs=10,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
+
+        pol = Polygram([an[:10], c1[:1001]])
+
+        for c, p in  pol.iter_window(1,1):
+            self.assertEqual([c.size for c in p.channels],  [1,10])
+
+    def test_save_load(self):
+
+        file, path = tempfile.mkstemp(suffix=".pkl")
+
+        an = Annotation(self.vals,fs=.1, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
+        c1 = Signal(self.rw1, fs=10,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
+
+        pol = Polygram([an[:10], c1[:1001]])
+
+
+        pol.save(path, 9)
+        import joblib as pkl
+        b = pkl.load(path)
+        try:
+            os.remove(path)
+        except Exception as e:
+            print e
+            pass
+        self.assertEqual(repr(pol[0]), repr(b[0]))
+        self.assertEqual(repr(pol[1]), repr(b[1]))
+        #self.assertTrue(compare_annots(a,b))

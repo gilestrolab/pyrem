@@ -3,39 +3,15 @@ __author__ = 'quentin'
 
 
 import datetime
-
-__author__ = 'quentin'
-
 import numpy as np
 import joblib as pkl
 from scipy import signal
-
-# from scipy.interpolate import interp1d
 import pandas as pd
-# for plotting signals in ipn:
+from pyrem.signal.utils import str_to_time
+
 SIGNALY_DPI = 328
 SIGNAL_FIGSIZE = (30, 5)
 MAX_POINTS_AMPLITUDE_PLOT = 1000
-
-import re
-from datetime import timedelta
-
-REGEX = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?((?P<milliseconds>\d+?)w)?')
-
-
-
-def str_to_time(str):
-    parts = REGEX.match(str)
-
-    if not parts or len(parts.group()) <1:
-        raise ValueError("The string `%s' does not contain time information.\nThe syntax is, for instance, 1h99m2s" %(str))
-    parts = parts.groupdict()
-    time_params = {}
-    for (name, param) in parts.iteritems():
-        if param:
-            time_params[name] = int(param)
-    return timedelta(**time_params)
-
 
 
 
@@ -178,6 +154,8 @@ class BiologicalTimeSeries(np.ndarray):
         elif isinstance(key.start, str):
             start = str_to_time(key.start)
             start_idx = self._idx_from_time(start)
+        elif isinstance(key.start, datetime.timedelta):
+            start_idx = self._idx_from_time(key.start)
 
         else:
             raise NotImplementedError()
@@ -189,13 +167,18 @@ class BiologicalTimeSeries(np.ndarray):
 
             stop_idx= self._idx_from_time(stop)
 
+        elif isinstance(key.stop, datetime.timedelta):
+            stop_idx = self._idx_from_time(key.stop)
         else:
             raise NotImplementedError()
 
         if start_idx > stop_idx:
             raise Exception("The starting time(%s), MUST be before the end time(%s)" % (str(start),str(stop)))
 
-
+        # important detail: we never want an empty subchannel.
+        # fixme it would be clever to implement this in the integer indexing engine as well...?
+        if start_idx == stop_idx:
+            stop_idx +=1
         return self[start_idx: stop_idx]
 
     def __getitem__( self, key ) :
