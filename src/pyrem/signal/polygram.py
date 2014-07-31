@@ -19,7 +19,8 @@ class Polygram(object):
 
         for c in self.channels:
             if not self._test_duration( max_duration, fs_max_duration, c.duration, c.fs):
-                raise ValueError("Channels must have approximately the same length")
+                raise ValueError("Channels must have approximately the same length."
+                                 "\nThe durations of the input channels are:\n%s", (str([str(c.duration) for c in channels ])))
 
         duplicate_names  = set([x for x in self.channel_names if self.channel_names.count(x) > 1])
         if len(duplicate_names) > 0:

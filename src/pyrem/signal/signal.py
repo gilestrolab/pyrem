@@ -233,7 +233,10 @@ class BiologicalTimeSeries(np.ndarray):
 
 
 class Signal(BiologicalTimeSeries):
-    def __new__(cls,data, fs, observation_probabilities=None, **kwargs):
+    #dummry init for pycharm completion
+    def __init__(self,data, fs, **kwargs):
+        pass
+    def __new__(cls,data, fs, **kwargs):
         try:
             obj = np.array(data).view(cls).astype(np.float32)
         except:
@@ -290,7 +293,9 @@ class Signal(BiologicalTimeSeries):
 
 
 class Annotation(BiologicalTimeSeries):
-
+    # dummy for doc and pycharm
+    def __init__(self,data, fs, observation_probabilities=None, **kwargs):
+        pass
     def __new__(cls,data, fs, observation_probabilities=None, **kwargs):
         try:
             chars = np.array(data,dtype=np.uint8)
