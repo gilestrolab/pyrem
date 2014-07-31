@@ -96,6 +96,10 @@ class Polygram(object):
         return self._channels
 
     @property
+    def n_channels(self):
+        return len(self._channels)
+
+    @property
     def metadata(self):
         return self._metadata
 
