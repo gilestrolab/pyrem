@@ -6,6 +6,9 @@ from scipy.ndimage.interpolation import zoom
 import numpy as np
 import pylab as pl
 from pyrem.signal.signal import Signal, Annotation
+import matplotlib.colors as colors
+import matplotlib.cm as cmx
+import matplotlib as plt
 
 
 class PolygramDisplay(object):
@@ -42,11 +45,11 @@ class PolygramDisplay(object):
                 self._plot_annotation_on_ax(sig, ax,init)
             else:
                 raise ValueError()
-            pl.setp([ax.get_xticklabels()], visible=False)
-            axis_title = "%s (@%sHz)" % (sig.name, str(round(sig.fs,3)))
+            #pl.setp([ax.get_xticklabels()], visible=False)
+            axis_title = "%s\n(@%sHz)" % (sig.name, str(round(sig.fs,3)))
             ax.set_ylabel(axis_title)
 
-    def _plot_annotation_on_ax(self, signal, ax, autoscale=False):
+    def _plot_annotation_on_ax(self, signal, ax, autoscale=False, colourmap="flag"):
 
         if autoscale:
             xstart = 0
@@ -73,9 +76,38 @@ class PolygramDisplay(object):
         ys = zoom(ys,[1, zoom_f], order=0)
 
 
-        ax.imshow(ys, extent=[np.min(xs), np.max(xs), 1.5, -0.5], aspect="auto")
+        ax.imshow(ys, extent=[np.min(xs), np.max(xs), 1.5, -0.5], aspect="auto",
+                  cmap=colourmap, vmin=0, vmax=255, origin='lower')
+
+
         ax.plot(xs,probs,"-", color="k", linewidth=3)
-        ax.set_title(signal.name)
+        ax.plot(xs,probs,"-", color="y", linewidth=1,alpha=0.5)
+
+
+        jet = cm = pl.get_cmap(colourmap)
+        cNorm  = colors.Normalize(vmin=0, vmax=255)
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+
+        states = np.unique(ys)
+
+        boxes = [pl.Rectangle((0, 0), 1, 1, fc=scalarMap.to_rgba(col)) for col in states]
+        labels = [chr(s) for  s in states]
+        pl.legend(boxes,labels, loc='lower right')
+
+        n_labels = 8 #fixme magic number
+
+        if len(xs) > n_labels:
+            trimming = int(float(len(xs)) / float(n_labels))
+            xs_trimmed = np.round(xs[::trimming])
+        else:
+            xs_trimmed = xs
+
+        time_strings = [str(timedelta(seconds=s)) for s in xs_trimmed]
+
+
+        ax.set_xticks(xs_trimmed)
+        ax.set_xticklabels(time_strings, rotation=70)
+
         return
 
     def _plot_signal_on_ax(self, signal, ax, autoscale=False):
@@ -133,10 +165,3 @@ class PolygramDisplay(object):
         ax.fill_between(xs,mean_minus_sd, mean_plus_sd, facecolor=(1,0.5,0,0.9),edgecolor=(0,0,0,0), antialiased=True)
         ax.plot(xs,means,"-", linewidth=1, color='k')
 
-        n_labels = 8 #fixme magic number
-
-        time_strings = [str(timedelta(seconds=s)) for s in xs]
-        if len(time_strings) > n_labels:
-            trimming = int(float(len(time_strings)) / float(n_labels))
-            xs = xs[::trimming]
-            time_strings = time_strings[::trimming]

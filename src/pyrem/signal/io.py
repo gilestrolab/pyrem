@@ -78,7 +78,7 @@ def polygram_from_spike_matlab_file(filename, fs, annotation_fs, channel_names, 
 
     annot_values = annot_values[:annot_values.size -1]
 
-    annot_probas = [1 if a in doubt_chars else 0 for a in annot_values]
+    annot_probas = [0 if a in doubt_chars else 1 for a in annot_values]
 
     an = Annotation(annot_values, annotation_fs, annot_probas, name="vigilance_state")
 
