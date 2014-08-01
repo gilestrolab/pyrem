@@ -50,14 +50,14 @@ class TestPolygram(unittest.TestCase):
         pol = Polygram([an[:19], c1[:1999]])
 
         pol2 = pol["1s":"2s"]
-        pol2.channels[1] +=1
-        res = pol2.channels[1]
+        # sig = pol2[1]
+        #sig += 1
+        res = pol2[1]
         ans = c1["1s":"2s"]
 
         self.assertTrue(np.allclose(res, ans))
 
-        self.assertTrue(pol2.channels[1] is pol2[1])
-        self.assertTrue(pol2.channels[1] is pol2["foo"])
+        self.assertTrue(pol2[1] is pol2["foo"])
         self.assertRaises(ValueError, lambda :pol2["DUMMY_NAME"])
 
 
@@ -67,11 +67,12 @@ class TestPolygram(unittest.TestCase):
 
         pol = Polygram([an, c1])
         pol2 = pol.copy()
-        pol2.channels[1] += 1
+        sig = pol2[1]
+        sig += 1
 
-        self.assertFalse(np.allclose(pol.channels[1], pol2.channels[1]))
-        self.assertFalse(np.allclose(c1, pol2.channels[1]))
-        self.assertTrue(c1 is pol.channels[1])
+        self.assertFalse(np.allclose(pol[1], sig ))
+        self.assertFalse(np.allclose(c1, pol2[1]))
+        self.assertTrue(c1 is pol[1])
 
     def test_windowing(self):
         an = Annotation(self.vals,fs=.1, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})

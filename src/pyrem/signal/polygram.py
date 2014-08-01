@@ -4,6 +4,8 @@ __author__ = 'quentin'
 
 import numpy as np
 import joblib as pkl
+from pyrem.signal.signal import Signal, Annotation
+
 
 
 class Polygram(object):
@@ -57,7 +59,7 @@ class Polygram(object):
         if isinstance( key, slice ):
             return self._get_time_slice(key)
         elif isinstance( key, int):
-            return self.channels[key]
+            return self._channels[key]
 
         elif isinstance( key, str):
             if key not in self.channel_names:
@@ -94,7 +96,29 @@ class Polygram(object):
 
     @property
     def channels(self):
-        return self._channels
+        for c in self._channels:
+            yield c
+
+    @property
+    def signal_channels(self):
+        for c in self._channels:
+            if isinstance(c,Signal):
+                yield c
+
+    @property
+    def annotation_channels(self):
+        for c in self._channels:
+            if isinstance(c,Annotation):
+                yield c
+
+    def map_signal_channels(self, fun):
+        assert callable(fun)
+        out = self.copy()
+        for i, c in enumerate(out._channels):
+            if isinstance(c,Signal):
+                out._channels[i] = fun(c)
+        return out
+
 
     @property
     def n_channels(self):

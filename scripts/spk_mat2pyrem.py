@@ -32,7 +32,7 @@ EXCLUDED = {
 "TelC_E"
 
 }
-N_PROCESS = 3
+N_PROCESS = 4
 
 def save_one_pol(f):
 
@@ -54,6 +54,7 @@ def save_one_pol(f):
         fs = DEFAULT_FS
     try:
         pol = polygram_from_spike_matlab_file(f, fs, 1/5.0,CHANNEL_ID_MAP,DOUBT_CHARS, resample_signals=RESAMPLE_AT)
+
 
 
 
