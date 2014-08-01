@@ -44,7 +44,7 @@ class PolygramDisplay(object):
             elif isinstance(sig, Annotation):
                 self._plot_annotation_on_ax(sig, ax,init)
             else:
-                raise ValueError()
+                raise ValueError("The time series is a %s" % str(type(sig)))
             #pl.setp([ax.get_xticklabels()], visible=False)
             axis_title = "%s\n(@%sHz)" % (sig.name, str(round(sig.fs,3)))
             ax.set_ylabel(axis_title)
@@ -165,3 +165,16 @@ class PolygramDisplay(object):
         ax.fill_between(xs,mean_minus_sd, mean_plus_sd, facecolor=(1,0.5,0,0.9),edgecolor=(0,0,0,0), antialiased=True)
         ax.plot(xs,means,"-", linewidth=1, color='k')
 
+        n_labels = 8 #fixme magic number
+
+        if len(xs) > n_labels:
+            trimming = int(float(len(xs)) / float(n_labels))
+            xs_trimmed = np.round(xs[::trimming])
+        else:
+            xs_trimmed = xs
+
+        time_strings = [str(timedelta(seconds=s)) for s in xs_trimmed]
+
+
+        ax.set_xticks(xs_trimmed)
+        ax.set_xticklabels(time_strings, rotation=70)

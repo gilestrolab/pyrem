@@ -58,11 +58,19 @@ class TestSignal(unittest.TestCase):
     def test_copy(self):
         a = Signal(self.random_walk, 10,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
         b = a.copy()
-
+        self.assertEqual(type(a), type(b))
         self.assertTrue(compare_signals(a, b))
 
         b+=1
         self.assertFalse(compare_signals(a, b))
+
+    #
+    # def test_resampling(self):
+    #     a = Signal(self.random_walk, 10,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
+    #     print a.size
+    #     print a.resample(19.99).size
+    #
+
 
     def test_save_load(self):
 

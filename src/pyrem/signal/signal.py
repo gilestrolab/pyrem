@@ -8,6 +8,7 @@ import joblib as pkl
 from scipy import signal
 import pandas as pd
 from pyrem.signal.utils import str_to_time
+from scikits.samplerate import resample
 
 SIGNALY_DPI = 328
 SIGNAL_FIGSIZE = (30, 5)
@@ -95,6 +96,8 @@ class BiologicalTimeSeries(np.ndarray):
     def metadata(self):
         return self.__metadata
 
+    def rename(self, name):
+        self.__name =  name
 
     @property
     def name(self):
@@ -124,7 +127,7 @@ class BiologicalTimeSeries(np.ndarray):
         "metadata":self.metadata,
         "name":self.name}
         dic =  dict(dic.items() + kwargs.items())
-        return BiologicalTimeSeries(a, **dic)
+        return self.__new__(type(self),a, **dic)
 
     def resample(self, new_fs):
         raise NotImplementedError
@@ -214,23 +217,6 @@ class BiologicalTimeSeries(np.ndarray):
                 return
             yield centre , out
 
-    # def _create_fig(self, *args, **kwargs):
-    #     from matplotlib import pyplot as plt
-    #
-    #     title = "Duration = %s; at = %fHz" % (self.duration , self.sampling_freq)
-    #
-    #     f, axarr = plt.subplots(self.nsignals , sharex=True, sharey=True)
-    #
-    #     axarr[0].set_title(title)
-    #     for i,(name,s) in enumerate(self.signal_iter()):
-    #         axarr[i].plot(s, *args, **kwargs)
-    #     out = plt
-    #
-    #     location, _ = plt.xticks()
-    #     plt.xticks(location, [self._time_from_idx(l) for l in location], rotation=45)
-    #
-    #     return out
-
 
 class Signal(BiologicalTimeSeries):
     #dummry init for pycharm completion
@@ -247,49 +233,14 @@ class Signal(BiologicalTimeSeries):
 
         return BiologicalTimeSeries.__new__(cls, data, fs, **kwargs)
 
-    def resample(self, new_fs):
-        num = new_fs * self.size / self.fs
-        out = signal.resample(self, int(num))
-        out = self._copy_attrs_to_array(out, fs=new_fs)
-        return out
+    def resample(self, target_fs, mode="sinc_best"):
+        # num = target_fs * self.size / self.fs
+        ratio = target_fs / self.fs
 
-    #
-    # def _represent_long_time_series(self,max_points=MAX_POINTS_AMPLITUDE_PLOT):
-    #     from matplotlib import pyplot as plt
-    #     winsize_npoints = float(self.size) / float(max_points)
-    #     secs = winsize_npoints / self.fs
-    #     print secs
-    #     mins, maxes, means, sds,xs = [],[],[],[],[]
-    #     for c, w in  self.iter_window(secs,1):
-    #         mins.append(np.min(w))
-    #         maxes.append(np.max(w))
-    #         means.append(np.mean(w))
-    #         sds.append(np.std(w))
-    #         xs.append(c)
-    #
-    #     means = np.array(means)
-    #     mean_plus_sd = means +sds
-    #     mean_minus_sd = means - sds
-    #
-    #     plt.figure()
-    #     title = "%s\nDuration = %s; at = %fHz" % (self.name, self.duration , self.fs)
-    #
-    #     plt.title(title)
-    #     plt.fill_between(xs,mins,maxes, facecolor=(0,0,1,0.6),edgecolor=(0,0,0,0.2), antialiased=True)
-    #     plt.fill_between(xs,mean_minus_sd, mean_plus_sd, facecolor=(1,0.5,0,0.9),edgecolor=(0,0,0,0), antialiased=True)
-    #     plt.plot(xs,means,"-", linewidth=2, color='k')
-    #
-    #     n_labels = 8 #fixme magic number
-    #
-    #     time_strings = [str(timedelta(seconds=s)) for s in xs]
-    #     if len(time_strings) > n_labels:
-    #         trimming = int(float(len(time_strings)) / float(n_labels))
-    #         xs = xs[::trimming]
-    #         time_strings = time_strings[::trimming]
-    #
-    #
-    #     plt.xticks(xs, time_strings, rotation=45)
-    #     plt.show()
+        out = resample(self,ratio,mode)
+        real_fs = out.size * self.fs / float(self.size)
+        out = self._copy_attrs_to_array(out, fs=real_fs)
+        return out
 
 
 class Annotation(BiologicalTimeSeries):
@@ -325,31 +276,3 @@ class Annotation(BiologicalTimeSeries):
     @property
     def probas(self):
         return self["probas"]
-
-
-#     def plot(self, *args, **kwargs):
-#         """
-#         Plots the signal using :mod:`matplotlib.pyplot`.
-#
-#         :param args: arguments to pass to :func:`~matplotlib.pyplot.plot`
-#         :param kwargs: keyword arguments to pass to :func:`~matplotlib.pyplot.plot`
-#         :return: the result of the :func:`matplotlib.pyplot.plot` function.
-#         """
-#         return self._create_plot(*args, **kwargs)
-#
-#     def _repr_png_(self):
-#         from IPython.core.pylabtools import print_figure
-#         from matplotlib import pyplot as plt
-#
-#         fig = self._create_fig()
-#         data = print_figure(fig, 'png')
-#         plt.close(fig)
-#         return data
-#
-#     @property
-#     def png(self):
-#         from IPython.display import Image
-#         return Image(self._repr_png_(), embed=True)
-#
-#
-

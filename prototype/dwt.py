@@ -6,8 +6,15 @@ from pyrem.signal.visualization import PolygramDisplay
 
 pol = polygram_from_pkl("/data/pyrem/Ellys/pkls/GFP_A.pkl")
 
-sig = pol["EEG_parietal_frontal"].resample(256.0)
+print pol.channel_names
+sig = pol["EEG_parietal_frontal"]
 
-pol2 = decompose_signal(sig,levels=[3,4,5])
+print "applying ressampling + DWTD..."
+pol2 = decompose_signal(sig,levels=[3,4,5], resample_before=256.0)
+pol2.channels.append(sig)
+pol2.channels.append(pol["EMG_1"])
+pol2.channels.append(pol["EMG_2"])
+pol2.channels.append(pol["vigilance_state"])
 
+print "Displaying..."
 PolygramDisplay(pol2)

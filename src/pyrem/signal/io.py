@@ -16,7 +16,7 @@ import  joblib
 def polygram_from_pkl(filename):
     return joblib.load(filename)
 
-def polygram_from_spike_matlab_file(filename, fs, annotation_fs, channel_names, doubt_chars, metadata={}):
+def polygram_from_spike_matlab_file(filename, fs, annotation_fs, channel_names, doubt_chars,resample_signals, metadata={}):
 
     """
     This function loads a matlab file exported by spike to
@@ -49,6 +49,7 @@ def polygram_from_spike_matlab_file(filename, fs, annotation_fs, channel_names, 
         data_channels[k] = a[:crop_at]
 
     signals = [Signal(data,fs, name=name ) for name,data in data_channels.items()]
+    signals = [ s.resample(256.0) for s in signals]
 
     annotations = pd.DataFrame(annotation_channels)
 
@@ -57,15 +58,13 @@ def polygram_from_spike_matlab_file(filename, fs, annotation_fs, channel_names, 
     annotations2 = annotations[0:annotations.shape[0]:2]
 
     # check we have removed the right (mainly empty) annotations
-    print annotations.shape[0] *5.0 / 60.0 / 60.0
-    print annotations2.shape[0] *5.0 / 60.0 / 60.0
+    # print annotations.shape[0] *5.0 / 60.0 / 60.0
+    # print annotations2.shape[0] *5.0 / 60.0 / 60.0
 
 
 
 
     annotations[annotations[annotations.columns[0]] == ""] = "?"
-
-    print  np.sum(annotations[annotations.columns[0]] == "")
 
 
     np_ord = np.vectorize(lambda x : ord(x.upper()))
