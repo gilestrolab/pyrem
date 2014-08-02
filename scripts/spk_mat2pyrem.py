@@ -35,7 +35,7 @@ EXCLUDED = {
 "TelC_E"
 
 }
-N_PROCESS = 4
+N_PROCESS = 6
 
 def save_one_pol(f):
 

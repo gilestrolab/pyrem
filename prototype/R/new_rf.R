@@ -1,7 +1,7 @@
 library("randomForest")
 
 
-FILENAME <- "/tmp/my_csv.out"
+OUT_CSV = "/data/pyrem/Ellys/all_features.csv"
 
 curate_df <- function(dfo){
 	df <- dfo
@@ -30,7 +30,25 @@ dfo <- read.csv(FILENAME , na.string="NaN")
 df <- curate_df(dfo)
 
 print(df)
-rf = randomForest( y ~ ., df, ntree=500)
+
+
+crossval_test <- function(out_level, original_df){
+        train_df <- subset(original_df, animal !=out_level)
+        test_df <- subset(original_df, animal ==out_level)
+        train_df$animal <- NULL
+        test_df$animal <- NULL
+        rf <- randomForest(y ~ ., train_df, ntree=50)
+        print(rf)
+        varImpPlot(rf)
+        preds <- predict(rf, test_df)
+
+        out <- data.frame(real = test_df$vigil_value, preds = preds)
+        out <- sum(test_df$vigil_value == preds) / length(preds)
+        return(out)
+}
+
+l = sapply(levels(df$animal), crossval_test, original_df=df)
+
 exit()
 ############################################################################
 #~
@@ -92,22 +110,6 @@ exit()
 ######################################################################################################
 
 
-crossval_test <- function(out_level, original_df){
-        train_df <- subset(original_df, animal !=out_level)
-        test_df <- subset(original_df, animal ==out_level)
-        train_df$animal <- NULL
-        test_df$animal <- NULL
-        rf <- randomForest(vigil_value ~ ., train_df, ntree=50)
-        print(rf)
-        varImpPlot(rf)
-        preds <- predict(rf, test_df)
-
-        out <- data.frame(real = test_df$vigil_value, preds = preds)
-        out <- sum(test_df$vigil_value == preds) / length(preds)
-        return(out)
-}
-
-l = sapply(levels(df$animal), crossval_test, original_df=df)
 #~
 #~
 

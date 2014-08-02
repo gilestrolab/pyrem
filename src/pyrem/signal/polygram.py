@@ -183,7 +183,6 @@ class Polygram(object):
         if not callable(fun):
             raise ValueError("fun must be a function!")
         out = self.copy()
-        out.show()
         for i, c in enumerate(out._channels):
             if isinstance(c,Signal):
                 out._channels[i] = fun(c)
