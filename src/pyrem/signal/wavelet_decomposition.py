@@ -5,7 +5,7 @@ import numpy as np
 from pyrem.signal.signal import Signal
 from pyrem.signal.polygram import Polygram
 
-def decompose_signal(signal, levels=(1,2,3,4,5), wavelet="db4", resample_before=None, mode="per"):
+def decompose_signal(signal, levels=(1,2,3,4,5), wavelet="db4", resample_before=None, mode="per", keep_a=True):
     max_level = max(levels)
 
     if resample_before:
@@ -18,6 +18,7 @@ def decompose_signal(signal, levels=(1,2,3,4,5), wavelet="db4", resample_before=
 
 
     coeff_names = ["_cA_%i" % (len(coeffs) -1 )]
+
     coeff_levels = [(len(coeffs) -1 )]
     for n in range(len(coeffs) -1, 0, -1):
         coeff_levels.append(n)
@@ -26,12 +27,15 @@ def decompose_signal(signal, levels=(1,2,3,4,5), wavelet="db4", resample_before=
 
     coeff_fs = tmp_signal.fs / 2.0 ** np.arange(max_level, 0,-1)
     coeff_fs = np.concatenate([[coeff_fs[0]],coeff_fs])
-
+    coeff_names = [signal.name + n for n in coeff_names]
     signals = []
     for l, fs, n, sig in zip(coeff_levels, coeff_fs, coeff_names, coeffs):
         if l in levels:
-            signals.append(Signal(sig,fs, name=n))
+            signals.append(signal._copy_attrs_to_array(sig, fs=fs, name=n))
     #trim channels that are too long
+    if not keep_a:
+        signals = signals[1:]
+
     min_duration = min([s.duration for s in signals])
     signals = [s[:min_duration] for s in signals]
 

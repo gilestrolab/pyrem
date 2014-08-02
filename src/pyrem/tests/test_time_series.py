@@ -146,3 +146,13 @@ class TestAnnotation(unittest.TestCase):
 
         self.assertTrue(compare_annots(a,b))
 
+    def test_copy(self):
+
+        file, path = tempfile.mkstemp(suffix=".pkl")
+
+        a = Annotation(self.vals,fs=10, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
+
+        b = a.copy()
+
+        self.assertTrue(compare_annots(a,b))
+

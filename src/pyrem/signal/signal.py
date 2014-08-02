@@ -122,12 +122,7 @@ class BiologicalTimeSeries(np.ndarray):
 
 
     def _copy_attrs_to_array(self, a, **kwargs):
-        dic = {"type":self.type,
-        "fs":self.fs,
-        "metadata":self.metadata,
-        "name":self.name}
-        dic =  dict(dic.items() + kwargs.items())
-        return self.__new__(type(self),a, **dic)
+        raise NotImplementedError
 
     def resample(self, new_fs):
         raise NotImplementedError
@@ -233,6 +228,14 @@ class Signal(BiologicalTimeSeries):
 
         return BiologicalTimeSeries.__new__(cls, data, fs, **kwargs)
 
+    def _copy_attrs_to_array(self, a, **kwargs):
+        dic = {"type":self.type,
+        "fs":self.fs,
+        "metadata":self.metadata,
+        "name":self.name}
+        dic =  dict(dic.items() + kwargs.items())
+        return self.__new__(type(self),a, **dic)
+
     def resample(self, target_fs, mode="sinc_best"):
         # num = target_fs * self.size / self.fs
         ratio = target_fs / self.fs
@@ -276,3 +279,12 @@ class Annotation(BiologicalTimeSeries):
     @property
     def probas(self):
         return self["probas"]
+
+    def _copy_attrs_to_array(self, a, **kwargs):
+        dic = {"type":self.type,
+        "fs":self.fs,
+        "metadata":self.metadata,
+        "name":self.name,
+        "observation_probabilities":self.probas}
+        dic =  dict(dic.items() + kwargs.items())
+        return self.__new__(type(self),a, **dic)

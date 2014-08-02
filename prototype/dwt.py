@@ -17,10 +17,10 @@ for i in pol2.signal_channels:
 i = sig
 print i.name, i.duration, i.fs
 
-pol2 = pol2.append_channel(sig)
+pol2 = pol2.merge(sig)
 # pol2.append_channel(pol["EMG_1"])
 # pol2.append_channel(pol["EMG_2"])
-pol2 = pol2.append_channel(pol["vigilance_state"])
+pol2 = pol2.merge(pol["vigilance_state"])
 
 print "Displaying..."
-PolygramDisplay(pol2)
+pol2.show()

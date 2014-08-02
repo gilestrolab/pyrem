@@ -12,6 +12,9 @@ CHANNEL_ID_MAP = [
                 "EMG_1",
                 "EMG_2"
                   ]
+
+CHANNELS_TYPES = ['eeg','eeg','emg','emg']
+
 INPUT_PATTERN = "/data/pyrem/Ellys/mats/*.mat"
 # INPUT_PATTERN = "/data/pyrem/Ellys/mats/GFP_F*.mat"
 OUT_DIR = "/data/pyrem/Ellys/pkls"
@@ -53,7 +56,9 @@ def save_one_pol(f):
 
         fs = DEFAULT_FS
     try:
-        pol = polygram_from_spike_matlab_file(f, fs, 1/5.0,CHANNEL_ID_MAP,DOUBT_CHARS, resample_signals=RESAMPLE_AT)
+        pol = polygram_from_spike_matlab_file(f, fs, 1/5.0,
+                                              CHANNEL_ID_MAP, CHANNELS_TYPES,
+                                              DOUBT_CHARS, resample_signals=RESAMPLE_AT)
 
 
 

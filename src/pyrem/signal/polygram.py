@@ -69,7 +69,7 @@ class Polygram(object):
         if isinstance( key, list):
             key = set(key)
         if isinstance( key, set):
-            return self.merge([self._channels[key] for k in key])
+            return Polygram([self.__getitem__(k) for k in key], metadata=self.metadata)
 
         if isinstance( key, slice ):
             return self._get_time_slice(key)
@@ -89,7 +89,15 @@ class Polygram(object):
             out = self.copy()
             for c in obj:
                 out = out.merge(c)
-                return out
+            return out
+        elif isinstance(obj, Polygram):
+            print obj
+            out = self.copy()
+            print "!!!!", out.duration, self.duration
+            for c in obj.channels:
+                out = out.merge(c)
+            return out
+
         channel  = obj
         if channel.duration <= self.duration or (not trim_channel):
             appended_channel = channel
@@ -172,8 +180,10 @@ class Polygram(object):
                 yield c
 
     def map_signal_channels(self, fun):
-        assert callable(fun)
+        if not callable(fun):
+            raise ValueError("fun must be a function!")
         out = self.copy()
+        out.show()
         for i, c in enumerate(out._channels):
             if isinstance(c,Signal):
                 out._channels[i] = fun(c)

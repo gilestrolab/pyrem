@@ -32,10 +32,8 @@ class TestPolygram(unittest.TestCase):
         # intolerable match raises a value error
         self.assertRaises(ValueError, lambda: Polygram([an[:10], c1[:1100]]))
 
-        # tolerable match
-        Polygram([an[:10], c1[:901]])
-        # intolerable match raises a value error
-        self.assertRaises(ValueError, lambda: Polygram([an[:10], c1[:900]]))
+        # channel with the minimum sampling rate is the reference all channels should have equal of longer durationq
+        self.assertRaises(ValueError, lambda: Polygram([an[:10], c1[:999]]))
 
         # channel with the same names (homonnymous) are forbidden !
         c2 = Signal(self.rw1, fs=100,type="eeg", name="bar", metadata={"animal":"joe", "treatment":18})
@@ -71,12 +69,12 @@ class TestPolygram(unittest.TestCase):
         pol2 = pol["1s":"2s"]
         # sig = pol2[1]
         #sig += 1
-        res = pol2[1]
+        res = pol2["foo"]
         ans = c1["1s":"2s"]
 
         self.assertTrue(np.allclose(res, ans))
 
-        self.assertTrue(pol2[1] is pol2["foo"])
+        self.assertTrue(pol2["foo"] is pol2["foo"])
         self.assertRaises(ValueError, lambda :pol2["DUMMY_NAME"])
 
 
@@ -86,12 +84,14 @@ class TestPolygram(unittest.TestCase):
 
         pol = Polygram([an, c1])
         pol2 = pol.copy()
-        sig = pol2[1]
+        sig = pol2["foo"]
+        print sig
         sig += 1
 
-        self.assertFalse(np.allclose(pol[1], sig ))
-        self.assertFalse(np.allclose(c1, pol2[1]))
-        self.assertTrue(c1 is pol[1])
+
+        self.assertFalse(np.allclose(pol["foo"], sig ))
+        self.assertFalse(np.allclose(c1, pol2["foo"]))
+        self.assertTrue(c1 is pol["foo"])
 
     def test_windowing(self):
         an = Annotation(self.vals,fs=.1, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
@@ -100,7 +100,7 @@ class TestPolygram(unittest.TestCase):
         pol = Polygram([an[:10], c1[:1001]])
 
         for c, p in  pol.iter_window(1,1):
-            self.assertEqual([c.size for c in p.channels],  [1,10])
+            self.assertEqual(dict([(c.name,c.size) for c in p.channels]),  {"bar":1, "foo": 10})
 
     def test_save_load(self):
 
