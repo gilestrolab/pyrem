@@ -137,7 +137,7 @@ class BiologicalTimeSeries(np.ndarray):
 
             metadata = "\n".join(["\t\t%s:\t%s" % (k, str(v)) for k,v in self.metadata.items()])
         else:
-            metadata = "None"
+            metadata = "\t\tNone"
 
         out = ["\n" + type(self).__name__ + "\n",
                "Name:\t%s" % (self.name),
@@ -145,7 +145,7 @@ class BiologicalTimeSeries(np.ndarray):
                "Sampling freq:\t%f Hz" % (self.fs),
                "Type:\t%s" % (self.type),
                "N points:\t%i" % (self.size),
-               "metadata:\n%s" % (metadata),
+               "Metadata:\n%s" % (metadata),
                ]
 
         return "\n".join(out)

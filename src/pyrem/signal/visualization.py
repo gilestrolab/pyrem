@@ -16,6 +16,8 @@ class PolygramDisplay(object):
 
         self.polygram = polygram
         self.max_point_amplitude_plot = max_point_amplitude_plot
+
+    def show(self):
         self.fig, self.axarr = pl.subplots(self.polygram.n_channels, sharex=True)
 
         self.fig.subplots_adjust(hspace=0)
@@ -23,8 +25,6 @@ class PolygramDisplay(object):
 
         self._redraw(None, init=True)
         self._redraw(None)
-        #ax2.plot(np.linspace(0,a.duration.total_seconds(),a.size),a)
-        #self.ax_update(ax2)
 
         pl.show()
 

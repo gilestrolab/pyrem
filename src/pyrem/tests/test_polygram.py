@@ -43,6 +43,25 @@ class TestPolygram(unittest.TestCase):
 
 
 
+    def test_merging(self):
+        an = Annotation(self.vals,fs=1, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
+        c1 = Signal(self.rw1, fs=100,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
+        c2 = Signal(self.rw1, fs=10,type="eeg", name="blah", metadata={"animal":"joe", "treatment":18})
+        c3 = Signal(self.rw1, fs=50,type="eeg", name="argh", metadata={"animal":"joe", "treatment":18})
+
+        pol = Polygram([an[:19], c1[:1999]])
+
+        pol2 = Polygram([c2[:199], c3[:999]])
+
+        pol.merge(pol2)
+        pol.merge(c3)
+        self.assertRaises(ValueError, lambda : pol.merge(c1))
+
+
+
+
+
+
     def test_slicing(self):
         an = Annotation(self.vals,fs=1, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
         c1 = Signal(self.rw1, fs=100,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
@@ -104,3 +123,8 @@ class TestPolygram(unittest.TestCase):
         self.assertEqual(repr(pol[0]), repr(b[0]))
         self.assertEqual(repr(pol[1]), repr(b[1]))
         #self.assertTrue(compare_annots(a,b))
+    def test_dummy(self):
+        an = Annotation(self.vals,fs=.1, observation_probabilities=self.probs, type="vigilance_state", name="bar", metadata={"animal":"joe", "treatment":18})
+        c1 = Signal(self.rw1, fs=10,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})
+
+        print Polygram([an[:10], c1[:1001]])

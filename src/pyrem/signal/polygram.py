@@ -4,8 +4,9 @@ __author__ = 'quentin'
 
 import numpy as np
 import joblib as pkl
+import pandas as pd
 from pyrem.signal.signal import Signal, Annotation
-
+from visualization import PolygramDisplay
 
 
 class Polygram(object):
@@ -43,7 +44,6 @@ class Polygram(object):
         longest_period = 1.0 / smallest_fs
 
         if delta.total_seconds() >= longest_period:
-            print "boom!", duration, fs
             return False
 
         return True
@@ -65,6 +65,12 @@ class Polygram(object):
 
 
     def __getitem__( self, key ) :
+
+        if isinstance( key, list):
+            key = set(key)
+        if isinstance( key, set):
+            return self.merge([self._channels[key] for k in key])
+
         if isinstance( key, slice ):
             return self._get_time_slice(key)
         elif isinstance( key, int):
@@ -78,14 +84,18 @@ class Polygram(object):
         else:
             print key
             raise NotImplementedError
-    def append_channel(self, channel, trim_channel=True):
+    def merge(self, obj, trim_channel=True):
+        if isinstance(obj, list):
+            out = self.copy()
+            for c in obj:
+                out = out.merge(c)
+                return out
+        channel  = obj
         if channel.duration <= self.duration or (not trim_channel):
             appended_channel = channel
         else:
-
             appended_channel = channel[:self.duration]
-            print channel.name, channel.duration
-            print appended_channel.name, appended_channel.duration
+
         new_channels = self._channels + [appended_channel]
 
         return Polygram(new_channels, self.metadata)
@@ -114,6 +124,35 @@ class Polygram(object):
             yield center, Polygram([c[start:stop] for c in self.channels], self.metadata)
             start += lag_td
 
+
+    def __repr__(self):
+        if self.metadata:
+            metadata = "\n".join(["\t\t%s:\t%s" % (k, str(v)) for k,v in self.metadata.items()])
+        else:
+            metadata = "\t\tNone"
+
+
+        out = ["\n" + type(self).__name__ + "\n",
+               "Duration:\t%s (HH:mm:ss)" % (str(self.duration)),
+               "N signals:\t%i" % (self.n_signals),
+               "N annotations:\t%i" % (self.n_annotations),
+               "Metadata:\n%s" % (metadata),
+               ]
+
+        headers = ["Name", "Type", "fs(Hz)", "Duration"]
+        detail = []
+        for c in self.channels:
+            row = [c.name, c.type, c.fs, c.duration]
+            row = [str(r) for r in row]
+            detail.append(row)
+
+        detail = str(pd.DataFrame(detail, columns=headers, index=[i for i in range(len(detail))]))
+
+        out = "\n".join(out)
+        out = out + "\n\nChannel informations:\n" + detail
+        return out
+    def show(self):
+        PolygramDisplay(self).show()
 
     @property
     def channels(self):
@@ -144,6 +183,14 @@ class Polygram(object):
     @property
     def n_channels(self):
         return len(self._channels)
+
+    @property
+    def n_signals(self):
+        return len([_ for _ in self.signal_channels])
+
+    @property
+    def n_annotations(self):
+        return len([_ for _ in self.annotation_channels])
 
     @property
     def metadata(self):
