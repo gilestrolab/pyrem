@@ -41,6 +41,7 @@ def save_one_pol(f):
 
     basename = os.path.basename(f).split(".")[0]
     if basename in EXCLUDED:
+        print "excluding", basename
         return
 
     new_file_name = basename + ".pkl"

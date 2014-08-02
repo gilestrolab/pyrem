@@ -135,8 +135,8 @@ class EntropyFeatures(SignalFeatureBase):
         #out["apent"] = ap_entropy(data, 2,5000)
         for scale in [2,3,4]:
             #for r in [1, 2, 3]:
-            for r in [.2]:
-                out["sample_%i_%i" % (scale, np.round(r, 3))] = samp_entropy(channel, scale, r)
+            for r in [.5, 1.0]:
+                out["sample_%i_%s" % (scale, str(np.round(r, 3)))] = samp_entropy(channel, scale, r)
 
 
 

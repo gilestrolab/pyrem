@@ -18,7 +18,7 @@ DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/*.pkl"
 
 OUT_CSV = "/data/pyrem/Ellys/all_features.csv"
 WINDOW_SIZE = 6
-WINDOW_LAG = 100
+WINDOW_LAG = 1
 
 N_PROCESSES = 6
 

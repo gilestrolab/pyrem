@@ -1,54 +1,66 @@
+rm(list=ls())
+DBG = 1
+printdbg <- function(){
+    print(DBG)
+    assign("DBG", DBG+1, envir = .GlobalEnv)
+    
+}
+
 library("randomForest")
 
 
 OUT_CSV = "/data/pyrem/Ellys/all_features.csv"
 
 curate_df <- function(dfo){
-	df <- dfo
-	# remove erroneous kurtosis
-	#df <- subset(df, power_kurtosis != Inf)
+    df <- dfo
+    # remove erroneous kurtosis
+    #df <- subset(df, power_kurtosis != Inf)
+    #df <- subset(df, power_kurtosis != Inf)
 
-	# remove ambiguous vigilance states
-	df <- subset( df, vigilance_state.vigil.proba == 1)
+    # remove ambiguous vigilance states
+    df <- subset( df, vigilance_state.vigil.proba == 1)
 
-	df$vigilance_state.vigil.proba <- NULL
-	df$t <- df$X
-	df$X <- NULL
-	#df$animal <- sprintf("%s_%s", df$treatment, df$animal)
-	#df <- subset(df, animal != "GFP_2" & animal != "GFP_3" & animal != "TelC_2")
-	#df$animal  <- as.factor(df$animal)
+    df$vigilance_state.vigil.proba <- NULL
+    df$t <- df$X
+    df$X <- NULL
+    df$animal <- sprintf("%s_%s", df$treatment, df$animal)
+    df <- subset(df, animal != "TelC_E")
+    df$animal  <- as.factor(df$animal)
 
-	df$y <- as.factor(df[,"vigilance_state.vigil.value"])
-	df$vigilance_state.vigil.value <- NULL
-
-	return(df)
+    df$y <- as.factor(df[,"vigilance_state.vigil.value"])
+    df$vigilance_state.vigil.value <- NULL
+    s = sapply(df, function(col)sum(is.na(col)))
+    df <- df[,s ==0]
+    return(df)
 }
 
 ########################################################
 
-dfo <- read.csv(FILENAME , na.string="NaN")
+dfo <- read.csv(OUT_CSV , na.string="NaN")
 df <- curate_df(dfo)
 
-print(df)
 
 
 crossval_test <- function(out_level, original_df){
+        printdbg()
         train_df <- subset(original_df, animal !=out_level)
         test_df <- subset(original_df, animal ==out_level)
         train_df$animal <- NULL
         test_df$animal <- NULL
+        printdbg()
         rf <- randomForest(y ~ ., train_df, ntree=50)
+        printdbg()
         print(rf)
         varImpPlot(rf)
         preds <- predict(rf, test_df)
 
-        out <- data.frame(real = test_df$vigil_value, preds = preds)
-        out <- sum(test_df$vigil_value == preds) / length(preds)
+        #out <- data.frame(real = test_df$y, preds = preds)
+        out <- sum(test_df$y == preds) / length(preds)
         return(out)
 }
 
 l = sapply(levels(df$animal), crossval_test, original_df=df)
-
+print(l)
 exit()
 ############################################################################
 #~
