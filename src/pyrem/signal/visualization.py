@@ -178,3 +178,5 @@ class PolygramDisplay(object):
 
         ax.set_xticks(xs_trimmed)
         ax.set_xticklabels(time_strings, rotation=70)
+
+        return

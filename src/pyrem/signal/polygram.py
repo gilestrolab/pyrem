@@ -11,7 +11,14 @@ from pyrem.signal.signal import Signal, Annotation
 class Polygram(object):
 
     def __init__(self, channels, metadata=None):
-        self._channels = channels
+
+        annotations_channels = [c for c in channels if isinstance(c, Annotation)]
+        signal_channels = [c for c in channels if isinstance(c, Signal)]
+
+        annotations_channels = sorted(annotations_channels, key= lambda x: x.name)
+        signal_channels = sorted(signal_channels, key= lambda x: x.name)
+
+        self._channels = signal_channels + annotations_channels
         self._metadata= metadata
 
         durations = [c.duration for c in self.channels]
@@ -22,12 +29,13 @@ class Polygram(object):
         for c in self.channels:
             if not self._test_duration( max_duration, fs_max_duration, c.duration, c.fs):
                 raise ValueError("Channels must have approximately the same length."
-                                 "\nThe durations of the input channels are:\n%s", (str([str(c.duration) for c in channels ])))
+                                 "\nThe durations of the input channels are:\n%s", (str([str(c.duration) for c in self.channels ])))
 
         duplicate_names  = set([x for x in self.channel_names if self.channel_names.count(x) > 1])
         if len(duplicate_names) > 0:
             raise ValueError("Channels CANNOT have the same name. Duplicated names:\n %s"
                              % (str("\n".join(duplicate_names))))
+
 
     def _test_duration(self, max_duration, fs_max_duration, duration, fs):
         delta = max_duration - duration
@@ -35,6 +43,7 @@ class Polygram(object):
         longest_period = 1.0 / smallest_fs
 
         if delta.total_seconds() >= longest_period:
+            print "boom!", duration, fs
             return False
 
         return True
@@ -69,6 +78,18 @@ class Polygram(object):
         else:
             print key
             raise NotImplementedError
+    def append_channel(self, channel, trim_channel=True):
+        if channel.duration <= self.duration or (not trim_channel):
+            appended_channel = channel
+        else:
+
+            appended_channel = channel[:self.duration]
+            print channel.name, channel.duration
+            print appended_channel.name, appended_channel.duration
+        new_channels = self._channels + [appended_channel]
+
+        return Polygram(new_channels, self.metadata)
+
 
     def iter_window(self, length, lag):
     #     """
@@ -135,3 +156,6 @@ class Polygram(object):
     @property
     def channel_types(self):
         return [c.type for c in self.channels]
+    @property
+    def duration(self):
+        return max([c.duration for c in self.channels])

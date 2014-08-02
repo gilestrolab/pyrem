@@ -11,10 +11,16 @@ sig = pol["EEG_parietal_frontal"]
 
 print "applying ressampling + DWTD..."
 pol2 = decompose_signal(sig,levels=[3,4,5])
-pol2.channels.append(sig)
-pol2.channels.append(pol["EMG_1"])
-pol2.channels.append(pol["EMG_2"])
-pol2.channels.append(pol["vigilance_state"])
+for i in pol2.signal_channels:
+    print i.name, i.duration, i.fs
+
+i = sig
+print i.name, i.duration, i.fs
+
+pol2 = pol2.append_channel(sig)
+# pol2.append_channel(pol["EMG_1"])
+# pol2.append_channel(pol["EMG_2"])
+pol2 = pol2.append_channel(pol["vigilance_state"])
 
 print "Displaying..."
 PolygramDisplay(pol2)

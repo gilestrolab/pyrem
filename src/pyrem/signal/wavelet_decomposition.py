@@ -5,7 +5,7 @@ import numpy as np
 from pyrem.signal.signal import Signal
 from pyrem.signal.polygram import Polygram
 
-def decompose_signal(signal, levels=(1,2,3,4,5), wavelet="db4", resample_before=None):
+def decompose_signal(signal, levels=(1,2,3,4,5), wavelet="db4", resample_before=None, mode="per"):
     max_level = max(levels)
 
     if resample_before:
@@ -13,7 +13,8 @@ def decompose_signal(signal, levels=(1,2,3,4,5), wavelet="db4", resample_before=
     else:
         tmp_signal = signal
 
-    coeffs = pywt.wavedec(tmp_signal, wavelet, level=max_level)
+    # this is where the magic happens
+    coeffs = pywt.wavedec(tmp_signal, wavelet, level=max_level, mode=mode)
 
 
     coeff_names = ["_cA_%i" % (len(coeffs) -1 )]
