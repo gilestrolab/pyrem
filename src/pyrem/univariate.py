@@ -3,8 +3,8 @@ r"""
 Features for univariate time series
 ====
 
-This sub module provides routines for computing features on univariate time series.
-Many functions are improved version of functions present in PyEEG [PYEEG]_.
+This sub-module provides routines for computing features on univariate time series.
+Many functions are improved version of PyEEG [PYEEG]_ functions.
 
 
 .. [PET95]  A. Petrosian, Kolmogorov complexity of finite sequences and recognition of different preictal EEG patterns, in ,
@@ -135,7 +135,7 @@ def pfd(a):
 
     return np.log(n)/(np.log(n)+np.log(n/(n+0.4*N_delta)))
 
-def hjorth(X):
+def hjorth(a):
     r"""
     Compute Hjorth parameters [HJO70]_.
 
@@ -160,16 +160,16 @@ def hjorth(X):
 
 
 
-    :param a: a one dimensional array representing a time series
-    :type a: np.ndarray
+    :param a: a one dimensional floating-point array representing a time series.
+    :type a: np.ndarray or  :class:`~pyrem.time_series.signal`
     :return: activity, complexity and morbidity
     :rtype: tuple(float, float, float)
     """
 
-    first_deriv = np.diff(X)
-    second_deriv = np.diff(X,2)
+    first_deriv = np.diff(a)
+    second_deriv = np.diff(a,2)
 
-    var_zero = np.mean(X ** 2)
+    var_zero = np.mean(a ** 2)
     var_d1 = np.mean(first_deriv ** 2)
     var_d2 = np.mean(second_deriv ** 2)
 

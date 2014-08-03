@@ -1,14 +1,14 @@
 __author__ = 'quentin'
 
-
-
 import datetime
+
 import numpy as np
 import joblib as pkl
-from scipy import signal
 import pandas as pd
-from pyrem.signal.utils import str_to_time
 from scikits.samplerate import resample
+
+from pyrem.utils import str_to_time
+
 
 SIGNALY_DPI = 328
 SIGNAL_FIGSIZE = (30, 5)

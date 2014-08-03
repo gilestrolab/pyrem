@@ -1,4 +1,4 @@
-from pyrem.signal.polygram import Polygram
+from pyrem.polygram import Polygram
 
 __author__ = 'quentin'
 
@@ -10,7 +10,7 @@ import scipy.io as scio
 # from scipy.interpolate import interp1d
 import pandas as pd
 import numpy as np
-from pyrem.signal.signal import Signal, Annotation
+from pyrem.time_series import Signal, Annotation
 import  joblib
 
 def polygram_from_pkl(filename):

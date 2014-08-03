@@ -1,13 +1,14 @@
 __author__ = 'quentin'
 
-
 import glob
+
 from sklearn.externals import joblib as pkl
 from sklearn.preprocessing import LabelEncoder
-from pyrem.features.feature_families import *
-
-from pyrem.signal.polygraph import polygraph_from_pkl
 from sklearn.ensemble import RandomForestClassifier
+
+from pyrem.feature_families import *
+# from pyrem.polygraph import polygraph_from_pkl
+
 
 class EEGsvEMG(object):
     __FEATURE_GROUPS = [

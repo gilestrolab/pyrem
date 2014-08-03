@@ -1,11 +1,11 @@
 __author__ = 'quentin'
 
 import unittest
-from pyrem.signal.polygram import *
-from pyrem.signal.signal import *
-import numpy as np
 import os
 import tempfile
+
+from pyrem.polygram import *
+from pyrem.time_series import *
 
 
 class TestPolygram(unittest.TestCase):

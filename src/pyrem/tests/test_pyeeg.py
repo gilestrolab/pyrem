@@ -1,13 +1,12 @@
-from prototype import pyeeg
+
+
 
 __author__ = 'quentin'
 
-
+from pyrem import univariate
 import unittest
-
-from pyrem.features import univariate
 import numpy as np
-
+#from prototype import pyeeg
 
 
 class TestFeatures(unittest.TestCase):

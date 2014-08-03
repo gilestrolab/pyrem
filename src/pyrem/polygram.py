@@ -5,8 +5,8 @@ __author__ = 'quentin'
 import numpy as np
 import joblib as pkl
 import pandas as pd
-from pyrem.signal.signal import Signal, Annotation
-from visualization import PolygramDisplay
+from pyrem.time_series import Signal, Annotation
+from pyrem.visualization import PolygramDisplay
 
 
 class Polygram(object):

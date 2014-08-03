@@ -6,15 +6,11 @@ Feature factory computes features for arbitrary feature families and group them 
 
 __author__ = 'quentin'
 
-
 import pandas as pd
-from univariate import *
 import scipy.stats as stats
-import numpy as np
-from pyrem.signal.signal import Signal,Annotation
 
-
-
+from pyrem.univariate import *
+from pyrem.time_series import Signal,Annotation
 
 
 class FeatureFamilyBase(object):

@@ -2,8 +2,9 @@ __author__ = 'quentin'
 
 import pywt
 import numpy as np
-from pyrem.signal.signal import Signal
-from pyrem.signal.polygram import Polygram
+
+from pyrem.polygram import Polygram
+
 
 def decompose_signal(signal, levels=(1,2,3,4,5), wavelet="db4", resample_before=None, mode="per", keep_a=True):
     max_level = max(levels)

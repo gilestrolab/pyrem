@@ -1,14 +1,13 @@
 __author__ = 'quentin'
 from datetime import timedelta
-from scipy import stats
 
 from scipy.ndimage.interpolation import zoom
 import numpy as np
 import pylab as pl
-from pyrem.signal.signal import Signal, Annotation
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
-import matplotlib as plt
+
+from pyrem.time_series import Signal, Annotation
 
 
 class PolygramDisplay(object):

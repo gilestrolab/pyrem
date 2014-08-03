@@ -1,10 +1,12 @@
 __author__ = 'quentin'
 
 import unittest
-from pyrem.signal.signal  import *
-import numpy as np
 import os
 import tempfile
+
+import numpy as np
+
+from pyrem.time_series import *
 
 
 def compare_signals(a,b, test_values=True):
