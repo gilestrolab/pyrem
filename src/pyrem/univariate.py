@@ -1,6 +1,6 @@
 r"""
 ====
-Features for univariate time series
+Feature computation for univariate time series
 ====
 
 This sub-module provides routines for computing features on univariate time series.
@@ -18,9 +18,9 @@ Many functions are improved version of PyEEG [PYEEG]_ functions.
 
 """
 
-
 __author__ = 'quentin'
 import numpy as np
+
 
 def _embed_seq(X,tau,de):
 
@@ -40,7 +40,7 @@ def _embed_seq(X,tau,de):
 
     return Y.T
 
-def _make_cmp(X, M, R, in_range_i, in_range_j, ap_ent=True):
+def _make_cmp(X, M, R, in_range_i, in_range_j):
      #Then we make Cmp
     N = len(X)
 
@@ -50,17 +50,13 @@ def _make_cmp(X, M, R, in_range_i, in_range_j, ap_ent=True):
     in_range_cmp_i = in_range_i[inrange_cmp]
 
 
-    if not ap_ent:
-        Cmp = np.bincount(in_range_cmp_i, minlength=N-M-1)
-        return Cmp.astype(np.float)
-    else:
-        Cmp = np.bincount(in_range_cmp_i, minlength=N-M)
-        in_range_cmp_j = in_range_j[inrange_cmp]
-        Cmp += np.bincount(in_range_cmp_j, minlength=N-M)
+    Cmp = np.bincount(in_range_cmp_i, minlength=N-M)
+    in_range_cmp_j = in_range_j[inrange_cmp]
+    Cmp += np.bincount(in_range_cmp_j, minlength=N-M)
 
-        return Cmp.astype(np.float)
+    return Cmp.astype(np.float)
 
-def _make_cm(X,M,R,ap_ent=True):
+def _make_cm(X,M,R):
     N = len(X)
 
     # we pregenerate all indices
@@ -80,31 +76,25 @@ def _make_cm(X,M,R,ap_ent=True):
     in_range_i = i_idx[inrange_cm]
     in_range_j = j_idx[inrange_cm]
 
-    if not ap_ent:
-        Cm = np.bincount(in_range_i, minlength=N-M-1)
 
-        return Cm.astype(np.float), in_range_i, in_range_j
-    else:
-        Cm = np.bincount(in_range_i, minlength=N-M+1)
-        Cm += np.bincount(in_range_j, minlength=N-M+1)
+    Cm = np.bincount(in_range_i, minlength=N-M+1)
+    Cm += np.bincount(in_range_j, minlength=N-M+1)
 
-        inrange_last = np.max(np.abs(Em[:-1] - Em[-1]),1) <= R
-        Cm[inrange_last] += 1
-        # all matches + self match
-        Cm[-1] += np.sum(inrange_last) + 1
+    inrange_last = np.max(np.abs(Em[:-1] - Em[-1]),1) <= R
+    Cm[inrange_last] += 1
+    # all matches + self match
+    Cm[-1] += np.sum(inrange_last) + 1
 
-        return Cm.astype(np.float), in_range_i, in_range_j
+    return Cm.astype(np.float), in_range_i, in_range_j
 
 
-
-def in_range(Template, Scroll, Distance):
-    for i in range(0,  len(Template)):
-            if abs(Template[i] - Scroll[i]) > Distance:
-                 return False
-    return True
 def pfd(a):
     r"""
     Compute Petrosian Fractal Dimension of a time series [PET95]_.
+
+    .. note::
+
+        Results is different from [PyEEG]_ which appeared to had implemented an erroneous formulae
 
     It is defined by:
 
@@ -120,11 +110,12 @@ def pfd(a):
     :math:`N_{\delta}` is the number of sign changes.
 
 
-    :param a: a one dimensional array representing a time series
-    :type a: np.ndarray
+    :param a: a one dimensional floating-point array representing a time series.
+    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
     :return: the Petrosian Fractal Dimension; a scalar.
     :rtype: float
     """
+
     diff = np.diff(a)
     # x[i] * x[i-1] for i in t0 -> tmax
     prod = diff[1:-1] * diff[0:-2]
@@ -161,7 +152,7 @@ def hjorth(a):
 
 
     :param a: a one dimensional floating-point array representing a time series.
-    :type a: np.ndarray or  :class:`~pyrem.time_series.signal`
+    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
     :return: activity, complexity and morbidity
     :rtype: tuple(float, float, float)
     """
@@ -172,7 +163,6 @@ def hjorth(a):
     var_zero = np.mean(a ** 2)
     var_d1 = np.mean(first_deriv ** 2)
     var_d2 = np.mean(second_deriv ** 2)
-
 
     activity = var_zero
     morbidity = np.sqrt(var_d1 / var_zero)
@@ -186,8 +176,8 @@ def svd_entropy(a, tau, de):
     The result differs from PyEEG implementation because :math:`log_2` is used, according to the definition in the paper.
 
 
-    :param a: a one dimensional array representing a time series
-    :type a: np.ndarray
+    :param a: a one dimensional floating-point array representing a time series.
+    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
     :param tau: the delay
     :type tau: int
     :param de: the embedding dimension
@@ -204,10 +194,10 @@ def svd_entropy(a, tau, de):
 def fisher_info(a, tau, de):
     r"""
     Compute the Fisher information of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
-    Vectorised version of the PyEEG function.
+    Vectorised (i.e. faster) version of the eponymous PyEEG function.
 
-    :param a: a one dimensional array representing a time series
-    :type a: np.ndarray
+    :param a: a one dimensional floating-point array representing a time series.
+    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
     :param tau: the delay
     :type tau: int
     :param de: the embedding dimension
@@ -228,8 +218,8 @@ def ap_entropy(a, m, R):
     Compute the approximate entropy of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
     Vectorised version of the PyEEG function. Faster than PyEEG, but still critically slow.
 
-    :param a: a one dimensional array representing a time series
-    :type a: np.ndarray
+    :param a: a one dimensional floating-point array representing a time series.
+    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
     :param m: the scale
     :type m: int
     :param R: The tolerance
@@ -263,15 +253,21 @@ def _coarse_grainning(a, tau):
 def samp_entropy(a, m, r, tau=1, relative_r=True):
     r"""
     Compute the sample entropy of a signal with embedding dimension `de` and delay `tau` [PYEEG]_.
-    Vectorised version of the PyEEG function. Faster than PyEEG, but still critically slow.
+    Vectorised version of the eponymous PyEEG function.
+    This function can also be used to vary tau and therefore compute MultiScale Entropy [MSE]_ by coarse grainning the time series.
+    By default, r is expressed as relatively to the standard deviation of the signal.
 
 
-    :param a: a one dimensional array representing a time series
-    :type a: np.ndarray
+    :param a: a one dimensional floating-point array representing a time series.
+    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
     :param m: the scale
     :type m: int
-    :param R: The tolerance
-    :type R: float`
+    :param r: The tolerance
+    :type r: float
+    :param tau: The scale for coarse grainning.
+    :type tau: int
+    :param relative_r: whether the argument r is relative to the standard deviation. If false, an absolute value should be given for r.
+    :type relative_r: true
     :return: the approximate entropy, a scalar
     :rtype: float
     """
@@ -283,8 +279,6 @@ def samp_entropy(a, m, r, tau=1, relative_r=True):
     embsp = _embed_seq(coarse_a, 1 , m + 1)
     embsp_last = embsp[:,-1]
     embs_mini = embsp[:, :-1]
-
-
 
 
     # Buffers are preallocated chunks of memory storing temporary results.
@@ -352,8 +346,8 @@ def spectral_entropy(a, sampling_freq, bands=None):
 
     :math:`f_s` is the sampling frequency
 
-    :param a: a one dimensional array representing a time series
-    :type a: np.ndarray
+    :param a: a one dimensional floating-point array representing a time series.
+    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
     :param sampling_freq: the sampling frequency
     :type sampling_freq:  float
     :param bands: a list of numbers delimiting the bins of the frequency bands. If None the entropy is computed over the whole range of the DFT (from 0 to :math:`f_s/2`)
@@ -440,43 +434,6 @@ def hurst(signal):
     return hurst
 
 
-
-# def hfd_new(X, Kmax):
-#     """ Compute Higuchi Fractal Dimension of a time series X, kmax
-#      is an HFD parameter
-#     """
-#     L = []
-#     x = []
-#     N = len(X)
-#     for k in range(1,Kmax):
-#         Lk = []
-#         for m in range(k):
-#             max = int((N-m)/k)
-#
-#             diffs = X[m+k:len(X)-k+1:k]
-#             #print np.sum(np.abs(diffs))
-#             # print len(ar[m: :k])
-#
-#
-#             print k,m,len(diffs)
-#
-#             Lmk = np.sum(np.abs(diffs))*(N - 1)/np.floor((N - m) / float(k)) / k
-#             #print k,m, np.sum(np.abs(diffs)) / float(len(diffs))
-#             Lk.append(Lmk)
-#
-#
-#
-#         L.append(np.log(np.mean(Lk)))
-#         x.append([np.log(float(1) / k), 1])
-#
-#     # print L,x
-#     (p, r1, r2, s)=np.linalg.lstsq(x, L)
-#     return p[0]
-#
-#
-
-
-
 def hfd(X, Kmax):
     """ Compute Higuchi Fractal Dimension of a time series X, kmax
      is an HFD parameter
@@ -504,30 +461,6 @@ def hfd(X, Kmax):
         x.append([np.log(float(1) / k), 1])
     (p, r1, r2, s)=np.linalg.lstsq(x, L)
     return p[0]
-
-#
-# ar = np.arange(100)
-# hfd(ar, 10)
-# print "==================="
-# hfd_new(ar, 10)
-
-# def hfd_exple(pow=10):
-#     start = 1000
-#     N = np.int64(2 **pow)
-#     i=start
-#     out = np.zeros((N))
-#     while i < N + start:
-#         out[i-start] = np.sum(np.random.normal(0,1,i))
-#         i += 1
-#     return out
-#
-# a = hfd_exple(15)
-
-
-# hfd(a, 4)
-
-
-
 
 
 

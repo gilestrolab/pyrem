@@ -6,7 +6,6 @@ setup(
     author='Quentin Geissmann',
     author_email= 'quentin.geissmann13@imperial.ac.uk',
     packages=['pyrem',
-              'pyrem.signal',
               ],
     url="https://github.com/gilestrolab/pyrem",
     license="GPL3",

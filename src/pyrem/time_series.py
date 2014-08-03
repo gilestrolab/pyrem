@@ -1,7 +1,36 @@
+r"""
+====
+Biological time series
+====
+
+
+This module provides data structure for two types of time series: :class:`~pyrem.time_series.Signal` and :class:`~pyrem.time_series.Annotation`.
+
+Both structures extend :class:`~numpy.ndarray` by providing attributes, such as sampling frequency, metadata, name.
+More importantly, time series provide specific features such as indexing with time strings.
+
+
+>>> import pyrem as pr
+>>> import numpy as np
+>>> # generate white noise:
+>>> noise = np.random.normal(size=int(1e6))
+>>> # a million point sampled at 256 Hz
+>>> sig = pr.time_series.Signal(noise, 256.0, type="noise", name="channel_1", metadata={"patient": "John_Doe"})
+>>> sig
+>>> # indexing with "XhXmSs" strings:
+>>> sig[:"1m3s"]
+>>> #resample at 100 Hz
+>>> sig_short =  sig.resample(100.0)
+>>> sig_short
+>>> # sig is just a numpy array so we can do:
+>>> sig_norm = sig - np.mean(sig)
+>>> # or things like:
+>>> np.diff(sig)
+
+"""
 __author__ = 'quentin'
 
 import datetime
-
 import numpy as np
 import joblib as pkl
 import pandas as pd
@@ -32,6 +61,24 @@ def signal_from_pkl(filename):
 
 
 class BiologicalTimeSeries(np.ndarray):
+    """
+    An abstract class for time series.
+    """
+    #dummy init for doc and editor
+    def __init__(self, data, fs, type=None, name=None, metadata=None):
+        """
+        :param data: an one-d array like structure (typically, a :`~numpy.ndarray`)
+        :param fs: the sampling frequency
+        :type fs: float
+        :param type: the type of time series (e.g. "eeg", "temperature", "blood_pH")
+        :type type: str
+        :param name: a unique name to identify a time series contained in a :class:`~pyrem.polygram.Polygram`
+        :type name: str
+        :param metadata:    a dictionary of additional information (e.g. experimental variables)
+        :type metadata: dict
+        """
+
+        pass
     def __new__(cls, data, fs, type=None, name=None, metadata=None):
 
         obj = np.array(data).view(cls)
@@ -85,22 +132,48 @@ class BiologicalTimeSeries(np.ndarray):
 
     @property
     def fs(self):
+        """
+        :return: the sampling frequency of the time series
+        :rtype: float
+        """
         return self.__fs
 
     @property
     def type(self):
+        """
+        :return: the user-defined type of time series (e.g. "eeg" or "ecg")
+        :rtype: str
+        """
         return self.__type
 
 
     @property
     def metadata(self):
+        """
+        :return: a dictionnary of metadata (i.e. information about data acquisition)
+        :rtype: dict
+        """
         return self.__metadata
 
     def rename(self, name):
+        """
+        Rename the signal
+
+        :param name: the new name
+        :type name: str
+
+        """
         self.__name =  name
 
     @property
     def name(self):
+        """
+        The name of the signal. It is expected to be unique.
+
+        :return: the user-defined name for this signal
+        :rtype: str
+        """
+
         return self.__name
 
     @property
@@ -125,6 +198,18 @@ class BiologicalTimeSeries(np.ndarray):
         raise NotImplementedError
 
     def resample(self, new_fs):
+        """
+        Abstract method for resampling a time series (behaves differently according to the type of time series)
+
+        .. note::
+
+            Because time series are digital (i.e. discrete) the resulting sampling rate is expected to be
+            slightly different from the target sampling rate.
+
+        :param new_fs: the target time series
+        :type new_fs: float
+        :return: a new :class:`~pyrem.time_series.BiologicalTimeSeries`
+        """
         raise NotImplementedError
 
     def __repr__(self):
@@ -189,12 +274,14 @@ class BiologicalTimeSeries(np.ndarray):
 
     def iter_window(self, length, lag):
         """
-        Iterate through an array by successive overlapping slices.
-        Also returns the center of the slice
+        Iterate through an array by successive (possibly overlapping) slices (i.e. epochs).
+        Conveniently, the central time ot the epoch is also returned.
 
-        :param lag: the ratio of overlap (1= no overlap, 0= completely overlapped)
-        :param length:of the epoch (in second)
-        :return: (centre_of_window, sub_signal)
+        :param lag: the ratio of overlap (1 = no overlap, 0 = completely overlapped, 2 = skip every other epoch)
+        :type lag: float
+        :param length: duration of the epochs (in second)
+        :type length: float
+        :return: (centre_of_window, :class:`~pyrem.time_series.BiologicalTimeSeries`)
         """
         if lag<=0:
             raise Exception("lag has to be  greater than one")
@@ -247,8 +334,20 @@ class Signal(BiologicalTimeSeries):
 
 
 class Annotation(BiologicalTimeSeries):
+
     # dummy for doc and pycharm
     def __init__(self,data, fs, observation_probabilities=None, **kwargs):
+        """
+        :param data: a vector representing different states.
+        It should be a uint8 one-d array like structure (typically, a :`~numpy.ndarray`)
+        :param fs: the sampling frequency
+        :param observation_probabilities: an array of confidence/ probability of observation of the states.
+            it should be a one-d array-like of floats of length `len(data)`.
+            If `None`, confidence are assumed to be equal to one for all observations.
+
+        :type fs: float
+        :param kwargs: key word arguments to be passed to `~pyrem.time_series.BiologicalTimeSeries`
+        """
         pass
     def __new__(cls,data, fs, observation_probabilities=None, **kwargs):
         try:
