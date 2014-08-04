@@ -60,12 +60,9 @@ def _make_cm(X,M,R):
     N = len(X)
 
     # we pregenerate all indices
-    if ap_ent:
-        i_idx,j_idx  = np.triu_indices(N - M)
-    else:
-        i_idx,j_idx  = np.triu_indices(N - M, k=1)
-    #i_idx,j_idx = i_idx.astype(np.uint16), j_idx.astype(np.uint16)
-
+    
+    i_idx,j_idx  = np.triu_indices(N - M)
+    
     # We start by making Cm
     Em = _embed_seq(X, 1, M)
     dif =  np.abs(Em[i_idx] - Em[j_idx])
@@ -241,6 +238,11 @@ def ap_entropy(a, m, R):
     return Ap_En
 
 def _coarse_grainning(a, tau):
+    """	
+    Coarse grainning for multiscale (sample) entropy.
+
+    """
+    
     if tau ==1:
         return a
     length_out = a.size / tau
@@ -385,7 +387,7 @@ def dfa(X, Ave = None, L = None, sampling= 1):
         max_power = np.int(np.log2(len(X)))-4
         L = X.size / 2 ** np.arange(4,max_power)
     if len(L)<2:
-        raise Exception("Two few values for L. Time series too short?")
+        raise Exception("Too few values for L. Time series too short?")
     F = np.zeros(len(L)) # F(n) of different given box length n
 
     for i,n in enumerate(L):
