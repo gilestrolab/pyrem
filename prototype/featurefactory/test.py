@@ -2,10 +2,10 @@ import glob
 import os
 import pandas as pd
 
-from pyrem.features.feature_families import *
-from pyrem.signal.wavelet_decomposition import decompose_signal
+from pyrem.feature_families import *
+from pyrem.wavelet_decomposition import decompose_signal
+from pyrem.io import polygram_from_pkl
 
-import pyrem as pr
 from multiprocessing import Pool
 import numpy as np
 
@@ -17,7 +17,7 @@ DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/*.pkl"
 # DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/A*.pkl"
 
 OUT_CSV = "/data/pyrem/Ellys/all_features.csv"
-WINDOW_SIZE = 6
+WINDOW_SIZE = 20
 WINDOW_LAG = 1
 
 N_PROCESSES = 6
@@ -28,7 +28,7 @@ N_PROCESSES = 6
 def features_one_file(f):
     file_name = os.path.basename(f).split(".")[0]
     treatment, animal = file_name.split("_")
-    pol = pr.polygram_from_pkl(f)
+    pol = polygram_from_pkl(f)
 
     eegs = decompose_signal(pol["EEG_parietal_cereb"], levels=[3,4,5])
     emgs = decompose_signal(pol["EMG_1"],[1,2,3,4],keep_a=False)
@@ -44,7 +44,9 @@ def features_one_file(f):
                         PowerFeatures(),
                         HjorthFeatures(),
                         NonLinearFeatures(),
-                        EntropyFeatures(),
+
+                        # FIXME skip for now -> speed
+                        #EntropyFeatures(),
                         VigilState(),]
 
     all_rows = []

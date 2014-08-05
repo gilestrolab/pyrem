@@ -154,6 +154,7 @@ crossval_test <- function(out_level, original_df){
                     }
                     
                 )
+        print(rf)
         print(out)
         
 #~         plot(log10(CV_accuracy) ~ log10(confidence), type="b")
@@ -187,6 +188,8 @@ select_variables <- function(df, t=0.75){
 #~     return(d_out)
     
 #~     #remove ammbiguous vigilance states
+
+
     d <- subset( df, py == 1)
     d$py <- NULL 
     d$treatment <- NULL 
@@ -207,6 +210,9 @@ select_variables <- function(df, t=0.75){
     }
 
 test_different_lags <- function(tau, df){
+    #                0,1,2,3,4,5,6,7,8,9,0
+    clustersize <- c(6,6,5,5,4,4,3,3,2,2,1)
+    
     print("==========================")
     print(paste("lag =", tau))
     anim_df = split(df,df$animal)
@@ -221,7 +227,8 @@ test_different_lags <- function(tau, df){
     
     print(dim(df))
 #~     l = sapply(levels(df$animal), crossval_test, original_df=df)
-    cl <- makeCluster(4)
+    print(clustersize[tau+1])
+    cl <- makeCluster(clustersize[tau+1])
     clusterExport(cl, "randomForest")
     clusterExport(cl, "entropy")
     clusterExport(cl, "confusionMatrix")

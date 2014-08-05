@@ -117,7 +117,7 @@ class HjorthFeatures(SignalFeatureBase):
     prefix = "hjorth"
     def _make_feature_vec(self, channel):
         a,m,c = hjorth(channel)
-        out = {"activity":a, "morbidity":m, "complexity":c}
+        out = {"morbidity":m, "complexity":c}
         return out
 
 class EntropyFeatures(SignalFeatureBase):

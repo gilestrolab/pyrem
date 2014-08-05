@@ -1,5 +1,5 @@
 __author__ = 'quentin'
-from pyrem.signal.io import polygram_from_spike_matlab_file
+from pyrem.io import polygram_from_spike_matlab_file
 from multiprocessing import pool
 import glob
 import os
