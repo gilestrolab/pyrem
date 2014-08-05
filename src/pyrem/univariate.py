@@ -111,6 +111,15 @@ def pfd(a):
     :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
     :return: the Petrosian Fractal Dimension; a scalar.
     :rtype: float
+
+    Example:
+
+    >>> import pyrem as pr
+    >>> import numpy as np
+    >>> # generate white noise:
+    >>> noise = np.random.normal(size=int(1e4))
+    >>> pr.univariate.pdf(noise)
+
     """
 
     diff = np.diff(a)
@@ -123,6 +132,9 @@ def pfd(a):
 
     return np.log(n)/(np.log(n)+np.log(n/(n+0.4*N_delta)))
 
+
+
+
 def hjorth(a):
     r"""
     Compute Hjorth parameters [HJO70]_.
@@ -134,7 +146,7 @@ def hjorth(a):
 
     .. math::
 
-        Morbidity = m_2 = \sigma_{d}/ \sigma_{a}
+        Complexity = m_2 = \sigma_{d}/ \sigma_{a}
 
     .. math::
         Morbidity = m_4 =  \frac{\sigma_{dd}/ \sigma_{d}}{m_2}
@@ -152,6 +164,16 @@ def hjorth(a):
     :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
     :return: activity, complexity and morbidity
     :rtype: tuple(float, float, float)
+
+    Example:
+
+    >>> import pyrem as pr
+    >>> import numpy as np
+    >>> # generate white noise:
+    >>> noise = np.random.normal(size=int(1e4))
+    >>> activity, complexity, morbidity = pr.univariate.hjorth(noise)
+
+
     """
 
     first_deriv = np.diff(a)
@@ -259,7 +281,6 @@ def samp_entropy(a, m, r, tau=1, relative_r=True):
     This function can also be used to vary tau and therefore compute MultiScale Entropy [MSE]_ by coarse grainning the time series.
     By default, r is expressed as relatively to the standard deviation of the signal.
 
-
     :param a: a one dimensional floating-point array representing a time series.
     :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
     :param m: the scale
@@ -272,6 +293,18 @@ def samp_entropy(a, m, r, tau=1, relative_r=True):
     :type relative_r: true
     :return: the approximate entropy, a scalar
     :rtype: float
+
+
+    Example:
+
+    >>> import pyrem as pr
+    >>> import numpy as np
+    >>> # generate white noise:
+    >>> noise = np.random.normal(size=int(1e4))
+    >>> pr.univariate.samp_entropy(noise, m=2, r=1.5)
+    >>> # now we can do that for multiple scales (MSE:
+    >>> [pr.univariate.samp_entropy(noise, m=2, r=1.5, tau=tau) for tau in range(1, 5)]
+
     """
 
 
@@ -327,7 +360,6 @@ def samp_entropy(a, m, r, tau=1, relative_r=True):
     if sum_cm == 0 or sum_cmp ==0:
         return np.NaN
     return np.log(sum_cm/sum_cmp)
-    #return Cmp
 
 
 

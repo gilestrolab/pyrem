@@ -49,12 +49,8 @@ class TestFeatures(unittest.TestCase):
         #~ ans = univariate.dfa(white_noise)
 #~ 
         #~ self.assertAlmostEqual(ref, ans)
-        
-    def test_pfd(self):
-        ref = 1.0359881151548751
-        ans = univariate.pfd(white_noise)
-
         self.assertAlmostEqual(ref, ans)
+
     def test_fisher_information(self):
         ref = 0.0002986254447524082 
         ans = univariate.fisher_info(white_noise,10,10)

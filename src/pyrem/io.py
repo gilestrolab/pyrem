@@ -7,7 +7,6 @@ __author__ = 'quentin'
 
 
 import scipy.io as scio
-# from scipy.interpolate import interp1d
 import pandas as pd
 import numpy as np
 from pyrem.time_series import Signal, Annotation
@@ -45,7 +44,7 @@ def polygram_from_spike_matlab_file(filename, fs, annotation_fs, channel_names, 
     del matl
 
     crop_at = np.min([i.size for _,i in data_channels.items()])
-    print "crop_at =", crop_at, "max size was:" , np.max([i.size for _,i in data_channels.items()])
+
     for k,a in data_channels.items():
         data_channels[k] = a[:crop_at]
 
@@ -58,15 +57,8 @@ def polygram_from_spike_matlab_file(filename, fs, annotation_fs, channel_names, 
 
     annotations = pd.DataFrame(annotation_channels)
     del annotation_channels
-    # trick to remove every second annotation (they are unpredictably redundant)
+
     annotations = annotations[1:annotations.shape[0]:2]
-    #annotations2 = annotations[0:annotations.shape[0]:2]
-
-    # check we have removed the right (mainly empty) annotations
-    # print annotations.shape[0] *5.0 / 60.0 / 60.0
-    # print annotations2.shape[0] *5.0 / 60.0 / 60.0
-
-
 
 
     annotations[annotations[annotations.columns[0]] == ""] = "?"
@@ -84,42 +76,12 @@ def polygram_from_spike_matlab_file(filename, fs, annotation_fs, channel_names, 
 
 
     annot_probas = [0 if a in doubt_chars else 1 for a in annot_values]
-    print "000000000000", np.sum(np.array(annot_probas) == 0)
+
     an = Annotation(annot_values, annotation_fs, annot_probas, name="vigilance_state", type="vigilance_state")
 
 
     signals = [s[:an.duration]for s in signals]
 
-    print an.duration
-    # print signals[0].duration.total_seconds(), an.duration.total_seconds()
-    # print 200  - 200*(signals[0].duration.total_seconds() - an.duration.total_seconds() )/signals[0].duration.total_seconds()
-
     signals.append(an)
     return Polygram(signals)
-
-    #
-
-    #
-    #
-    #
-    # x = np.linspace(0,data.shape[0],annot_values.shape[0])
-    #
-    # inter_f = interp1d(x, annot_values, "nearest", axis=0)
-    #
-    # annot_values = inter_f(np.arange(data.shape[0]))
-    #
-    # metadata["input_file"] = filename
-    #
-    #
-    # # polygraph =  pr.Polygraph(data, sampling_rate,
-    # #                           annot_values, df.columns,
-    # #                           annotation_types=["vigil"], metadata=metadata)
-    #
-
-#    return polygraph
-
-
-
-
-
 
