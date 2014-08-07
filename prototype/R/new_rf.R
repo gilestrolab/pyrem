@@ -160,9 +160,9 @@ crossval_test <- function(out_level, original_df){
         d <- reshape(d, varying = colnames(d) ,v.names = "y", direction = "long",ids=rownames(d))        
         d$animal <- out_level
         return(d)
-        
+#~         
 }
-
+#~ 
 select_variables_pca <- function(df, t=0.99){
 
 #~ 
@@ -190,6 +190,7 @@ select_variables_pca <- function(df, t=0.99){
     #remove ammbiguous vigilance states    
     
 }
+
 select_variables <- function(df, t=0.50){
     
     d <- subset( df, py == 1)
@@ -206,17 +207,17 @@ select_variables <- function(df, t=0.50){
 #~     return(out)
     
     rf <- randomForest(y ~ ., d, ntree=50, sampsize=c(1000,1000,1000))
-#~     return(rf)
-    print(rf)
-    print(importance(rf))
+
     imp_df <- data.frame(importance(rf))
-    bad_vars <- subset(imp_df, MeanDecreaseGini < quantile(rf$importance,t))
+    bad_vars <- subset(imp_df, MeanDecreaseGini < mean(rf$importance) * t)
+    print(paste("excluding", nrow(bad_vars), "variables"))
     match_bad_name = match(rownames(bad_vars), colnames(df))
     return(subset(df, select = -match_bad_name))
 #~ 
 #~     
     
     }
+
 important_subbands <- function(df){
     d <- subset( df, py == 1)
     d$py <- NULL 
@@ -224,7 +225,9 @@ important_subbands <- function(df){
     d$t <- NULL 
     d$animal <- NULL 
     d$y <- droplevels(d$y)
-    
+#~     d$superx3A <- d$EEG_parietal_cereb_cD_3.power.mean / d$EEG_parietal_cereb_cA_5.power.mean
+#~     d$superx4A <- d$EEG_parietal_cereb_cD_4.power.mean / d$EEG_parietal_cereb_cA_5.power.mean
+#~     d$superx5A <- d$EEG_parietal_cereb_cD_5.power.mean / d$EEG_parietal_cereb_cA_5.power.mean
     rf <- randomForest(y ~ ., d, ntree=50, sampsize=c(1000,1000,1000))
     imp_df <- data.frame(do.call("rbind",strsplit(rownames(rf$importance), "\\.")))
     imp_df$y <- rf$importance[,1]
@@ -276,21 +279,19 @@ dfo <- read.csv(OUT_CSV , na.string="NaN")
 
 df <- curate_df(dfo)
 
-
 print("Selecting variables")
 #~ df <- select_variables(df)
 
-
-#~ good_coeffs <-c(
 #~ 
-#~                 "EMG_1_cD_1",
-#~                 "EMG_1_cD_2",
-#~                 "EMG_1_cD_3",
-#~                 "EEG_parietal_cereb_cD_3",
-#~                 "EEG_parietal_cereb_cD_4",
-#~                 "EEG_parietal_cereb_cD_5",
-#~                 "EEG_parietal_cereb_cD_6"
-#~                 )
+good_coeffs <-c(
+                "EMG_REF_cD_1",
+                "EMG_REF_cD_2",
+                "EMG_REF_cD_3",
+                "EEG_parietal_cereb_cD_3",
+                "EEG_parietal_cereb_cD_4",
+                "EEG_parietal_cereb_cD_5",
+                "EEG_parietal_cereb_cA_5"
+                )
 #~ 
 #~ good_coeffs <-c("EMG_1_cD_4",
 #~                 "EMG_1_cD_5",
@@ -298,120 +299,41 @@ print("Selecting variables")
 #~          
 
 
-#df <- exclude_coeffs(good_coeffs,df)
+#~ df <- exclude_coeffs(good_coeffs,df)
 #~ 
 #~ rf <- select_variables(df)
 #~ df <- select_variables_pca(df)
-#df <- select_variables(df)
+#~ df <- select_variables(df)
 
-l_dfs <- lapply(rep(0:3, 3), test_different_lags, df)
+l_dfs <- lapply(rep(0:4, 3), test_different_lags, df)
 
 stop()
-############################################################################
-#~
-#df <- subset(df, df$vigil_value==87)
-#df$vigil_value <- NULL
-
-#~
-#~ crossval <- function(out_level, original_df){
-#~         train_df <- subset(original_df, animal !=out_level)
-#~         #train_df <- original_df
-#~         # train_df <- original_df
-#~         test_df <- subset(original_df, animal ==out_level)
-#~         print(out_level)
-#~
-#~          # print(head(test_df))
-#~          # print(unique(train_df$treatment))
-#~          # print(unique(test_df$treatment))
-#~
-#~          train_df$animal <- NULL
-#~          test_df$animal <- NULL
-#~          rf <- randomForest(treatment ~ ., train_df, ntree=50)
-#~          varImpPlot(rf)
-#~
-#~          votes <- predict(rf, test_df,type="prob")
-#~
-#~          votes <- matrix(votes, nrow=length(rownames(votes)),dimnames=list(NULL,colnames(votes)))
-#~
-#~          h_rows <- apply(votes, 1, entropy)
-#~          weighted_votes <- colSums(votes * h_rows )
-#~
-#~
-#~          #
-#~          # weighted_votes = weighted_votes /sum(weighted_votes)
-#~          #
-#~          # # tab <- matrix(weighted_votes, nrow=1,dimnames=list(NULL,colnames(votes)))
-#~          p = max(weighted_votes) / sum(weighted_votes)
-#~          out <- data.frame(pred = colnames(votes)[which.max(weighted_votes)], real=unique(test_df$treatment), p=p)
-#~
-#~          print(weighted_votes)
-#~          return(out)
-#~ }
-
-#~
-#~ entropy <- function(v){
-#~     v[v==0] <- 1e-100
-#~     h <- 1 + sum(v * log2(v)) /log2(length(v))
-#~     return(h)
-#~ }
-#~ set.seed(1)
-#~ l = lapply(levels(df$animal), crossval, original_df=df)
-#~
-#~ d = do.call("rbind",l)
-#~ print(d)
-
-# predictions = do.call("rbind", l)
-# predictions <- within(predictions, pred <- ifelse(GFP > TelC, "GFP", "TelC"))
-
-#
-######################################################################################################
 
 
-#~
-#~
-
-#
-#
-# dpdf("/tmp/test.pdf")
-# for (a in levels(df$animal)){
-#   sub_df <- subset(df, animal == a)
-#   plot( log10(power_median) ~ t,sub_df, pch=20, col=treatment,ylim=c(6,10),main=a)
-#   }
-# dev.off()
-
-
-
-
-#############
-#~ set.seed(1)
-#~ out_level <- "GFP_D"
-#~ train_df <- subset(df, animal !=out_level)
-#~ test_df <- subset(df, animal ==out_level)
-#~
-#~ train_df$animal <- NULL
-#~ test_df$animal <- NULL
-#~
-#~ ytrain <- train_df$treatment
-#~ ytest <- test_df$treatment
-#~
-#~ xtrain<- train_df
-#~ xtrain$treatment <- NULL
-#~ xtest <- test_df
-#~ xtest$treatment <- NULL
-#~
-#~ rf <- randomForest(x = xtrain, y= ytrain, ntree=100)
-#~
-#~ table(predict(rf, xtest))
+show_2d_hist <- function(x, z, y){
+    mat <- cbind(x, z)
+    contour(kde2d(x, z), levels=c(0))
+    sub_mats <- split(data.frame(mat), y)
+    print(length(sub_mats[[1]]))
+    kerns = lapply(sub_mats,function(m)kde2d(m[,"x"], m[,"z"]))
+    cols =as.numeric(as.factor(names(sub_mats)))
+    
+    for (i in 1:length(kerns))
+        contour(kerns[[i]],levels=c(.25,0.75,0.5), add=T, col=cols[i])
+    legend("bottomleft", legend=names(sub_mats), lwd=2,col=cols)
+    }
+#~ show_2d_hist(log10(d$EEG_parietal_cereb_cA_5.power.median), log10(d$EMG_REF_cD_3.power.median), d$y)
 
 
-'
-Class: 78  Class: 82 Class: 87
-0.9094319 0.84323282 0.8801143  # "coeffs eeg and emg, D_2:6 (no A)"
-0.8943559 0.82718649 0.8678393 # "coeffs eeg D_2:6 , emg_5_6 (no A)"
-0.9014322 0.84034602 0.8681586 # "coeffs eMG D_2:6 , eEG_5_6 (no A)"
-0.8803510 0.83611262 0.8641646 # "coeffs eeg and emg, D_4:6 (no A)"
-0.9141507 0.81931153 0.8861858 # all data
-0.8872067 0.84670554 0.8764197 #  "coeffs eeg and emg, D_3:6 (no A)"
-0.8777605 0.82924432 0.8722724 # "coeffs eMG D_1:2 , eEG_4_6 (no A)"
-
-'
+#~ 
+#~ '
+#~ Class: 78  Class: 82 Class: 87
+#~ 0.9094319 0.84323282 0.8801143  # "coeffs eeg and emg, D_2:6 (no A)"
+#~ 0.8943559 0.82718649 0.8678393 # "coeffs eeg D_2:6 , emg_5_6 (no A)"
+#~ 0.9014322 0.84034602 0.8681586 # "coeffs eMG D_2:6 , eEG_5_6 (no A)"
+#~ 0.8803510 0.83611262 0.8641646 # "coeffs eeg and emg, D_4:6 (no A)"
+#~ 0.9141507 0.81931153 0.8861858 # all data
+#~ 0.8872067 0.84670554 0.8764197 #  "coeffs eeg and emg, D_3:6 (no A)"
+#~ 0.8777605 0.82924432 0.8722724 # "coeffs eMG D_1:2 , eEG_4_6 (no A)"
+#~ 
+#~ '
