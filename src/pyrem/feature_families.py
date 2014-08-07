@@ -88,6 +88,25 @@ class VigilState(AnnotationFeatureBase):
 
         return out
 
+
+
+class AbsoluteFeatures(SignalFeatureBase):
+    prefix = "absolute"
+    def _make_feature_vec(self, channel):
+
+        out = dict()
+
+        absol = channel ** 2
+        out["mean"] = np.mean(absol)
+        out["sd"] = np.std(absol)
+        out["median"] = np.median(absol)
+        out["skew"] = stats.skew(absol)
+        out["kurt"] = stats.kurtosis(absol)
+        out["min"] = np.max(absol)
+        out["max"] = np.min(absol)
+
+        return out
+
 class PowerFeatures(SignalFeatureBase):
     prefix = "power"
     def _make_feature_vec(self, channel):
@@ -99,7 +118,10 @@ class PowerFeatures(SignalFeatureBase):
         out["sd"] = np.std(powers)
         out["median"] = np.median(powers)
         out["skew"] = stats.skew(powers)
-        out["kurt"] = stats.kurtosis(powers)
+        out["kurt"] = stats.skew(powers)
+        out["min"] = np.max(powers)
+        out["max"] = np.min(powers)
+
 
         return out
 
@@ -129,10 +151,10 @@ class EntropyFeatures(SignalFeatureBase):
         out["svd"] = svd_entropy(channel, 3,3) # fixme magic number here
         out["fisher"] = fisher_info(channel, 3,3)
         #out["apent"] = ap_entropy(data, 2,5000)
-        for scale in [2,3,4]:
-            #for r in [1, 2, 3]:
-            for r in [.5, 1.0]:
-                out["sample_%i_%s" % (scale, str(np.round(r, 3)))] = samp_entropy(channel, scale, r)
+        # for scale in [2]:
+        #     #for r in [1, 2, 3]:
+        #     for r in [.5]:
+        #         out["sample_%i_%s" % (scale, str(np.round(r, 3)))] = samp_entropy(channel, scale, r)
 
 
 

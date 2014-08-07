@@ -31,10 +31,27 @@ FSS = {
 "TelC_C":199.99,
 }
 
+EMG_REF_IDX = {
+"GFP_sleep":3,
+"GFP_A":4,
+"GFP_D":4,
+"GFP_F":4,
+"GFP_1":3,
+"GFP_2":4,
+"GFP_3":3,
+"GFP_4":3,
+"TelC_1":4,
+"TelC_2":4,
+"TelC_3":3,
+"TelC_4":3,
+"TelC_C":4,
+}
+
+
 EXCLUDED = {
 "TelC_E"
-
 }
+
 N_PROCESS = 6
 
 def save_one_pol(f):
@@ -44,6 +61,9 @@ def save_one_pol(f):
         print "excluding", basename
         return
 
+
+    channel_names = CHANNEL_ID_MAP
+    channel_names[EMG_REF_IDX[basename] - 1] = "EMG_REF"
     new_file_name = basename + ".pkl"
     out_path = os.path.join(OUT_DIR,new_file_name)
 
@@ -58,7 +78,7 @@ def save_one_pol(f):
         fs = DEFAULT_FS
     try:
         pol = polygram_from_spike_matlab_file(f, fs, 1/5.0,
-                                              CHANNEL_ID_MAP, CHANNELS_TYPES,
+                                              channel_names, CHANNELS_TYPES,
                                               DOUBT_CHARS, resample_signals=RESAMPLE_AT)
 
 

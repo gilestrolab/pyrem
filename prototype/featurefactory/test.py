@@ -17,10 +17,10 @@ DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/*.pkl"
 # DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/A*.pkl"
 
 OUT_CSV = "/data/pyrem/Ellys/all_features.csv"
-WINDOW_SIZE = 20
-WINDOW_LAG = 1
+WINDOW_SIZE = 30
+WINDOW_LAG = 0.5
 
-N_PROCESSES = 6
+N_PROCESSES = 5
 
 
 
@@ -31,7 +31,7 @@ def features_one_file(f):
     pol = polygram_from_pkl(f)
 
     eegs = decompose_signal(pol["EEG_parietal_cereb"], levels=[3,4,5])
-    emgs = decompose_signal(pol["EMG_1"],[1,2,3,4],keep_a=False)
+    emgs = decompose_signal(pol["EMG_REF"],[1,2,3],keep_a=False)
 
     pol2 = eegs.merge(emgs)
     pol2 = pol2.merge(pol["vigilance_state"])
@@ -46,7 +46,8 @@ def features_one_file(f):
                         NonLinearFeatures(),
 
                         # FIXME skip for now -> speed
-                        #EntropyFeatures(),
+                        # EntropyFeatures(),
+                        # AbsoluteFeatures(),
                         VigilState(),]
 
     all_rows = []

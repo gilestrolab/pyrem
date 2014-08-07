@@ -58,7 +58,7 @@ Example:
 >>> print sig2.duration
 >>> # this should be exactly 1h2m2s
 >>> print sig.duration - sig2.duration
->>> print sig["1h2m2s":"1h2m2s100w"] # 10w means 10 ms
+>>> print sig["1h2m2s":"1h2m2s100w"] # 100w means 100 ms
 
 .. note::
 
@@ -68,6 +68,9 @@ Example:
     fall in this interval, however, the signal does have a value.
     In this case, `pyrem` returns a signal of length 1 where the unique value is the nearest neighbour value.
 
+# fixme !! this does not work!
+
+>>> sig = pr.time_series.Signal([3,4,2,6,4,7,4,5,7,9], 10.0,)
 
 """
 __author__ = 'quentin'

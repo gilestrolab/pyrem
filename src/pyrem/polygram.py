@@ -122,8 +122,8 @@ class Polygram(object):
             raise Exception("lag has to be  greater than one")
 
         min_duration = min([ c.duration for c in self.channels])
-        length_td = timedelta(seconds=length)
-        lag_td = length_td * lag
+        length_td = timedelta(seconds=length  * lag)
+        lag_td = length_td
         start = timedelta()
 
         while start < (min_duration - length_td):

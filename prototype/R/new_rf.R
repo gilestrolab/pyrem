@@ -5,7 +5,7 @@ printdbg <- function(){
     assign("DBG", DBG+1, envir = .GlobalEnv)
     
 }
-set.seed(1)
+set.seed(2)
 
 library("randomForest")
 library("caret")
@@ -14,6 +14,15 @@ library("parallel")
 
 
 OUT_CSV = "/data/pyrem/Ellys/all_features.csv"
+       
+exclude_coeffs <-function(name_list, df){
+    non_feature_cols <- grep("\\.", colnames(df), invert=T)
+    l <- lapply(name_list, grep, colnames(df))
+    
+    col_idx <- c(non_feature_cols, unique(do.call("c", l)))
+    return(df[,col_idx])
+
+}
 
 curate_df <- function(dfo){
     df <- dfo
@@ -34,7 +43,7 @@ curate_df <- function(dfo){
     # our Y variable is a factor (vigilance state)
     df$y <- as.factor(df[,"vigilance_state.vigil.value"])
     df$vigilance_state.vigil.value <- NULL
-    df$py <- as.factor(df[,"vigilance_state.vigil.proba"])
+    df$py <- df[,"vigilance_state.vigil.proba"]
     df$vigilance_state.vigil.proba <- NULL
     
     # remove ambiguous vigilance states ?
@@ -123,27 +132,19 @@ crossval_test <- function(out_level, original_df){
         train_df$animal <- NULL
         test_df$animal <- NULL
         
-        rf <- randomForest(y ~ ., train_df, ntree=50, sampsize=c(1000,1000,1000))        
+        rf <- randomForest(y ~ ., train_df, ntree=40, sampsize=c(200,200,200))        
         
-        
-#~         varImpPlot(rf)       
         preds <- predict(rf, test_df, type="prob")
         pred_values <- apply(preds,1,function(v){colnames(preds)[which.max(v)]})
         pred_values <- factor(pred_values, levels=levels(test_df$y))
         #out <- data.frame(real = test_df$y, preds = preds)
         out <- sum(test_df$y == pred_values) / length(pred_values)
-        
+        plot(rf)
         strt <- 500
         stp<- 2000
         l = stp - strt +1
         h_rows <- apply(preds, 1, entropy)        
-        
-#~         plot( strt:stp, rep(1.2,l), col=as.numeric(test_df$y[strt:stp]) +2, pch=20,ylim=c(0,1.5))
-#~         
-#~         points( strt:stp, rep(1.3,l), col=as.numeric(pred_values[strt:stp]) +2, pch=20)
-#~         lines( strt:stp, h_rows[strt:stp])
-#~         points( strt:stp, h_rows[strt:stp], pch=20, col=ifelse(test_df$y[strt:stp] == pred_values[strt:stp], "blue", "red"))
-#~         
+
         confidence <- 0:99/100
         CV_accuracy <- sapply(confidence, function(r){
                         valid <- (h_rows > r & h_rows <= r+0.1)
@@ -154,42 +155,43 @@ crossval_test <- function(out_level, original_df){
                     }
                     
                 )
-        print(rf)
-        print(out)
-        
-#~         plot(log10(CV_accuracy) ~ log10(confidence), type="b")
-        
-        return(confusionMatrix (pred_values, test_df$y))
+        cm <- t(confusionMatrix (pred_values, test_df$y)$byClass)
+        d <- data.frame(cm)
+        d <- reshape(d, varying = colnames(d) ,v.names = "y", direction = "long",ids=rownames(d))        
+        d$animal <- out_level
+        return(d)
         
 }
 
-select_variables <- function(df, t=0.75){
+select_variables_pca <- function(df, t=0.99){
+
+#~ 
+    pca <- princomp(~. , df[,grep("\\.", colnames(df))])
     
-
-
-#~     pca <- princomp(~. , df[,grep("\\.", colnames(df))])
-#~     
-#~     components <- pca$scores
-#~     cumpca <- cumsum(pca$sdev)
-#~     cumpca <- cumpca - min(cumpca)
-#~     cumpca <- cumpca / max(cumpca)
-#~     components <- components[,1:which(cumpca > t)[1]]
-#~     
-#~     d_out <- df[, grep("\\.", colnames(df), invert=T)]
-#~     d_out <- cbind(data.frame(components), d_out)
-#~     d <- subset( d_out, py == 1)
-#~     d$py <- NULL 
-#~     d$treatment <- NULL 
-#~     d$t <- NULL 
-#~     d$animal <- NULL 
-#~     d$y <- droplevels(d$y)
-#~     rf <- randomForest(y ~ ., d, ntree=100, sampsize=c(1000,1000,1000))
-    #d <- subset( d, py == 1)
-#~     return(d_out)
+    components <- pca$scores
+    cumpca <- cumsum(pca$sdev)
+    cumpca <- cumpca - min(cumpca)
+    cumpca <- cumpca / max(cumpca)
+    components <- components[,1:which(cumpca > t)[1]]
     
-#~     #remove ammbiguous vigilance states
-
-
+    d_out <- df[, grep("\\.", colnames(df), invert=T)]
+    d_out <- cbind(data.frame(components), d_out)
+    d <- subset( d_out, py == 1)
+    d$py <- NULL 
+    d$treatment <- NULL 
+    d$t <- NULL 
+    d$animal <- NULL 
+    d$y <- droplevels(d$y)
+    rf <- randomForest(y ~ ., d, ntree=100, sampsize=c(1000,1000,1000))
+    print(rf)
+#~     #d <- subset( d, py == 1)
+    return(d_out)
+#~     
+    #remove ammbiguous vigilance states    
+    
+}
+select_variables <- function(df, t=0.50){
+    
     d <- subset( df, py == 1)
     d$py <- NULL 
     d$treatment <- NULL 
@@ -197,21 +199,42 @@ select_variables <- function(df, t=0.75){
     d$animal <- NULL 
     d$y <- droplevels(d$y)
     
-    rf <- randomForest(y ~ ., d, ntree=100, sampsize=c(1000,1000,1000))
-    plot(rf)
+#~     result <- rfcv(subset(d, select=-y),d$y, cv.fold=10, ntree=50, sampsize=c(1000,1000,1000))
+    
+    
+#~     with(result, plot(n.var, error.cv, log="x", type="o", lwd=2))
+#~     return(out)
+    
+    rf <- randomForest(y ~ ., d, ntree=50, sampsize=c(1000,1000,1000))
+#~     return(rf)
     print(rf)
+    print(importance(rf))
     imp_df <- data.frame(importance(rf))
     bad_vars <- subset(imp_df, MeanDecreaseGini < quantile(rf$importance,t))
     match_bad_name = match(rownames(bad_vars), colnames(df))
     return(subset(df, select = -match_bad_name))
-
+#~ 
+#~     
     
+    }
+important_subbands <- function(df){
+    d <- subset( df, py == 1)
+    d$py <- NULL 
+    d$treatment <- NULL 
+    d$t <- NULL 
+    d$animal <- NULL 
+    d$y <- droplevels(d$y)
+    
+    rf <- randomForest(y ~ ., d, ntree=50, sampsize=c(1000,1000,1000))
+    imp_df <- data.frame(do.call("rbind",strsplit(rownames(rf$importance), "\\.")))
+    imp_df$y <- rf$importance[,1]
+
     
     }
 
 test_different_lags <- function(tau, df){
-    #                0,1,2,3,4,5,6,7,8,9,0
-    clustersize <- c(6,6,5,5,4,4,3,3,2,2,1)
+#~     #                0,1,2,3,4,5,6,7,8,9,0
+#~     clustersize <- c(4,4,4,3,3,3,2,2,2,2,2) - 1
     
     print("==========================")
     print(paste("lag =", tau))
@@ -227,21 +250,20 @@ test_different_lags <- function(tau, df){
     
     print(dim(df))
 #~     l = sapply(levels(df$animal), crossval_test, original_df=df)
-    print(clustersize[tau+1])
-    cl <- makeCluster(clustersize[tau+1])
-    clusterExport(cl, "randomForest")
-    clusterExport(cl, "entropy")
-    clusterExport(cl, "confusionMatrix")
-    l = parLapply(cl, levels(df$animal), crossval_test, original_df=df)
-    stopCluster(cl)
-    ms <- lapply(l, function(e) {
-        t(e$byClass)
-        })
-    print(apply(abind(ms, along=3), c(1,2), mean))
-#~     cm_mean <- apply(abind(l["byClass",], along=3), c(1,2), mean)
-#~     cm_sd <- apply(abind(l["byClass",], along=3), c(1,2), sd)
+#~     print(clustersize[tau+1])
+#~     cl <- makeCluster(clustersize[tau+1])
+#~     clusterExport(cl, "randomForest")
+#~     clusterExport(cl, "entropy")
+#~     clusterExport(cl, "confusionMatrix")
+#~     l = parLapply(cl, levels(df$animal), crossval_test, original_df=df)
+    l = lapply(levels(df$animal), crossval_test, original_df=df)
+#~     stopCluster(cl)
+    d <- do.call("rbind",l)
+    d$lag <- tau
+    toprint <-subset(d,id == "Sensitivity" |id == "Specificity" |id == "Pos Pred Value"   )
     
-    return(l)
+    print (aggregate(y ~ id * time , toprint, mean))
+    return(d)
 }
 
 "
@@ -258,7 +280,31 @@ df <- curate_df(dfo)
 print("Selecting variables")
 #~ df <- select_variables(df)
 
-l <- lapply(0:10, test_different_lags, df)
+
+#~ good_coeffs <-c(
+#~ 
+#~                 "EMG_1_cD_1",
+#~                 "EMG_1_cD_2",
+#~                 "EMG_1_cD_3",
+#~                 "EEG_parietal_cereb_cD_3",
+#~                 "EEG_parietal_cereb_cD_4",
+#~                 "EEG_parietal_cereb_cD_5",
+#~                 "EEG_parietal_cereb_cD_6"
+#~                 )
+#~ 
+#~ good_coeffs <-c("EMG_1_cD_4",
+#~                 "EMG_1_cD_5",
+#~                 "EMG_1_cD_6")
+#~          
+
+
+#df <- exclude_coeffs(good_coeffs,df)
+#~ 
+#~ rf <- select_variables(df)
+#~ df <- select_variables_pca(df)
+#df <- select_variables(df)
+
+l_dfs <- lapply(rep(0:3, 3), test_different_lags, df)
 
 stop()
 ############################################################################
@@ -357,3 +403,15 @@ stop()
 #~
 #~ table(predict(rf, xtest))
 
+
+'
+Class: 78  Class: 82 Class: 87
+0.9094319 0.84323282 0.8801143  # "coeffs eeg and emg, D_2:6 (no A)"
+0.8943559 0.82718649 0.8678393 # "coeffs eeg D_2:6 , emg_5_6 (no A)"
+0.9014322 0.84034602 0.8681586 # "coeffs eMG D_2:6 , eEG_5_6 (no A)"
+0.8803510 0.83611262 0.8641646 # "coeffs eeg and emg, D_4:6 (no A)"
+0.9141507 0.81931153 0.8861858 # all data
+0.8872067 0.84670554 0.8764197 #  "coeffs eeg and emg, D_3:6 (no A)"
+0.8777605 0.82924432 0.8722724 # "coeffs eMG D_1:2 , eEG_4_6 (no A)"
+
+'
