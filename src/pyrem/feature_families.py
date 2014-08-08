@@ -151,10 +151,10 @@ class EntropyFeatures(SignalFeatureBase):
         out["svd"] = svd_entropy(channel, 3,3) # fixme magic number here
         out["fisher"] = fisher_info(channel, 3,3)
         #out["apent"] = ap_entropy(data, 2,5000)
-        # for scale in [2]:
-        #     #for r in [1, 2, 3]:
-        #     for r in [.5]:
-        #         out["sample_%i_%s" % (scale, str(np.round(r, 3)))] = samp_entropy(channel, scale, r)
+        for scale in [2]:
+            #for r in [1, 2, 3]:
+            for r in [.5]:
+                out["sample_%i_%s" % (scale, str(np.round(r, 3)))] = samp_entropy(channel, scale, r)
 
 
 

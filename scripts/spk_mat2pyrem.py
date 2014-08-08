@@ -49,7 +49,8 @@ EMG_REF_IDX = {
 
 
 EXCLUDED = {
-"TelC_E"
+"TelC_E",
+"GFP_3",
 }
 
 N_PROCESS = 6

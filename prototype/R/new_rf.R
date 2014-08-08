@@ -11,11 +11,12 @@ library("randomForest")
 library("caret")
 library("abind")
 library("parallel")
+library("MASS")
 
 
 OUT_CSV = "/data/pyrem/Ellys/all_features.csv"
        
-exclude_coeffs <-function(name_list, df){
+keep_only_grep <-function(name_list, df){
     non_feature_cols <- grep("\\.", colnames(df), invert=T)
     l <- lapply(name_list, grep, colnames(df))
     
@@ -23,6 +24,7 @@ exclude_coeffs <-function(name_list, df){
     return(df[,col_idx])
 
 }
+
 
 curate_df <- function(dfo){
     df <- dfo
@@ -132,14 +134,16 @@ crossval_test <- function(out_level, original_df){
         train_df$animal <- NULL
         test_df$animal <- NULL
         
-        rf <- randomForest(y ~ ., train_df, ntree=40, sampsize=c(200,200,200))        
+        #rf <- randomForest(y ~ ., train_df, ntree=40, sampsize=c(200,200,200))        
+        rf <- randomForest(y ~ ., train_df, ntree=100, sampsize=c(5000,1000,5000))        
+        
         
         preds <- predict(rf, test_df, type="prob")
         pred_values <- apply(preds,1,function(v){colnames(preds)[which.max(v)]})
         pred_values <- factor(pred_values, levels=levels(test_df$y))
         #out <- data.frame(real = test_df$y, preds = preds)
         out <- sum(test_df$y == pred_values) / length(pred_values)
-        plot(rf)
+        
         strt <- 500
         stp<- 2000
         l = stp - strt +1
@@ -156,6 +160,8 @@ crossval_test <- function(out_level, original_df){
                     
                 )
         cm <- t(confusionMatrix (pred_values, test_df$y)$byClass)
+        plot(rf, ylim=c(0,1),lwd=2)
+        print(rf)
         d <- data.frame(cm)
         d <- reshape(d, varying = colnames(d) ,v.names = "y", direction = "long",ids=rownames(d))        
         d$animal <- out_level
@@ -206,8 +212,9 @@ select_variables <- function(df, t=0.50){
 #~     with(result, plot(n.var, error.cv, log="x", type="o", lwd=2))
 #~     return(out)
     
-    rf <- randomForest(y ~ ., d, ntree=50, sampsize=c(1000,1000,1000))
-
+    rf <- randomForest(y ~ ., d, ntree=100, sampsize=c(1000,1000,1000))
+    print(rf)
+    plot(rf)
     imp_df <- data.frame(importance(rf))
     bad_vars <- subset(imp_df, MeanDecreaseGini < mean(rf$importance) * t)
     print(paste("excluding", nrow(bad_vars), "variables"))
@@ -218,23 +225,33 @@ select_variables <- function(df, t=0.50){
     
     }
 
-important_subbands <- function(df){
+make_definitive_rf <- function (df){
+    anim_df = split(df,df$animal)
+    lagged_anim_dfs <- lapply(anim_df, add_lagged_time_features,  min_max_lag=c(-4,+4))
+    df <- do.call("rbind",lagged_anim_dfs)
     d <- subset( df, py == 1)
     d$py <- NULL 
     d$treatment <- NULL 
     d$t <- NULL 
     d$animal <- NULL 
     d$y <- droplevels(d$y)
-#~     d$superx3A <- d$EEG_parietal_cereb_cD_3.power.mean / d$EEG_parietal_cereb_cA_5.power.mean
-#~     d$superx4A <- d$EEG_parietal_cereb_cD_4.power.mean / d$EEG_parietal_cereb_cA_5.power.mean
-#~     d$superx5A <- d$EEG_parietal_cereb_cD_5.power.mean / d$EEG_parietal_cereb_cA_5.power.mean
-    rf <- randomForest(y ~ ., d, ntree=50, sampsize=c(1000,1000,1000))
+
+    rf <- randomForest(y ~ ., d, ntree=100, sampsize=c(5000,2000,5000))
+    return(rf)
+}
+important_subbands <- function(df){
+    rf <- make_definitive_rf(df)
+    
+    print(rf)
+    plot(rf)
     imp_df <- data.frame(do.call("rbind",strsplit(rownames(rf$importance), "\\.")))
     imp_df$y <- rf$importance[,1]
-
+    return(imp_df)
     
     }
-
+#ddd <- important_subbands(df)
+#~  
+ 
 test_different_lags <- function(tau, df){
 #~     #                0,1,2,3,4,5,6,7,8,9,0
 #~     clustersize <- c(4,4,4,3,3,3,2,2,2,2,2) - 1
@@ -278,62 +295,102 @@ dfo <- read.csv(OUT_CSV , na.string="NaN")
 #dfo <- readRDS(file="/data/pyrem/Ellys/all_features.rds")
 
 df <- curate_df(dfo)
+#exclude animal:
+df <- subset(df, animal != "GFP_3")
+df$animal <- droplevels(df$animal)
+df <- keep_only_grep(c("power"),df)
+df <- keep_only_grep(c("mean"),df)
 
-print("Selecting variables")
-#~ df <- select_variables(df)
-
-#~ 
-good_coeffs <-c(
-                "EMG_REF_cD_1",
-                "EMG_REF_cD_2",
-                "EMG_REF_cD_3",
-                "EEG_parietal_cereb_cD_3",
-                "EEG_parietal_cereb_cD_4",
-                "EEG_parietal_cereb_cD_5",
-                "EEG_parietal_cereb_cA_5"
-                )
-#~ 
-#~ good_coeffs <-c("EMG_1_cD_4",
-#~                 "EMG_1_cD_5",
-#~                 "EMG_1_cD_6")
-#~          
-
-
-#~ df <- exclude_coeffs(good_coeffs,df)
+#~ df <- keep_only_grep(good_coeffs,df)
 #~ 
 #~ rf <- select_variables(df)
 #~ df <- select_variables_pca(df)
 #~ df <- select_variables(df)
 
-l_dfs <- lapply(rep(0:4, 3), test_different_lags, df)
+l_dfs <- lapply(rep(0:3, 1), test_different_lags, df)
+cv_df <- do.call("rbind", l_dfs)
+boxplot(y ~ lag * time, subset(cv_df, id == "Sensitivity"), log="y")
+boxplot(y ~ lag * time, subset(cv_df, id == "Specificity"), log="y")
+boxplot(y ~ lag * time, subset(cv_df, id == "Pos Pred Value"), log="y")
 
 stop()
 
 
-show_2d_hist <- function(x, z, y){
+show_2d_hist <- function(x, z, y, levels= c(.25,0.75,0.5)){
+    
     mat <- cbind(x, z)
-    contour(kde2d(x, z), levels=c(0))
+    contour(kde2d(x, z,n=100,  h=c(0.15,.15)), levels=c(0), main= "Distribution of actual labels")
+    
     sub_mats <- split(data.frame(mat), y)
-    print(length(sub_mats[[1]]))
+    
     kerns = lapply(sub_mats,function(m)kde2d(m[,"x"], m[,"z"]))
     cols =as.numeric(as.factor(names(sub_mats)))
     
     for (i in 1:length(kerns))
-        contour(kerns[[i]],levels=c(.25,0.75,0.5), add=T, col=cols[i])
-    legend("bottomleft", legend=names(sub_mats), lwd=2,col=cols)
+        contour(kerns[[i]],levels=levels, add=T, col=cols[i],n=100,  h=c(0.3,.3))
+    legend("bottomleft", legend=names(sub_mats), lwd=2,col=cols,title="78 -> N; 83 -> R; 88->W")
+    
+    #sub sample d to keep 2000 of each class:
+    l <- split(data.frame(x,z), y)
+    l <- lapply(l, function(xx){
+        idx = 1:nrow(xx)
+        return(xx[sample(idx, 5000, replace=T),])
+        })
+    dsub <- do.call("rbind", l)
+    kern <- kde2d(dsub[,"x"],dsub[,"z"],n=100,  h=c(0.3,0.3))
+    contour(kern, levels=0:9/10,main="Distribution of a balanced sample")
+#~     
+#~     if (! is.null(rf))
+#~     contour(kde2d(x, z,n=100,  h=c(0.15,.15)), levels=c(0))
+#~         new_y <- predict(rf, dsub)
+#~         sub_mats <- split(dsub, new_y)
+#~         
+#~         kerns = lapply(sub_mats,function(m)kde2d(df$lag_0.EEG_parietal_frontal_cD_6.power.mean / df$lag_0.EEG_parietal_frontal_cD_1.power.mean, m$lag_0.EMG_REF_cD_3.power.mean))
+#~         cols =as.numeric(as.factor(names(sub_mats)))
+#~         
+#~         for (i in 1:length(kerns))
+#~             contour(kerns[[i]],levels=levels, add=T, col=cols[i],n=100,  h=c(0.3,.3))
+#~         legend("bottomleft", legend=names(sub_mats), lwd=2,col=cols)
     }
-#~ show_2d_hist(log10(d$EEG_parietal_cereb_cA_5.power.median), log10(d$EMG_REF_cD_3.power.median), d$y)
+#show_2d_hist(log10(d$EEG_parietal_frontal_cD_5.power.median), log10(d$EMG_REF_cD_3.power.median), d$y)
+
+df <- curate_df(dfo)
+#exclude animal:
+df <- subset(df, animal != "GFP_3")
+df$animal <- droplevels(df$animal)
+df <- keep_only_grep(c("power"),df)
+df <- keep_only_grep(c("mean"),df)
+anim_df = split(df,df$animal)
+lagged_anim_dfs <- lapply(anim_df, add_lagged_time_features,  min_max_lag=c(-4,+4))
+df <- do.call("rbind",lagged_anim_dfs)
+d <- subset( df, py == 1)
+d$py <- NULL 
+d$treatment <- NULL 
+d$t <- NULL 
+d$animal <- NULL 
+d$y <- droplevels(d$y)
+
+pdf("/tmp/todel.pdf", h=9, w=16)
+par(mfrow=c(1,3))
+
+#~ rf <- make_definitive_rf(df)
+
+dsub <- d
+dsub$y <- predict(rf, dsub)
+
+l <- split(dsub, new_y)
+l <- lapply(l, function(xx){
+    idx = 1:nrow(xx)
+    return(xx[sample(idx, 5000, replace=T),])
+    })
+dsub <- do.call("rbind", l)
 
 
-#~ 
-#~ '
-#~ Class: 78  Class: 82 Class: 87
-#~ 0.9094319 0.84323282 0.8801143  # "coeffs eeg and emg, D_2:6 (no A)"
-#~ 0.8943559 0.82718649 0.8678393 # "coeffs eeg D_2:6 , emg_5_6 (no A)"
-#~ 0.9014322 0.84034602 0.8681586 # "coeffs eMG D_2:6 , eEG_5_6 (no A)"
-#~ 0.8803510 0.83611262 0.8641646 # "coeffs eeg and emg, D_4:6 (no A)"
-#~ 0.9141507 0.81931153 0.8861858 # all data
-#~ 0.8872067 0.84670554 0.8764197 #  "coeffs eeg and emg, D_3:6 (no A)"
-#~ 0.8777605 0.82924432 0.8722724 # "coeffs eMG D_1:2 , eEG_4_6 (no A)"
-#~ 
-#~ '
+plot(log10(dsub$lag_0.EEG_parietal_frontal_cD_6.power.mean / dsub$lag_0.EEG_parietal_frontal_cD_1.power.mean), log10(dsub$lag_0.EMG_REF_cD_3.power.mean), col=dsub$y,
+ pch=20,
+ xlab="cD_6 / cD_1 (~ Theta:Delta)",
+ ylab="EMG's c_D3 mean power",
+ main="Model predictions")
+ 
+ show_2d_hist(log10(d$lag_0.EEG_parietal_frontal_cD_6.power.mean / d$lag_0.EEG_parietal_frontal_cD_1.power.mean), log10(d$lag_0.EMG_REF_cD_3.power.mean), d$y, levels= 2:9 /10)
+dev.off()

@@ -1,0 +1,86 @@
+Palettes               package:grDevices               R Documentation
+
+_C_o_l_o_r _P_a_l_e_t_t_e_s
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     Create a vector of ‘n’ contiguous colors.
+
+_U_s_a_g_e:
+
+     rainbow(n, s = 1, v = 1, start = 0, end = max(1, n - 1)/n, alpha = 1)
+     heat.colors(n, alpha = 1)
+     terrain.colors(n, alpha = 1)
+     topo.colors(n, alpha = 1)
+     cm.colors(n, alpha = 1)
+     
+_A_r_g_u_m_e_n_t_s:
+
+       n: the number of colors (>= 1) to be in the palette.
+
+    s, v: the ‘saturation’ and ‘value’ to be used to complete the HSV
+          color descriptions.
+
+   start: the (corrected) hue in [0,1] at which the rainbow begins.
+
+     end: the (corrected) hue in [0,1] at which the rainbow ends.
+
+   alpha: the alpha transparency, a number in [0,1], see argument
+          ‘alpha’ in ‘hsv’.
+
+_D_e_t_a_i_l_s:
+
+     Conceptually, all of these functions actually use (parts of) a
+     line cut out of the 3-dimensional color space, parametrized by
+     ‘hsv(h, s, v)’, and hence equispaced hues in RGB space tend to
+     cluster at the red, green and blue primaries.
+
+     Some applications such as contouring require a palette of colors
+     which do not wrap around to give a final color close to the
+     starting one.
+
+     With ‘rainbow’, the parameters ‘start’ and ‘end’ can be used to
+     specify particular subranges of hues.  The following values can be
+     used when generating such a subrange: red = 0, yellow = 1/6, green
+     = 2/6, cyan = 3/6, blue = 4/6 and magenta = 5/6.
+
+_V_a_l_u_e:
+
+     A character vector, ‘cv’, of color names.  This can be used either
+     to create a user-defined color palette for subsequent graphics by
+     ‘palette(cv)’, a ‘col =’ specification in graphics functions or in
+     ‘par’.
+
+_S_e_e _A_l_s_o:
+
+     ‘colors’, ‘palette’, ‘hsv’, ‘hcl’, ‘rgb’, ‘gray’ and ‘col2rgb’ for
+     translating to RGB numbers.
+
+_E_x_a_m_p_l_e_s:
+
+     require(graphics)
+     # A Color Wheel
+     pie(rep(1, 12), col = rainbow(12))
+     
+     ##------ Some palettes ------------
+     demo.pal <-
+       function(n, border = if (n < 32) "light gray" else NA,
+                main = paste("color palettes;  n=", n),
+                ch.col = c("rainbow(n, start=.7, end=.1)", "heat.colors(n)",
+                           "terrain.colors(n)", "topo.colors(n)",
+                           "cm.colors(n)"))
+     {
+         nt <- length(ch.col)
+         i <- 1:n; j <- n / nt; d <- j/6; dy <- 2*d
+         plot(i, i+d, type = "n", yaxt = "n", ylab = "", main = main)
+         for (k in 1:nt) {
+             rect(i-.5, (k-1)*j+ dy, i+.4, k*j,
+                  col = eval(parse(text = ch.col[k])), border = border)
+             text(2*j,  k * j + dy/4, ch.col[k])
+         }
+     }
+     n <- if(.Device == "postscript") 64 else 16
+          # Since for screen, larger n may give color allocation problem
+     demo.pal(n)
+     
+
