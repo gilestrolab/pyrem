@@ -236,7 +236,7 @@ make_definitive_rf <- function (df){
     d$animal <- NULL 
     d$y <- droplevels(d$y)
 
-    rf <- randomForest(y ~ ., d, ntree=100, sampsize=c(5000,2000,5000))
+    rf <- randomForest(y ~ ., d, ntree=100, sampsize=c(2000,2000,2000))
     return(rf)
 }
 important_subbands <- function(df){
@@ -299,7 +299,10 @@ df <- curate_df(dfo)
 df <- subset(df, animal != "GFP_3")
 df$animal <- droplevels(df$animal)
 df <- keep_only_grep(c("power"),df)
-df <- keep_only_grep(c("mean"),df)
+#~ df <- keep_only_grep(c("mean"),df)
+
+rf <- make_definitive_rf(df)
+print(rf)
 
 #~ df <- keep_only_grep(good_coeffs,df)
 #~ 

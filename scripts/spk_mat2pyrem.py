@@ -16,6 +16,7 @@ CHANNEL_ID_MAP = [
 CHANNELS_TYPES = ['eeg','eeg','emg','emg']
 
 INPUT_PATTERN = "/data/pyrem/Ellys/mats/*.mat"
+# INPUT_PATTERN = "/data/pyrem/Ellys/mats/GFP_1.mat"
 # INPUT_PATTERN = "/data/pyrem/Ellys/mats/GFP_F*.mat"
 OUT_DIR = "/data/pyrem/Ellys/pkls"
 
@@ -58,6 +59,11 @@ N_PROCESS = 6
 def save_one_pol(f):
 
     basename = os.path.basename(f).split(".")[0]
+    annotation_file = f.split(".")
+    annotation_file[-1] = "txt"
+    annotation_file = ".".join(annotation_file)
+    print "Using annotation file: " + annotation_file
+
     if basename in EXCLUDED:
         print "excluding", basename
         return
@@ -78,7 +84,7 @@ def save_one_pol(f):
 
         fs = DEFAULT_FS
     try:
-        pol = polygram_from_spike_matlab_file(f, fs, 1/5.0,
+        pol = polygram_from_spike_matlab_file(f,annotation_file, fs, 1/5.0,
                                               channel_names, CHANNELS_TYPES,
                                               DOUBT_CHARS, resample_signals=RESAMPLE_AT)
 
@@ -94,5 +100,8 @@ def save_one_pol(f):
 if __name__== "__main__":
     files = glob.glob(INPUT_PATTERN)
     clust = pool.Pool(N_PROCESS)
-
+    #
     clust.map(save_one_pol, sorted(files))
+    # map(save_one_pol, sorted(files))
+
+

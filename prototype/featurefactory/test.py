@@ -43,12 +43,11 @@ def features_one_file(f):
 
     feature_factory = [
                         PowerFeatures(),
-                        # HjorthFeatures(),
-                        # NonLinearFeatures(),
+                        HjorthFeatures(),
+                        NonLinearFeatures(),
 
                         # FIXME skip for now -> speed
-                        # EntropyFeatures(),
-                        # AbsoluteFeatures(),
+                        EntropyFeatures(),
                         VigilState(),]
 
     all_rows = []
