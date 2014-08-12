@@ -11,7 +11,7 @@ ALL_TEX := $(shell ls *.tex)
 #~ report.pdf: $(ALL_TEX) report.bib Makefile tutorials
 report.pdf: $(ALL_TEX)  Makefile
 	echo "Generating pdf"
-	latexmk report.tex
+	latexmk -pdf report.tex
 	
 clean:
 	latexmk -C

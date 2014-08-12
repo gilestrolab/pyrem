@@ -25,7 +25,8 @@
 \geometry{bindingoffset=1cm}
 
 \makeglossaries
-\renewcommand*\abstractname{Summary}
+
+%~ \renewcommand*\abstractname{Summary}
 
 % http://www.tex.ac.uk/cgi-bin/texfaq2html?label=altabcr
 \setcounter{MaxMatrixCols}{50}
@@ -70,15 +71,21 @@ Imperial College London
 
 % our acronyms
 \newacronym{rem}{REM}{Rapid Eye Movement}
-\newacronym{mea}{MEA}{Moment Expansion Approximation}
+
+\newglossaryentry{maxord}
+{
+  name=maximal order,
+  description={Maximal moment expansion order. Max order always (regardless to the closure method) refers to the highest order of 
+  moments present in an ODE system resulting from Moment Expansion Approximation. 
+  In other words, moment expansion is closed with moments of maximal order plus one
+   },
+  sort=maximal order
+}
 
 \begin{abstract}
 	\TODO{write the abstract}
 \end{abstract}
 
-\pagebreak % move TOC to a different page from abstract
-
-\newpage{}
 \printglossaries
 
 \newpage
