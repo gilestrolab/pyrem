@@ -1,0 +1,103 @@
+\documentclass[11pt,a4paper]{article}
+\setcounter{secnumdepth}{6}
+
+\usepackage{standalone}
+\usepackage{geometry} % Used to adjust the document margins
+\usepackage{graphicx}
+\usepackage[font=footnotesize]{caption}
+\usepackage[noadjust]{cite}
+\usepackage[toc,page]{appendix}
+\usepackage{hyperref}
+\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{sidecap}
+\usepackage{caption}
+\usepackage{subcaption}
+
+%~ \usepackage[colorinlistoftodos,disable]{todonotes}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{csquotes}
+\usepackage{parskip} % Spaces between paragraphs
+
+
+\usepackage[acronym]{glossaries}
+% add binding margins
+\geometry{bindingoffset=1cm}
+
+\makeglossaries
+\renewcommand*\abstractname{Summary}
+
+% http://www.tex.ac.uk/cgi-bin/texfaq2html?label=altabcr
+\setcounter{MaxMatrixCols}{50}
+
+% package name:
+\newcommand{\py}{\texttt{python}}
+\newcommand{\eg}{\emph{e.g.}}
+\newcommand{\ie}{\emph{i.e.}}
+
+%~ \newcommand{\sauliustodo}[2][]{\todo[color=cyan, #1]{\textbf{SL:} #2}}
+%~ \newcommand{\sisitodo}[2][]{\todo[color=yellow, #1]{\textbf{SF:} #2}}
+\newcommand{\FIXME}[2][]{\todo[color=cyan, #1]{\textbf{QG:} #2}}
+\newcommand{\TODO}[2][]{\todo[color=red, #1]{\textbf{QG:} #2}}
+
+\newcommand{\citationneeded}[2][]{\todo[color=brown, fancyline, #1]{\textbf{Citation Needed:} #2}}
+\newcommand{\contrib}{\emph}
+\begin{document}
+
+\pagenumbering{roman}
+
+\title{abcd}
+\author{Quentin Geissmann\\
+\\	
+\\
+\\
+\\
+Supervised by Giorgio Gilestro\\
+\\
+\\
+Imperial College London
+}
+\date{\today}
+
+\clearpage\maketitle
+\thispagestyle{empty}
+\newpage{}
+
+\listoftodos
+\newpage
+
+
+
+% our acronyms
+\newacronym{rem}{REM}{Rapid Eye Movement}
+\newacronym{mea}{MEA}{Moment Expansion Approximation}
+
+\begin{abstract}
+	\TODO{write the abstract}
+\end{abstract}
+
+\pagebreak % move TOC to a different page from abstract
+
+\newpage{}
+\printglossaries
+
+\newpage
+\pagenumbering{arabic}
+
+\input{intro}
+\newpage{}
+\input{matmet}
+\newpage{}
+\input{results}
+\newpage{}
+\input{discussion}
+\newpage{}
+%~ \bibliography{report.bib}{}
+%~ \bibliographystyle{ieeetr}
+
+%~ \newpage{}
+%~ \begin{appendices}
+%~ \section{Documentation}
+%~ \end{appendices}
+   
+\end{document}
