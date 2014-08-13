@@ -1,3 +1,78 @@
+r"""
+====
+Polygram
+====
+
+
+This module provides :class:`~pyrem.polygram.Polygram`; a container for biological time series such as :class:`~pyrem.time_series.Signal` and :class:`~pyrem.time_series.Annotation`.
+Often, 
+
+
+
+>>> import pyrem as pr
+>>> import numpy as np
+>>> # generate white noise:
+>>> noise = np.random.normal(size=int(1e6))
+>>> # a million point sampled at 256 Hz
+>>> sig = pr.time_series.Signal(noise, 256.0,
+>>>                             type="noise", name="channel_1",
+>>>                             metadata={"patient": "John_Doe"})
+>>> sig
+>>> #resample at 100 Hz
+>>> sig_short =  sig.resample(100.0)
+>>> sig_short
+>>> # sig is just a numpy array so we can do:
+>>> sig_norm = sig - np.mean(sig)
+>>> # or things like:
+>>> np.diff(sig)
+
+Indexing time series:
+
+>>> # Numpy style indexing
+>>> sig[1:1000:3] # one to 999, every 3 values
+>>> sig[: -100] # from start to 0 to 100 before the end
+>>> # see numpy documentation for more info
+
+Indexing with stings:
+
+It is very common to have to extract a signal between two different time points.
+Instead of having to compute manually the index every time, `pyrem` time series can be directly indexed with stings
+representing time with the following format:
+
+`"29h33m1.02s"`
+
+Where:
+
+* h is for hour
+* m for minutes
+* s for seconds
+
+Example:
+
+>>> # string indexing:
+>>> print sig.duration
+>>> sig2 = sig["1h2m2s":]  # everything after 1 hour, 2 min and 2 seconds
+>>> print sig2.duration
+>>> # this should be exactly 1h2m2s
+>>> print sig.duration - sig2.duration
+>>> print sig["1h2m2s":"1h2m2.1s"]
+
+.. note::
+
+    When indexing a signal with time strings, we query the values of an the discrete representation of a continuous signal
+    Therefore, it makes no sense to obtain a signal of length zero.
+    For instance, imagine a signal of 10 seconds sampled at 1Hz. If we query the value between 1.5 and 1.6s, no points
+    fall in this interval, however, the signal does have a value.
+    In this case, `pyrem` returns a signal of length 1 where the unique value is the value of the former neighbour.
+
+
+>>> sig = pr.time_series.Signal([3,4,2,6,4,7,4,5,7,9], 10.0,)
+>>> sig["0s":"0.001s"])
+>>> sig["0s":"0.011s"])
+
+
+"""
+
 from datetime import timedelta
 
 __author__ = 'quentin'

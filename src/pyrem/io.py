@@ -10,15 +10,26 @@ import scipy.io as scio
 import pandas as pd
 import numpy as np
 from pyrem.time_series import Signal, Annotation
-import  joblib
+import joblib
+
+from pyrem.time_series import BiologicalTimeSeries, Annotation, Signal
+
 
 def polygram_from_pkl(filename):
     return joblib.load(filename)
 
+def signal_from_pkl(filename):
+    return joblib.load(filename)
 
-def annotation_from_spike_txt(filename, doubt_chars):
+#
+# def signal_from_csv(file_name, sampling_freq):
+#     data = pd.read_csv(file_name, engine="c", header=None, dtype=np.float32)
+#     return Signal(data, sampling_freq)
+
+
+def _annotation_from_spike_txt(filename, doubt_chars):
     """
-    hacky parser needed because spike does not export epochs of exactly 5.000 s!!!!!!!
+    Hacky parser needed because spike does not export epochs of exactly 5.000 s!!!!!!!
 
     :param filename:
     :return:
@@ -53,7 +64,7 @@ def polygram_from_spike_matlab_file(signal_filename, annotation_filename, fs, an
     :return: a polygram
     """
 
-    an = annotation_from_spike_txt(annotation_filename, doubt_chars)
+    an = _annotation_from_spike_txt(annotation_filename, doubt_chars)
 
 
     type_for_name = dict(zip(channel_names, channel_types))

@@ -7,6 +7,8 @@ import tempfile
 import numpy as np
 
 from pyrem.time_series import *
+from pyrem.io import signal_from_pkl
+
 
 
 def compare_signals(a,b, test_values=True):
@@ -107,9 +109,11 @@ class TestSignal(unittest.TestCase):
         self.assertTrue(compare_signals(a[0:100],view))
 
 
-        self.assertEqual(a[:"201w"].size, 2)
-        self.assertEqual(a[:"199w"].size, 1)
+        self.assertEqual(a[:"0.201s"].size, 2)
+        self.assertEqual(a[:"0.199s"].size, 1)
 
+        sig = Signal([3,4,2,6,4,7,4,5,7,9], 10.0,)
+        self.assertEqual(sig["0s":"0.001s"].size, 1)
 
     def test_windowing(self):
         a = Signal(self.random_walk, 10,type="eeg", name="foo", metadata={"animal":"joe", "treatment":18})

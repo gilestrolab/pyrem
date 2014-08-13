@@ -40,15 +40,13 @@ It is very common to have to extract a signal between two different time points.
 Instead of having to compute manually the index every time, `pyrem` time series can be directly indexed with stings
 representing time with the following format:
 
-`"29h33m1s3ms"`
+`"29h33m1.02s"`
 
 Where:
 
 * h is for hour
 * m for minutes
 * s for seconds
-* w for milliseconds
-
 
 Example:
 
@@ -58,7 +56,7 @@ Example:
 >>> print sig2.duration
 >>> # this should be exactly 1h2m2s
 >>> print sig.duration - sig2.duration
->>> print sig["1h2m2s":"1h2m2s100w"] # 100w means 100 ms
+>>> print sig["1h2m2s":"1h2m2.1s"]
 
 .. note::
 
@@ -66,11 +64,13 @@ Example:
     Therefore, it makes no sense to obtain a signal of length zero.
     For instance, imagine a signal of 10 seconds sampled at 1Hz. If we query the value between 1.5 and 1.6s, no points
     fall in this interval, however, the signal does have a value.
-    In this case, `pyrem` returns a signal of length 1 where the unique value is the nearest neighbour value.
+    In this case, `pyrem` returns a signal of length 1 where the unique value is the value of the former neighbour.
 
-# fixme !! this does not work!
 
 >>> sig = pr.time_series.Signal([3,4,2,6,4,7,4,5,7,9], 10.0,)
+>>> sig["0s":"0.001s"])
+>>> sig["0s":"0.011s"])
+
 
 """
 __author__ = 'quentin'
@@ -80,20 +80,8 @@ import numpy as np
 import joblib as pkl
 import pandas as pd
 from scikits.samplerate import resample
-
 from pyrem.utils import str_to_time
 
-
-SIGNALY_DPI = 328
-SIGNAL_FIGSIZE = (30, 5)
-MAX_POINTS_AMPLITUDE_PLOT = 1000
-
-
-
-
-def signal_from_csv(file_name, sampling_freq):
-    data = pd.read_csv(file_name, engine="c", header=None, dtype=np.float32)
-    return BiologicalTimeSeries(data, sampling_freq)
 
 
 def _normalise(mat):
@@ -101,8 +89,6 @@ def _normalise(mat):
     return out
 
 
-def signal_from_pkl(filename):
-    return pkl.load(filename)
 
 
 class BiologicalTimeSeries(np.ndarray):
