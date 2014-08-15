@@ -16,8 +16,8 @@ import numpy as np
 DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/*.pkl"
 # DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/A*.pkl"
 
-OUT_CSV = "/data/pyrem/Ellys/all_features.csv"
-WINDOW_SIZE = 20
+OUT_CSV = "/data/pyrem/Ellys/all_features_e5s.csv"
+WINDOW_SIZE = 5
 WINDOW_LAG = 1.0
 
 N_PROCESSES = 4
