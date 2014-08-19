@@ -27,12 +27,14 @@ library("parallel")
 library("betareg")
 library("betareg")
 library(MASS)
+
+source("./pair_of_classes_importance.R")
 ######################################################
 
 
-show_2d_hist <- function(x, z, y, preds,conf, levels= c(.25,0.75,0.5)){
+show_2d_hist <- function(x, z, y, levels= c(.25,0.75,0.5),...){
 		mat <- cbind(x, z)
-		contour(kde2d(x, z,n=50,  h=c(0.15,.15)), levels=c(0), main= "Distribution of actual labels")
+		contour(kde2d(x, z,n=50,  h=c(0.15,.15)), levels=c(10), ...)
 		sub_mats <- split(data.frame(mat), y)
 		kerns = lapply(sub_mats,function(m)kde2d(m[,"x"], m[,"z"]))
 		cols =as.numeric(as.factor(names(sub_mats)))
@@ -41,49 +43,17 @@ show_2d_hist <- function(x, z, y, preds,conf, levels= c(.25,0.75,0.5)){
 		legend("bottomleft", legend=names(sub_mats), lwd=2,col=cols,title="78 -> N; 83 -> R; 88->W")
 		
 		
-		errors <- preds != y
+#~ 		errors <- preds != y
 #~ 		hcols <- heat.colors(10)
 #~  		points(x[errors], z[errors], col=hcols[round(conf[errors]*10)], pch=".",cex=3) 
 #~  		points(x[errors], z[errors], col=hcols[round(conf[errors]*10)], pch=".",cex=3) 
-		contour(kde2d(x[errors], z[errors],n=50,  h=c(0.15,.15)), levels=c(0:4/4), add=T)#. col="grey")
+#~ 		contour(kde2d(x[errors], z[errors],n=50,  h=c(0.15,.15)), levels=c(0:4/4), add=T)#. col="grey")
 #~  		hist(conf[errors])
  		
 	}
 #~ show_2d_hist(log10(dd$win_7.EEG_parietal_frontal_cD_6.power.mean), log10(dd$win_7.EMG_REF_cD_1.power.mean), preds$true_y, preds$y, preds$conf)
 
-	
-#~ +     
-#~ +     sub_mats <- split(data.frame(mat), y)
-#~ +     
-#~ +     kerns = lapply(sub_mats,function(m)kde2d(m[,"x"], m[,"z"]))
-#~ +     cols =as.numeric(as.factor(names(sub_mats)))
-#~ +     
-#~ +     for (i in 1:length(kerns))
-#~ +         contour(kerns[[i]],levels=levels, add=T, col=cols[i],n=100,  h=c(0.3,.3))
-#~ +     legend("bottomleft", legend=names(sub_mats), lwd=2,col=cols,title="78 -> N; 83 -> R; 88->W")
-#~ +     
-#~ +     #sub sample d to keep 2000 of each class:
-#~ +     l <- split(data.frame(x,z), y)
-#~ +     l <- lapply(l, function(xx){
-#~ +         idx = 1:nrow(xx)
-#~ +         return(xx[sample(idx, 5000, replace=T),])
-#~ +         })
-#~ +     dsub <- do.call("rbind", l)
-#~ +     kern <- kde2d(dsub[,"x"],dsub[,"z"],n=100,  h=c(0.3,0.3))
-#~ +     contour(kern, levels=0:9/10,main="Distribution of a balanced sample")
-#~ + #~     
-#~ + #~     if (! is.null(rf))
-#~ + #~     contour(kde2d(x, z,n=100,  h=c(0.15,.15)), levels=c(0))
-#~ + #~         new_y <- predict(rf, dsub)
-#~ + #~         sub_mats <- split(dsub, new_y)
-#~ + #~         
-#~ + #~         kerns = lapply(sub_mats,function(m)kde2d(df$lag_0.EEG_parietal_frontal_cD_6.power.mean / df$lag_0.EEG_parietal_frontal_cD_1.power.mean, m$lag_0.EMG_REF_cD_3.power.mean))
-#~ + #~         cols =as.numeric(as.factor(names(sub_mats)))
-#~ + #~         
-#~ + #~         for (i in 1:length(kerns))
-#~ + #~             contour(kerns[[i]],levels=levels, add=T, col=cols[i],n=100,  h=c(0.3,.3))
-#~ + #~         legend("bottomleft", legend=names(sub_mats), lwd=2,col=cols)
-     
+
 
 
 make_length_per_class <- function(series){
@@ -116,12 +86,34 @@ entropy_conf <- function(v){
     return(h)
 }
 
-curate_df <- function(df){
+normalise_cols <- function(d, pattern_valid_cols = "\\.power.m"){
+			d <- d[order(d$t),]
+			cols_to_norm_idx <- grep(pattern_valid_cols, colnames(d))
+
+			cols_to_norm <- d[,cols_to_norm_idx]
+			
+			cols_to_norm <- log10(cols_to_norm)
+
+			cols_to_norm <- apply(cols_to_norm, 2, function(x){
+				return((x - mean(x)) / sd(x))
+				})
+			other_cols <- subset(d,select = -cols_to_norm_idx)
+			
+			out <- cbind(cols_to_norm,other_cols)
+				
+			}
+			
+curate_df <- function(df,log_norm_all_Xs = T,pattern_valid_cols = "\\.power.m"){
     
     # remove cols containing NAs
-    s = sapply(df, function(col)sum(is.na(col)))
+    s = sapply(df, function(col){
+		if( sum(is.na(col)) + sum(!is.finite(col)) > 0)
+			return(T)
+		return(F)
+		})
+    
     if(sum(s) != 0)
-		print(paste("removing columns: ", colnames(df)[which(s >0)]))
+		print(paste("removing columns: ", colnames(df)[s]))
 	
     df <- df[,s ==0]
     
@@ -137,6 +129,12 @@ curate_df <- function(df){
     df$py <- df[,"vigilance_state.vigil.proba"]
     df$vigilance_state.vigil.proba <- NULL
        
+    if(log_norm_all_Xs){
+		l_dfs <- split(df, df$animal)
+		
+		l_dfs <- lapply(l_dfs,normalise_cols, pattern_valid_cols)
+		df <- do.call("rbind", l_dfs)
+		}
     return(df)
 }
 
@@ -187,17 +185,20 @@ describe_time_series <- function(df){
 	print(round(apply(trans_array, c(1,2), sd),3))
 }
 
-strip_df_for_ml <- function(df){
+strip_df_for_ml <- function(df, keep_animal=F){
 	d <- subset( df, py == 1)
 	d$py <- NULL 
 	d$treatment <- NULL 
 	d$t <- NULL 
-	d$animal <- NULL 
+	
+	if(!keep_animal)
+		d$animal <- NULL 
+		
 	d$y <- droplevels(d$y)
 	return(d)
 	}
 	
-stratified_cv_one_level <- function(out_level, df, rf_fun,return_preds=FALSE, resample_test=TRUE, sample_size=500){
+stratified_cv_one_level <- function(out_level, df, rf_fun,return_preds=FALSE, resample_test=TRUE, sample_size=750){
 	test_df <- subset(df, animal ==out_level)
 	train_df <- subset(df, animal !=out_level)
 	test_df <- strip_df_for_ml(test_df)
@@ -216,26 +217,33 @@ stratified_cv_one_level <- function(out_level, df, rf_fun,return_preds=FALSE, re
 
 	if(return_preds){
 		preds_p <- predict(rf, test_df, type="prob")
+		
 		conf <- apply(preds_p, 1, entropy_conf)
 		preds <- apply(preds_p, 1, which.max)
+		
 		preds <- levels(test_df$y)[preds]
+		
 		out_df <- data.frame(y= test_df$y, preds = preds, conf, animal=out_level)
+		
 		return(out_df)
 	}
 	
 	preds <- predict(rf, test_df)
+	
 	error <- sum(test_df$y != preds) / length(preds)
 
 	return(list(error=error, rf=rf))
 }
 
-stratified_cv <- function(df, rf_fun, return_preds=FALSE, resample_test=TRUE, nprocesses=4){
+stratified_cv <- function(df, rf_fun, return_preds=FALSE, resample_test=TRUE, nprocesses=N_THREADS){
 	
 	if(nprocesses < 2){
-		if(! return_preds)
-			out <- sapply(levels(df$animal), function(x)stratified_cv_one_level(x, df, rf_fun,return_preds,resample_test)$error)
+		
+		if(! return_preds){
+			out <- sapply(levels(df$animal), function(x)stratified_cv_one_level(x, df, rf_fun,return_preds, resample_test)$error)
+		}
 		else{
-			dfs <- lapply(levels(df$animal), function(x)stratified_cv_one_level(x, df, rf_fun,return_preds,resample_test))
+			dfs <- lapply(levels(df$animal), function(x)stratified_cv_one_level(x, df, rf_fun,return_preds, resample_test))
 			out <- do.call("rbind", dfs)
 		}
 		}
@@ -268,7 +276,7 @@ stratified_cv <- function(df, rf_fun, return_preds=FALSE, resample_test=TRUE, np
 	}
 select_variables <- function(df, scale=1.2){
 	
-	# importantly!! importance has to be computed on a balanced sample
+	# importantly!!, the importance has to be computed on a balanced sample
     rf_fun <- function(dd){
 				d <- strip_df_for_ml(dd);
 				return(randomForest(y ~ ., d, ntree=50, sampsize=c(1000,1000,1000)))
@@ -354,11 +362,21 @@ make_time_features <- function(lag, d, min_max_lag){
     }
 make_window_features <- function(winsize, d, dummy){
 	kernel = rep(1/winsize, winsize)
-    out <- apply(d, 2, filter, kernel)
+	
+#~     out <- apply(d, 2, 
+#~ 		function(v,k){
+#~ 			runmed(v, k)
+#~ 			}, winsize)
+    out <- apply(d, 2, 
+		function(v,k){
+			runmed(v, k)
+			}, winsize)
     colnames(out) <- sprintf("win_%i.%s", winsize, colnames(out))
     return(out)
     
     }
+    
+    
 add_lagged_time_features <- function(d, min_max_lag=c(-2,2),pattern_valid_cols = "\\.", use_window=FALSE){
     if(! use_window)
 		if (min_max_lag[2] == 0  & min_max_lag[1] ==0) 
@@ -400,7 +418,28 @@ add_lagged_time_features <- function(d, min_max_lag=c(-2,2),pattern_valid_cols =
     return(out)
 }
 
+add_mean_features <- function(d, pattern_valid_cols = "\\."){
+    
+    cols_to_use_idx <- grep(pattern_valid_cols, colnames(d))
+    
+    cols_to_use <- d[,cols_to_use_idx ]
+    
+    other_cols <- subset(d,select = -cols_to_use_idx)
+    
+
+	medians <- apply(cols_to_use,2, mean)
+	medians <- matrix(medians,nrow=nrow(cols_to_use), ncol=length(medians) ,byrow=T)
+	colnames(medians) <- sprintf("_median.%s", colnames(cols_to_use))
+	
+	out <- cbind(d, medians)
+    return(out)
+}
 ####   df <- add_lagged_time_features_to_whole(df, min_max_lag=c(1,3))
+add_mean_features_to_whole <- function(df, pattern_valid_cols = "\\."){
+	l_dfs <- split(df, df$animal)
+	l_dfs <- lapply(l_dfs,add_mean_features, pattern_valid_cols=pattern_valid_cols)
+	return(do.call("rbind", l_dfs))
+	}
 
 
 add_lagged_time_features_to_whole <- function(df,min_max_lag=c(-2,2),pattern_valid_cols = "\\.", use_window=FALSE){
@@ -455,22 +494,31 @@ analize_error_vs_nvar <- function(df, replicates=3){
 	return(error_nvar_df)
 	}
 	
+analize_error_vs_nvar_comb <- function(df, replicates=3, targets=c(1,2,3,4,5,10,15,20)){
+	l <- lapply(1:replicates, function(dummy)select_comb_vars(df,targets))
+	error_nvar_df <- do.call("rbind", l)
+	boxplot(error ~ n_vars, error_nvar_df, pch=20, xlab=expression(italic(p)), ylab=c("Average cross validation class error"),ylab=c(0,0.15))
+	return(error_nvar_df)
+	}
+	
 analize_error_vs_confidence <- function(df){
 	rf_fun <- function(dd){
-		d <- strip_df_for_ml(dd);
+		d <- strip_df_for_ml(dd)
 		# 200 trees for accuracy of confidence
-		return(randomForest(y ~ ., d, ntree=200, sampsize=c(1000,1000,1000)))
+		rf <-randomForest(y ~ ., d, ntree=200, sampsize=c(1000,1000,1000))
+		return(rf)
 		}
 	dd <- stratified_cv(df, rf_fun, TRUE)
 	
 	conf_bins <- 0:9/10
-	error_vs_conf <- sapply(0:9/10, function(c, d){
+	error_vs_conf <- sapply(conf_bins, function(c, d){
 		sub_d <- subset(d, conf>c &  conf <= c+0.1)
 		errors <- sub_d$y != sub_d$preds
 		return(sum(errors) / nrow(sub_d))
 		}, dd)
 	barplot(error_vs_conf, width=1,space=0, names.arg=conf_bins, ylim=c(0,0.5), ylab= "Actual (cross validation) error", xlab="Prediction confidence")
 	hist(dd$conf, nclass=20, col="grey", freq=F, xlab="Prediction confidence", main="")
+	return(list(error_vs_conf=error_vs_conf, data=dd))
 }
 analize_predicted_ts_features <- function(df){
 
@@ -478,7 +526,6 @@ analize_predicted_ts_features <- function(df){
 	# 4 predict
 	rf_fun <- function(dd){
 		d <- strip_df_for_ml(dd);
-		# 200 trees for accuracy of confidence
 		return(randomForest(y ~ ., d, ntree=100, sampsize=c(5000,500,5000)))
 		}
 	preds <- stratified_cv(df, rf_fun, resample_test=F, return_preds=T)
@@ -487,33 +534,16 @@ analize_predicted_ts_features <- function(df){
 	dd <- strip_df_for_ml(df) 
 	preds$true_y <- dd$y
 	
-	
-#~ 	show_2d_hist(log10(dd$lag_0.EEG_parietal_frontal_cD_6.power.mean), log10(dd$lag_m2.EMG_REF_cD_1.power.mean), preds$y, preds$y, preds$conf)
-#~ 	show_2d_hist(log10(dd$lag_0.EEG_parietal_frontal_cD_6.power.mean), log10(dd$lag_m2.EMG_REF_cD_1.power.mean), dd$y, preds$y, preds$conf)
-#~ 	
 
-#~ 	show_2d_hist(log10(dd$win_1.EMG_REF_cD_1.power.mean), log10(dd$win_7.EMG_REF_cD_1.power.mean), preds$y, preds$y, preds$conf)
-	show_2d_hist(log10(dd$win_3.EEG_parietal_frontal_cD_6.power.mean), log10(dd$win_3.EMG_REF_cD_1.power.mean), preds$y, preds$y, preds$conf)
-	show_2d_hist(log10(dd$win_1.EEG_parietal_frontal_cD_6.power.mean / 
-			dd$win_1.EEG_parietal_frontal_cD_1.power.mean),
-			 log10(dd$win_1.EMG_REF_cD_3.power.min
-			 ),
-			  preds$y, preds$y)
-			  
-		show_2d_hist(log10(dd$win_1.EEG_parietal_frontal_cD_6.power.mean / 
-			dd$win_1.EEG_parietal_frontal_cD_1.power.mean),
-			 log10(dd$win_1.EMG_REF_cD_3.power.min
-			 ),
-			  preds$y, preds$y)
-			  
-	plot3d(log10(dd$win_3.EEG_parietal_frontal_cD_6.power.mean),
-			log10(dd$win_3.EEG_parietal_frontal_cD_1.power.mean),
-			 log10(dd$win_3.EMG_REF_cD_1.power.min),
-			  col = preds$true_y)
-			  
-	show_2d_hist(log10(dd$win_15.EEG_parietal_frontal_cD_6.power.mean), log10(dd$win_15.EMG_REF_cD_1.power.mean), preds$y, preds$y, preds$conf)
-	show_2d_hist(log10(dd$win_3.EEG_parietal_frontal_cD_6.power.mean), log10(dd$win_3.EMG_REF_cD_1.power.mean), preds$true_y, preds$true_y, preds$conf)
-	
+#~ 	for(a in levels(preds$animal)){
+#~ 		subdd <- dd[preds$animal == a,]
+#~ 		subpreds <- subset(preds, animal == a)
+#~ 
+#~ 		show_2d_hist(log10(subdd$win_3.EEG_parietal_frontal_cD_6.power.mean / subdd$win_3.EEG_parietal_frontal_cD_1.power.mean), log10(subdd$win_3.EMG_REF_cD_1.power.mean), subpreds$y,main=a)
+#~ 		show_2d_hist(log10(subdd$win_3.EEG_parietal_frontal_cD_6.power.mean / subdd$win_3.EEG_parietal_frontal_cD_1.power.mean), log10(subdd$win_3.EMG_REF_cD_1.power.mean), subpreds$true_y,main=a)
+#~ 		
+#~ 	}
+
 	anim_dfs = split(preds,preds$animal)
 	pred_time_series <- sapply(anim_dfs, function(x)x$y)
 	true_time_series <- sapply(anim_dfs, function(x)x$true_y)
@@ -569,9 +599,12 @@ analize_predicted_ts_features <- function(df){
 	
 	
 	###
-	dd$preds <-preds$y
+#~ 	dd$preds <-preds$y
 	return(stat_df)
 	}
+
+
+
 
 
 main <- function(input_file_prefix){
@@ -579,73 +612,117 @@ main <- function(input_file_prefix){
 	prefix <- format(Sys.time(), "%Y_%m_%d-%X")
 	pdf(sprintf("/tmp/Rout_%s.pdf",prefix)); sink(sprintf("/tmp/Rout_%s.txt",prefix))	
 	dfo <- cache_load_file(input_file_prefix)
-	dfo <- curate_df(dfo)
+	dfo <- curate_df(dfo, F)
+
+#~ 	dfo <- curate_df(dfo,F)
+	
+	
 #~ 	
 	describe_time_series(dfo)
 	error_nvar_df <- analize_error_vs_nvar(dfo,replicates=REPLICATES)
+#~ 	error_nvar_df$method = "recursive"
+#~ 	error_nvar_df_comb <- analize_error_vs_nvar_comb(dfo,replicates=REPLICATES, COMB_NVARS)
+#~  	error_nvar_df_comb$method = "comb"
+#~  	
+#~  	error_nvar_df <- rbind(error_nvar_df, error_nvar_df_comb)
+#~  	
  	
 #~ 	out <- recursive_variable_elimination(dfo, target=25)
 #~ 	
-#~ 	
+	
+	
+	
+	
 	non_predictor_cols <- grep("\\.", colnames(dfo), invert=T, value=TRUE)
 	df <- dfo[,c(VARIABLE_TO_USE, non_predictor_cols)]
 	
-	pdf("/tmp/rlags_wind.pdf")
+	
+	
+	
     error_lag_df_window <- analize_error_vs_lag(df, list(
 									c(1),
-#~ 									c(1,3),
-#~ 									c(1,3,7),
-#~ 									c(1,3,7, 15),
-#~ 									c(1,3,7, 15, 31),
+									c(1,3),
+									c(1,3,7),
+									c(1,3,7, 15),
+									c(1,3,7, 15, 31),
 									c(1,3,7, 15, 31, 61),
 									c(1,3,5, 9, 17, 33, 65,129)),
-#~ 									c(1,3,61)),
 									 replicates=REPLICATES, use_window=TRUE)
-	dev.off()
-	pdf("/tmp/rlags.pdf")
-    error_lag_df_l <- analize_error_vs_lag(df, 3, replicates=REPLICATES)
-	dev.off()
+	
+#~     error_lag_df_l <- analize_error_vs_lag(df, 3, replicates=REPLICATES)
+	
 	
 #~ 	df <- add_lagged_time_features_to_whole(df, min_max_lag=c(-TAU_TO_USE, +TAU_TO_USE))
+#~ 	df <- add_lagged_time_features_to_whole(df, min_max_lag=c(-TAU_TO_USE, +TAU_TO_USE))
 	df <- add_lagged_time_features_to_whole(df, min_max_lag=WINDOW_SIZE_TO_USE, use_window=TRUE)
-	analize_error_vs_confidence(df)
+#~ 	dfm <- add_mean_features_to_whole(df)
+	err_conf_data <- analize_error_vs_confidence(df)
 	
-	0
+	stat_df <- analize_predicted_ts_features(df)
 	
 	#todo:
 #~ 	CV transition matrices and prevalence...
 
 	dev.off();sink()
+	return(list(error_nvar_df, err_conf_data,error_lag_df_window, stat_df))
 }
 
 
 
 VARIABLE_TO_USE <- {c(
-	"EEG_parietal_frontal_cD_1.power.mean",        
-	"EEG_parietal_frontal_cD_1.power.min",        
-	
-	"EEG_parietal_frontal_cD_6.power.mean",        
-	"EEG_parietal_frontal_cD_6.power.min",        
-	
-	"EEG_parietal_frontal_cD_5.hjorth.complexity",   
-	"EEG_parietal_frontal_cD_5.hjorth.morbidity",
-	
-	"EEG_parietal_frontal_cD_5.power.mean",
-	"EEG_parietal_frontal_cD_5.power.min",
-	
-	"EMG_REF_cD_1.power.min",                                          
-	"EMG_REF_cD_1.power.mean",                                          
-	"EMG_REF_cD_2.power.min",                       
-	"EMG_REF_cD_2.power.mean",                       
-	"EMG_REF_cD_3.power.min",
-	"EMG_REF_cD_3.power.mean"
+#~ 	"EEG_parietal_frontal_cD_1.power.mean",        
+#~ 	"EEG_parietal_frontal_cD_1.power.min",        
+#~ 	
+#~ 	"EEG_parietal_frontal_cD_6.power.mean",        
+#~ 	"EEG_parietal_frontal_cD_6.power.min",        
+#~ 	
+#~ 	"EEG_parietal_frontal_cD_5.hjorth.complexity",   
+#~ 	"EEG_parietal_frontal_cD_5.hjorth.morbidity",
+#~ 	
+#~ 	"EEG_parietal_frontal_cD_5.power.mean",
+#~ 	"EEG_parietal_frontal_cD_5.power.min",
+#~ 	
+#~ 	"EMG_REF_cD_1.power.min",                                          
+#~ 	"EMG_REF_cD_1.power.mean",                                          
+#~ 	"EMG_REF_cD_2.power.min",                       
+#~ 	"EMG_REF_cD_2.power.mean",                       
+#~ 	"EMG_REF_cD_3.power.min",
+#~ 	"EMG_REF_cD_3.power.mean"
+#~ 	
+#~ 	
+#~ 	
 )}
 
-TAU_TO_USE <- 3
+
+VARIABLE_TO_USE <- {c(
+"EEG_parietal_frontal_cA_6.power.mean",
+"EEG_parietal_frontal_cA_6.power.min",
+"EEG_parietal_frontal_cD_1.power.mean",     
+"EEG_parietal_frontal_cD_1.power.min",     
+"EEG_parietal_frontal_cD_2.hjorth.complexity",
+"EEG_parietal_frontal_cD_2.hjorth.morbidity", 
+"EEG_parietal_frontal_cD_5.hjorth.complexity",
+"EEG_parietal_frontal_cD_5.hjorth.morbidity", 
+"EEG_parietal_frontal_cD_6.power.mean", 
+"EEG_parietal_frontal_cD_6.power.min",        
+"EEG_parietal_frontal_cD_6.power.sd",         
+"EMG_REF_cD_1.power.mean",                    
+"EMG_REF_cD_1.power.min",                     
+"EMG_REF_cD_2.power.mean",                    
+"EMG_REF_cD_2.power.min",                    
+"EMG_REF_cD_3.power.mean",                    
+"EMG_REF_cD_3.power.min")}
+
+TAU_TO_USE <- 1
 WINDOW_SIZE_TO_USE <- c(1,3,7, 15, 31, 61)
-REPLICATES <- 3
-args <- commandArgs(trailingOnly = TRUE)
+COMB_NVARS <- c(1,2,3,4,5,10,15,20)
+REPLICATES <- 10
+N_THREADS <- 3
+#~ args <- commandArgs(trailingOnly = TRUE)
 #~ main(args[1])
+out <- main("/data/pyrem/Ellys/all_features_e5s")
+
+############################################################################
 
 ###finalrf:
 	
@@ -656,8 +733,8 @@ args <- commandArgs(trailingOnly = TRUE)
 #~ 	
 #~ }
 
-plot3d(x$EEG_parietal_frontal_cD_2.hjorth.morbidity ,log10(x$EMG_REF_cD_1.power.mean), log10(x$EEG_parietal_frontal_cD_5.power.mean),  col=y, size=5)
-
+#~ plot3d(x$EEG_parietal_frontal_cD_2.hjorth.morbidity ,log10(x$EMG_REF_cD_1.power.mean), log10(x$EEG_parietal_frontal_cD_5.power.mean),  col=y, size=5)
+#~ 
 
 #sleep stages? within non-rem?
 #~ plot3d(x=log10(df$EMG_REF_cD_1.power.mean), y=log10(df$EEG_parietal_frontal_cD_6.power.mean), z=log10(df$EEG_parietal_frontal_cD_1.power.mean), col=df$y)
@@ -669,7 +746,37 @@ plot3d(x$EEG_parietal_frontal_cD_2.hjorth.morbidity ,log10(x$EMG_REF_cD_1.power.
 #~ points(1:length(xp), rep(0.8, length(xt)), col=ifelse(xt==xp,0,1), pch=20,cex=1)
 
 
+#~ 
 
+#~ df2 <- add_lagged_time_features_to_whole(df, min_max_lag=WINDOW_SIZE_TO_USE, use_window=TRUE)
+#~ 
+#~ df2 <- strip_df_for_ml(df2, keep_animal=T)
+#~ 
+#~ anim <- "TelC_3"
+#~ train <- df2[df2$animal == anim,]
+#~ test =df2[df2$animal == anim,]
+#~ df2$animal <- NULL
+#~ test$animal <- NULL
+#~ rf <- randomForest(subset(df2, select=-y),df2$y, 
+#~ 		sampsize=c(5000,500,5000),
+#~ 		ytest=test$y, xtest=subset(test, select=-y), 
+#~ 		 ntree=100, do.trace=T )
+		 
+#~ 
+#~ rf <- randomForest(subset(train, select=-y),train$y, 
+#~ 		ytest=test$y, xtest=subset(test, select=-y), 
+#~ 		keep.forest=T,
+#~ 		sampsize=c(5000,500,5000),
+#~ 		 ntree=100, do.trace=T )
+#~ 
+#~ ani_df <- subset(df, animal==anim)
+#~ new_y <- predict(rf, ani_df)
+#~ dfout <- cbind(ani_df, new_y)
+#~ towrite <- dfout[, c("t","y", "new_y")]
+#~ towrite$eq <- ifelse(as.character(towrite$y) == as.character(towrite$new_y), "", "!")
+#~ write.table(towrite, "/tmp/out.tsv", quote=F, row.names=F)
 
-
-
+#~ show_2d_hist(log10(dfout$win_7.EEG_parietal_frontal_cD_6.power.mean), log10(dfout$win_7.EMG_REF_cD_1.power.mean), dfout$new_y, dfout$new_y, NULL)
+#~ show_2d_hist(log10(dfout$win_7.EEG_parietal_frontal_cD_6.power.mean), log10(dfout$win_7.EMG_REF_cD_1.power.mean), dfout$y, dfout$y, NULL)
+#~ plot3d(log10(dfout$win_1.EEG_parietal_frontal_cD_6.power.mean), log10(dfout$win_1.EEG_parietal_frontal_cD_1.power.mean), log10(dfout$win_1.EMG_REF_cD_1.power.mean), col=dfout$y)
+#~ plot3d(log10(dfout$win_7.EEG_parietal_frontal_cD_6.power.mean), log10(dfout$win_7.EEG_parietal_frontal_cD_2.hjorth.complexity), log10(dfout$win_7.EMG_REF_cD_1.power.mean), col=dfout$new_y)

@@ -16,7 +16,7 @@ import numpy as np
 DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/*.pkl"
 # DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/A*.pkl"
 
-OUT_CSV = "/data/pyrem/Ellys/all_features_e5s.csv"
+OUT_CSV = "/data/pyrem/Ellys/all_features_e5s_plus_raw.csv"
 WINDOW_SIZE = 5
 WINDOW_LAG = 1.0
 
@@ -34,7 +34,8 @@ def features_one_file(f):
     eegs = decompose_signal(pol["EEG_parietal_frontal"], levels=[1,2,3,4,5,6])
     emgs = decompose_signal(pol["EMG_REF"],[1,2,3],keep_a=False)
 
-    pol2 = eegs.merge(emgs)
+    pol2 = eegs.merge(pol["EEG_parietal_frontal"])
+    pol2 = pol2.merge(emgs)
     pol2 = pol2.merge(pol["vigilance_state"])
 
     ##normalise
@@ -44,10 +45,10 @@ def features_one_file(f):
     feature_factory = [
                         PowerFeatures(),
                         HjorthFeatures(),
-                        NonLinearFeatures(),
-
-                        # FIXME skip for now -> speed
-                        EntropyFeatures(),
+                        # NonLinearFeatures(),
+                        #
+                        # # FIXME skip for now -> speed
+                        # EntropyFeatures(),
                         VigilState(),]
 
     all_rows = []
