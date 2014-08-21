@@ -5,6 +5,7 @@ import pandas as pd
 from pyrem.feature_families import *
 from pyrem.wavelet_decomposition import decompose_signal
 from pyrem.io import polygram_from_pkl
+from pyrem.polygram import Polygram
 
 from multiprocessing import Pool
 import numpy as np
@@ -14,11 +15,13 @@ import numpy as np
 
 
 DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/*.pkl"
-# DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/A*.pkl"
+# DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/TelC_*.pkl"
 
-OUT_CSV = "/data/pyrem/Ellys/all_features_e5s_plus_raw.csv"
+
+#OUT_CSV = "/data/pyrem/Ellys/all_features_e5s_plus_raw.csv"
+OUT_CSV = "/data/pyrem/Ellys/all_features_e5s_periodo.csv"
 WINDOW_SIZE = 5
-WINDOW_LAG = 1.0
+WINDOW_LAG = 1
 
 N_PROCESSES = 4
 
@@ -31,20 +34,22 @@ def features_one_file(f):
     pol = polygram_from_pkl(f)
 
     # eegs = decompose_signal(pol["EEG_parietal_cereb"], levels=[1,2,3,4,5,6])
-    eegs = decompose_signal(pol["EEG_parietal_frontal"], levels=[1,2,3,4,5,6])
-    emgs = decompose_signal(pol["EMG_REF"],[1,2,3],keep_a=False)
-
-    pol2 = eegs.merge(pol["EEG_parietal_frontal"])
-    pol2 = pol2.merge(emgs)
-    pol2 = pol2.merge(pol["vigilance_state"])
+    # eegs = decompose_signal(pol["EEG_parietal_frontal"], levels=[1,2,3,4,5], resample_before=160.0)
+    # emgs = decompose_signal(pol["EMG_REF"],[1,2,3],keep_a=False)
+    #
+    # pol2 = eegs.merge(emgs)
+    # pol2 = pol2.merge(pol["vigilance_state"])
 
     ##normalise
-    pol2 = pol2.map_signal_channels(lambda c : (c - np.mean(c))/ np.std(c))
+    # pol2 = pol2.map_signal_channels(lambda c : (c - np.mean(c))/ np.std(c))
 
-
+    pol2 = Polygram([pol["EEG_parietal_cereb"],pol["EMG_REF"] , pol["vigilance_state"]])
+    print pol2
     feature_factory = [
                         PowerFeatures(),
+                        PeriodogramFeatures(),
                         HjorthFeatures(),
+
                         # NonLinearFeatures(),
                         #
                         # # FIXME skip for now -> speed
@@ -66,7 +71,6 @@ def features_one_file(f):
         if p != old_p:
             print f, p, "%"
             old_p = p
-
 
         row = pd.concat(dfs, axis=1)
         row.index = [t]
