@@ -1,6 +1,8 @@
-from pyrem.classifiers.eeg_vs_emg import EEGsvEMG
-import pyrem as pr
 import glob
+
+from non_package_stuff.classifiers.eeg_vs_emg import EEGsvEMG
+import pyrem as pr
+
 DATA_FILE_PATTERN= "/data/pyrem/eeg_vs_emg_data/*.pkl"
 
 from sklearn.externals import joblib

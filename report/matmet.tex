@@ -4,7 +4,14 @@ lorem ipsum ...
 \TODO{an intro is needed}
 \subsection{Data}
 \subsection{Preprocessing}
-Re Sampling and epoching
+
+First of all, \gls{EEG} and \gls{EMG} signals were resampled from approximatly 200.0Hz to 256.0Hz using
+conservative sinc interpolation\citationneeded{Putman}. 
+256.0Hz was prefered to 200.0Hz because
+Annotations labels were resampled at 0.20Hz using nearest neghbour interpolation.
+
+
+
 \subsection{Stratified Cross Validation}
 why this is super important
 

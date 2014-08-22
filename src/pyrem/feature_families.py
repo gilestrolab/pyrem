@@ -8,6 +8,7 @@ __author__ = 'quentin'
 
 import pandas as pd
 import scipy.stats as stats
+import scipy.signal as signal
 
 from pyrem.univariate import *
 from pyrem.time_series import Signal,Annotation
@@ -89,21 +90,37 @@ class VigilState(AnnotationFeatureBase):
         return out
 
 
+class PeriodogramFeatures(SignalFeatureBase):
+    prefix = "spectr"
+    def _make_feature_vec(self, channel):
+        f, Pxx_den = signal.welch(channel, channel.fs, nperseg=256)
+
+        posden = Pxx_den
+
+
+        posden= np.log10(posden[0:25])
+        orders = np.argsort(-posden)
+
+        out = {}
+        for i,d  in enumerate(orders):
+            out["%03d" %(i)] = d
+
+        return out
 
 class AbsoluteFeatures(SignalFeatureBase):
-    prefix = "absolute"
+    prefix = "abs"
     def _make_feature_vec(self, channel):
 
         out = dict()
 
-        absol = channel ** 2
+        absol = np.abs(channel)
         out["mean"] = np.mean(absol)
         out["sd"] = np.std(absol)
         out["median"] = np.median(absol)
-        out["skew"] = stats.skew(absol)
-        out["kurt"] = stats.kurtosis(absol)
+        # out["skew"] = stats.skew(absol)
+        # out["kurt"] = stats.kurtosis(absol)
         out["min"] = np.max(absol)
-        out["max"] = np.min(absol)
+        # out["max"] = np.min(absol)
 
         return out
 
@@ -117,10 +134,10 @@ class PowerFeatures(SignalFeatureBase):
         out["mean"] = np.mean(powers)
         out["sd"] = np.std(powers)
         out["median"] = np.median(powers)
-        out["skew"] = stats.skew(powers)
-        out["kurt"] = stats.skew(powers)
+        # out["skew"] = stats.skew(powers)
+        # out["kurt"] = stats.skew(powers)
         out["min"] = np.max(powers)
-        out["max"] = np.min(powers)
+        # out["max"] = np.min(powers)
 
 
         return out

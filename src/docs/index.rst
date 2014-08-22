@@ -12,7 +12,6 @@ Contents:
    :maxdepth: 1
 
    pyrem
-   setup
 
 
 Indices and tables

@@ -53,17 +53,26 @@ show_2d_hist <- function(x, z, y, levels= c(.25,0.75,0.5),all=F,...){
 			max_n <- max(sapply(sub_mats, nrow))
 			
 			sampled_mats <- lapply(sub_mats, function(m){
-				idxs <- sample(1:nrow(m),max_n, replace=T)
+				idxs <- sample(1:nrow(m),max_n/2, replace=T)
 				return(m[idxs,])
 			})
 			
 			sampled_mats <- do.call("rbind", sampled_mats)
-			kern  <- kde2d(sampled_mats[,"x"], sampled_mats[,"z"],n=100,  h=c(0.3,.3),)
+			kern  <- kde2d(sampled_mats[,"x"], sampled_mats[,"z"],n=200,  h=c(0.4,.4),)
 			contour(kern,levels=levels,...)
+#~ 			filled.contour(kern,color.palette=terrain.colors,...)
+			
+#~ 			heatmap(kern,...)
 			}
 	}
-
-
+#~ 
+#~ 	show_2d_hist(log10(subdd$win_3.EEG_parietal_frontal_cA_6.power.mean * subdd$win_3.EEG_parietal_frontal_cD_6.power.mean / subdd$win_3.EEG_parietal_frontal_cD_1.power.mean), 
+#~ 					log10(subdd$win_7.EMG_REF_cD_3.power.mean * subdd$win_3.EMG_REF_cD_2.power.mean * subdd$win_3.EMG_REF_cD_1.power.mean), subpreds$y, levs,all=T,
+#~ 					 main=paste("No labels, balanced",a),
+#~ 					ylim=yl, xlim=xl
+#~ 					)
+#~ 					
+					
 #~ 		errors <- preds != y
 #~ 		hcols <- heat.colors(10)
 #~  		points(x[errors], z[errors], col=hcols[round(conf[errors]*10)], pch=".",cex=3) 
@@ -558,18 +567,18 @@ analize_predicted_ts_features <- function(df){
 	dd <- strip_df_for_ml(df) 
 	preds$true_y <- dd$y
 	
-	par(mfrow=c(1,3))
+	par(mfrow=c(1,2))
 	for(a in levels(preds$animal)){
 		subdd <- dd[preds$animal == a,]
 		subpreds <- subset(preds, animal == a)
 		xl <- c(-3,3)
 		yl <- c(-5,2)
 		levs <- c(0.1,0.25, 0.5, 0.75, 0.9)
-	show_2d_hist(log10(subdd$win_3.EEG_parietal_frontal_cA_6.power.mean * subdd$win_3.EEG_parietal_frontal_cD_6.power.mean / subdd$win_3.EEG_parietal_frontal_cD_1.power.mean), 
-					log10(subdd$win_7.EMG_REF_cD_3.power.mean * subdd$win_3.EMG_REF_cD_2.power.mean * subdd$win_3.EMG_REF_cD_1.power.mean), subpreds$true_y, levs,all=T,
-					 main=paste("No labels, balanced",a),
-					ylim=yl, xlim=xl
-					)
+#~ 	show_2d_hist(log10(subdd$win_3.EEG_parietal_frontal_cA_6.power.mean * subdd$win_3.EEG_parietal_frontal_cD_6.power.mean / subdd$win_3.EEG_parietal_frontal_cD_1.power.mean), 
+#~ 					log10(subdd$win_7.EMG_REF_cD_3.power.mean * subdd$win_3.EMG_REF_cD_2.power.mean * subdd$win_3.EMG_REF_cD_1.power.mean), subpreds$true_y, levs,all=T,
+#~ 					 main=paste("No labels, balanced",a),
+#~ 					ylim=yl, xlim=xl
+#~ 					)
 					
 		show_2d_hist(log10(subdd$win_3.EEG_parietal_frontal_cA_6.power.mean * subdd$win_3.EEG_parietal_frontal_cD_6.power.mean / subdd$win_3.EEG_parietal_frontal_cD_1.power.mean), 
 					log10(subdd$win_7.EMG_REF_cD_3.power.mean * subdd$win_3.EMG_REF_cD_2.power.mean * subdd$win_3.EMG_REF_cD_1.power.mean), subpreds$true_y, levs, main=paste("Reference", a),
@@ -809,12 +818,12 @@ N_THREADS <- 3
 
 #~ df <- add_lagged_time_features_to_whole(df, min_max_lag=c(7,11, 15, 21), use_window=TRUE)
 stop("eos")
-df2 <- strip_df_for_ml(df, keep_animal=T)
+df2 <- strip_df_for_ml(dfo, keep_animal=T)
 
 #~ 
-df2 <- df2[grep("TelC_", df2$animal),]
+#~ df2 <- df2[grep("TelC_", df2$animal),]
 
-anim <- "TelC_3"
+anim <- "GFP_F"
 train <- df2[df2$animal != anim,]
 #~ 
 test =df2[df2$animal == anim,]

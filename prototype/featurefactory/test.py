@@ -19,7 +19,7 @@ DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/*.pkl"
 
 
 #OUT_CSV = "/data/pyrem/Ellys/all_features_e5s_plus_raw.csv"
-OUT_CSV = "/data/pyrem/Ellys/all_features_e5s_periodo.csv"
+OUT_CSV = "/data/pyrem/Ellys/all_features_e5s_eeg_dwt_1_to_7.csv"
 WINDOW_SIZE = 5
 WINDOW_LAG = 1
 
@@ -33,21 +33,20 @@ def features_one_file(f):
     treatment, animal = file_name.split("_")
     pol = polygram_from_pkl(f)
 
-    # eegs = decompose_signal(pol["EEG_parietal_cereb"], levels=[1,2,3,4,5,6])
-    # eegs = decompose_signal(pol["EEG_parietal_frontal"], levels=[1,2,3,4,5], resample_before=160.0)
-    # emgs = decompose_signal(pol["EMG_REF"],[1,2,3],keep_a=False)
+    #eegs = decompose_signal(pol["EEG_parietal_cereb"], levels=[1,2,3,4,5,6])
+    eegs = decompose_signal(pol["EEG_parietal_frontal"], levels=[1,2,3,4,5,6,7])
+    emgs = decompose_signal(pol["EMG_REF"],[1,2,3, 4,5,6,7])
+
     #
-    # pol2 = eegs.merge(emgs)
-    # pol2 = pol2.merge(pol["vigilance_state"])
+    pol2 = eegs.merge(emgs)
+    pol2 = pol2.merge(pol["vigilance_state"])
 
     ##normalise
-    # pol2 = pol2.map_signal_channels(lambda c : (c - np.mean(c))/ np.std(c))
+    pol2 = pol2.map_signal_channels(lambda c : (c - np.mean(c))/ np.std(c))
 
-    pol2 = Polygram([pol["EEG_parietal_cereb"],pol["EMG_REF"] , pol["vigilance_state"]])
-    print pol2
+
     feature_factory = [
                         PowerFeatures(),
-                        PeriodogramFeatures(),
                         HjorthFeatures(),
 
                         # NonLinearFeatures(),
@@ -62,8 +61,8 @@ def features_one_file(f):
     for t, w in pol2.iter_window(WINDOW_SIZE, WINDOW_LAG):
         dfs = []
         for c in w.channels:
-            for f in feature_factory:
-                feature_vec = f.make_vector(c)
+            for ff in feature_factory:
+                feature_vec = ff.make_vector(c)
                 if not feature_vec is None:
                     dfs.append(feature_vec)
 

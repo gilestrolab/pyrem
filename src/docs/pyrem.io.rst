@@ -1,7 +1,7 @@
-setup module
-============
+pyrem.io module
+===============
 
-.. automodule:: setup
+.. automodule:: pyrem.io
     :members:
     :undoc-members:
     :show-inheritance:

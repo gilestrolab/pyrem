@@ -1,12 +1,12 @@
 r"""
-====
+============================
 Biological time series
-====
+============================
 
 
 This module provides data structure for two types of time series: :class:`~pyrem.time_series.Signal` and :class:`~pyrem.time_series.Annotation`.
 
-Both structures extend :class:`~numpy.ndarray` by providing attributes, such as sampling frequency, metadata, name.
+Both structures extend :class:`~numpy.ndarray` by providing attributes, such as *sampling frequency*, *metadata*, name.
 More importantly, time series provide specific features such as indexing with time strings.
 
 
@@ -15,30 +15,52 @@ More importantly, time series provide specific features such as indexing with ti
 >>> # generate white noise:
 >>> noise = np.random.normal(size=int(1e6))
 >>> # a million point sampled at 256 Hz
+
+Then, to create a time series from this vector of random numbers:
+
 >>> sig = pr.time_series.Signal(noise, 256.0,
 >>>                             type="noise", name="channel_1",
 >>>                             metadata={"patient": "John_Doe"})
+
+Display information about this time series:
+
 >>> sig
->>> #resample at 100 Hz
+
+To resample at 100 Hz:
+
 >>> sig_short =  sig.resample(100.0)
 >>> sig_short
->>> # sig is just a numpy array so we can do:
+
+Time series derive from numpy arrays, so you can just use them as such:
+
 >>> sig_norm = sig - np.mean(sig)
->>> # or things like:
+Note that the resulting signal is conveniently a time series (not a regular numpy array)
+
 >>> np.diff(sig)
 
-Indexing time series:
+============================
+Indexing time series
+============================
 
->>> # Numpy style indexing
+----------------------------
+As numpy arrays
+----------------------------
+
+Since time series are derived from numpy array, the numpy indexing rule apply:
+
 >>> sig[1:1000:3] # one to 999, every 3 values
 >>> sig[: -100] # from start to 0 to 100 before the end
->>> # see numpy documentation for more info
 
-Indexing with stings:
+See numpy documentation for more info.
 
-It is very common to have to extract a signal between two different time points.
-Instead of having to compute manually the index every time, `pyrem` time series can be directly indexed with stings
-representing time with the following format:
+----------------------------
+With strings
+----------------------------
+
+It is common to have to extract a signal between two different time points.
+Instead of having to tediously calculate index from time, `pyrem`  offers the possibility to use stings and :class:`datetime.timedelta`
+
+Time strings are represented with the following format:
 
 `"29h33m1.02s"`
 
@@ -60,19 +82,45 @@ Example:
 
 .. note::
 
-    When indexing a signal with time strings, we query the values of an the discrete representation of a continuous signal
+    When indexing a signal with time strings, we query the values of a *discrete representation of a continuous signal*.
     Therefore, it makes no sense to obtain a signal of length zero.
     For instance, imagine a signal of 10 seconds sampled at 1Hz. If we query the value between 1.5 and 1.6s, no points
-    fall in this interval, however, the signal does have a value.
+    fall in this interval. However, the signal does have a value.
     In this case, `pyrem` returns a signal of length 1 where the unique value is the value of the former neighbour.
-
 
 >>> sig = pr.time_series.Signal([3,4,2,6,4,7,4,5,7,9], 10.0,)
 >>> sig["0s":"0.001s"])
 >>> sig["0s":"0.011s"])
 
+============================
+Epoch iteration
+============================
+
+A common task is to extract successive temporal slices (i.e. epochs) of a signal, for instance, in order to compute features.
+:func:`~pyrem.time_series.BiologicalTimeSeries.iter_window` iterator facilitates this.
+
+
+Let us work wit a one minute signal as an example:
+
+>>> sig1m = sig[:"1m"]
+
+Get every 5 seconds of a the first minutes of a signal:
+
+>>> for time, sub_signal in sig1m.iter_window(5,1.0):
+>>>     print time, sub_signal.duration
+
+Get 10 second epochs, overlapping of 50% (5s):
+
+>>> for time, sub_signal in sig1m.iter_window(10,0.5):
+>>>     print time, sub_signal.duration
+
+Get 1 second epochs, skipping every other epoch
+
+>>> for time, sub_signal in sig1m.iter_window(1,2.0):
+>>>     print time, sub_signal.duration
 
 """
+
 __author__ = 'quentin'
 
 import datetime
@@ -98,7 +146,7 @@ class BiologicalTimeSeries(np.ndarray):
     #dummy init for doc and editor
     def __init__(self, data, fs, type=None, name=None, metadata=None):
         """
-        :param data: an one-d array like structure (typically, a :`~numpy.ndarray`)
+        :param data: an one-d array like structure (typically, a :class:`~numpy.ndarray`)
         :param fs: the sampling frequency
         :type fs: float
         :param type: the type of time series (e.g. "eeg", "temperature", "blood_pH")
@@ -181,7 +229,7 @@ class BiologicalTimeSeries(np.ndarray):
     @property
     def metadata(self):
         """
-        :return: a dictionnary of metadata (i.e. information about data acquisition)
+        :return: a dictionary of metadata (i.e. information about data acquisition)
         :rtype: dict
         """
         return self.__metadata
@@ -209,6 +257,10 @@ class BiologicalTimeSeries(np.ndarray):
 
     @property
     def duration(self):
+        """
+        :return: the total duration of the time series
+        :rtype: datetime
+        """
         return self._time_from_idx(self.size)
 #
 
@@ -222,6 +274,12 @@ class BiologicalTimeSeries(np.ndarray):
         return  end - start
 #
     def copy(self):
+        """
+        Deep copy a time series.
+
+        :return: A new time series with identical values and attributes
+        :rtype: :class:`~pyrem.time_series.BiologicalTimeSeries`
+        """
         return self._copy_attrs_to_array(self)
 
 
@@ -332,6 +390,9 @@ class BiologicalTimeSeries(np.ndarray):
 
 
 class Signal(BiologicalTimeSeries):
+    """
+
+    """
     #dummry init for pycharm completion
     def __init__(self,data, fs, **kwargs):
         pass
@@ -355,6 +416,15 @@ class Signal(BiologicalTimeSeries):
         return self.__new__(type(self),a, **dic)
 
     def resample(self, target_fs, mode="sinc_best"):
+        """
+        Resample the signal. One implication of the signal being digital, is that the resulting sampling
+        frequency is not guaranteed to be exactly at `target_fs`.
+        This method wraps :method:`~scikits.samplerate.resample`
+
+        :param target_fs: The new sampling frequency
+        :param mode:
+        :return:
+        """
         # num = target_fs * self.size / self.fs
         ratio = target_fs / self.fs
 
@@ -369,6 +439,9 @@ class Annotation(BiologicalTimeSeries):
     # dummy for doc and pycharm
     def __init__(self,data, fs, observation_probabilities=None, **kwargs):
         """
+        Annotations are time series of discrete values associated with a probability/confidence of observing this value.
+        :class:`~pyrem.time_series.BiologicalTimeSeries` indexing rules apply to them.
+
         :param data: a vector representing different states.\
             It should be a uint8 one-d array like structure (typically, a :class:`~numpy.ndarray`)
         :param fs: the sampling frequency
@@ -399,15 +472,37 @@ class Annotation(BiologicalTimeSeries):
 
         return BiologicalTimeSeries.__new__(cls, data, fs, **kwargs)
 
-    def resample(self, new_fs):
+    def resample(self, target_fs):
+        """
+        Resample annotations to a new sampling frequency.
+        Values are resampled with nearest neighbour interpolation,
+        while associated probabilities are linearly interpolated.
+
+        :param target_fs: The target sampling frequency
+        :type target_fs: float
+        :return: a new  :class:`~pyrem.time_series.Annotation` object
+        """
+
         raise NotImplementedError #fixme
 
     @property
     def values(self):
+        """
+        The values of each annotations.
+
+        :return: an array of :class:`~numpy.uint8`
+        :rtype: :class:`~numpy.ndarray`
+        """
         return self["values"]
 
     @property
     def probas(self):
+        """
+        The probabilities/confidences associated to the annotation values.
+
+        :return: an array of :class:`~numpy.float32`
+        :rtype: :class:`~numpy.ndarray`
+        """
         return self["probas"]
 
     def _copy_attrs_to_array(self, a, **kwargs):
