@@ -49,7 +49,7 @@ class TestFeatures(unittest.TestCase):
         #~ ans = univariate.dfa(white_noise)
 #~ 
         #~ self.assertAlmostEqual(ref, ans)
-        self.assertAlmostEqual(ref, ans)
+        # self.assertAlmostEqual(ref, ans)
 
     def test_fisher_information(self):
         ref = 0.0002986254447524082 
@@ -59,11 +59,11 @@ class TestFeatures(unittest.TestCase):
 
     def test_hfd(self):
 
-        ans = univariate.hfd_new(white_noise[:100], 10)
-        ref = 1.0703560530609153
+        ans = univariate.hfd(white_noise[:100], 10)
+        ref =  2.0703560530609164
         self.assertAlmostEqual(ref, ans)
-        ans = univariate.hfd_new(white_noise[:10000], 20)
-        ref = 1.0087282626050618
+        ans = univariate.hfd(np.cumsum(white_noise[:10000]), 20)
+        ref = 1.5369261439430244
         self.assertAlmostEqual(ref, ans)
 
 

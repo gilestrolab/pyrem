@@ -5,6 +5,23 @@ Feature computation for univariate time series
 
 This sub-module provides routines for computing features on univariate time series.
 Many functions are improved version of PyEEG [PYEEG]_ functions.
+Here is a comprehensive list of functions
+
++-------------------+------------------+-----------+----------+-----------+
+|      Feature      |     Function     | Speed-up* | Currated | Reference |
++-------------------+------------------+-----------+----------+-----------+
+|    Approximate    |                  |    100    |    No    | mklmlkm   |
+|      Entropy      |                  |           |          |           |
++-------------------+------------------+-----------+----------+-----------+
+|   Sample entropy  | sample_entropy() |    1000   |    Yes   |           |
++-------------------+------------------+-----------+----------+-----------+
+| Petrosian Fractal |       pfd()      |           |    Yes   | [PET95]_  |
+|     Dimension     |                  |           |          |           |
++-------------------+------------------+-----------+----------+-----------+
+|    SVD entropy    |                  |           |          |           |
++-------------------+------------------+-----------+----------+-----------+
+|                   |                  |           |          |           |
++-------------------+------------------+-----------+----------+-----------+
 
 
 .. [PET95]  A. Petrosian, Kolmogorov complexity of finite sequences and recognition of different preictal EEG patterns, in ,
@@ -15,6 +32,12 @@ Many functions are improved version of PyEEG [PYEEG]_ functions.
 
 .. [HJO70] B. Hjorth, EEG analysis based on time domain properties,
     Electroencephalography and Clinical Neurophysiology, vol. 29, no. 3, pp. 306-310, Sep. 1970.
+
+.. [COS05] M. Costa, A. L. Goldberger, and C.-K. Peng, "Multiscale entropy analysis of biological signals," Phys. Rev. E, vol. 71, no. 2, p. 021906, Feb. 2005.
+
+.. [RIC00][1]J. S. Richman and J. R. Moorman, "Physiological time-series analysis using approximate entropy and sample entropy,"
+    American Journal of Physiology - Heart and Circulatory Physiology, vol. 278, no. 6, pp. H2039-H2049, Jun. 2000.
+
 
 """
 
@@ -70,7 +93,6 @@ def _coarse_grainning(a, tau):
     mat = a[0:a.size - n_dropped].reshape((tau, length_out))
     return np.mean(mat, axis=0)
 
-
 def _make_cm(X,M,R):
     N = len(X)
 
@@ -99,20 +121,26 @@ def _make_cm(X,M,R):
 
     return Cm.astype(np.float), in_range_i, in_range_j
 
-
 def pfd(a):
     r"""
     Compute Petrosian Fractal Dimension of a time series [PET95]_.
 
-    .. note::
-
-        Results is different from [PyEEG]_ which appeared to had implemented an erroneous formulae
 
     It is defined by:
 
     .. math::
 
         \frac{log(N)}{log(N) + log(\frac{N}{N+0.4N_{\delta}})}
+
+    .. note::
+        **Difference with PyEEG:**
+
+        Results is different from [PYEEG]_ which implemented an apparently erroneous formulae:
+
+        .. math::
+
+            \frac{log(N)}{log(N) + log(\frac{N}{N}+0.4N_{\delta})}
+
 
 
     Where:
@@ -147,12 +175,11 @@ def pfd(a):
 
     return np.log(n)/(np.log(n)+np.log(n/(n+0.4*N_delta)))
 
-
-
-
 def hjorth(a):
     r"""
     Compute Hjorth parameters [HJO70]_.
+
+
 
 
     .. math::
@@ -172,6 +199,23 @@ def hjorth(a):
     :math:`\sigma_{x}^2` is the mean power of a signal :math:`x`. That is, its variance, if it's mean is zero.
 
     :math:`a`, :math:`d` and :math:`dd` represent the original signal, its first and second derivatives, respectively.
+
+    .. note::
+
+        **Difference with PyEEG:**
+
+        Results is different from [PYEEG]_ which appear to uses a non normalised (by the length of the signal) definition of the activity:
+
+        .. math::
+
+            \sigma_{a}^2 = \sum{\mathbf{x}[i]^2}
+
+        As opposed to
+
+        .. math::
+
+            \sigma_{a}^2 = \frac{1}{n}\sum{\mathbf{x}[i]^2}
+
 
 
 
@@ -206,8 +250,21 @@ def hjorth(a):
 
 def svd_entropy(a, tau, de):
     r"""
-    Compute the Single Value Decomposition entropy of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
-    The result differs from PyEEG implementation because :math:`log_2` is used, according to the definition in the paper.
+    Compute the Singular Value Decomposition entropy of a signal with embedding dimension "de" and delay "tau" [PYEEG]_.
+
+    .. note::
+
+        **Difference with PyEEG:**
+
+        The result differs from PyEEG implementation because :math:`log_2` is used (as opposed to natural logarithm in PyEEG code),
+        according to the definition in the paper [PYEEG]_ (eq. 9):
+
+        .. math::
+            H_{SVD} = -\sum{\bar\sigma{}_i log_2 \bar\sigma{}_i}
+
+
+
+
 
 
     :param a: a one dimensional floating-point array representing a time series.
@@ -274,13 +331,12 @@ def ap_entropy(a, m, R):
     Ap_En = (Phi_m - Phi_mp) / (N - m)
     return Ap_En
 
-
-
 def samp_entropy(a, m, r, tau=1, relative_r=True):
     r"""
-    Compute the sample entropy of a signal with embedding dimension `de` and delay `tau` [PYEEG]_.
+    Compute the sample entropy [RIC00]_ of a signal with embedding dimension `de` and delay `tau` [PYEEG]_.
     Vectorised version of the eponymous PyEEG function.
-    This function can also be used to vary tau and therefore compute MultiScale Entropy [MSE]_ by coarse grainning the time series.
+    In addition, this function can also be used to vary tau and therefore compute Multi-Scale Entropy(MSE) [COS05]_ by
+    coarse grainning the time series (see example bellow).
     By default, r is expressed as relatively to the standard deviation of the signal.
 
     :param a: a one dimensional floating-point array representing a time series.
@@ -304,7 +360,7 @@ def samp_entropy(a, m, r, tau=1, relative_r=True):
     >>> # generate white noise:
     >>> noise = np.random.normal(size=int(1e4))
     >>> pr.univariate.samp_entropy(noise, m=2, r=1.5)
-    >>> # now we can do that for multiple scales (MSE:
+    >>> # now we can do that for multiple scales (MSE):
     >>> [pr.univariate.samp_entropy(noise, m=2, r=1.5, tau=tau) for tau in range(1, 5)]
 
     """
@@ -362,8 +418,6 @@ def samp_entropy(a, m, r, tau=1, relative_r=True):
     if sum_cm == 0 or sum_cmp ==0:
         return np.NaN
     return np.log(sum_cm/sum_cmp)
-
-
 
 def spectral_entropy(a, sampling_freq, bands=None):
 
@@ -444,8 +498,10 @@ def dfa(X, Ave = None, L = None, sampling= 1):
 
 def hurst(signal):
     """
-    from:
+    **Experimental**/untested implementation taken from:
     http://drtomstarke.com/index.php/calculation-of-the-hurst-exponent-to-test-for-trend-and-mean-reversion/
+
+    Use at your own risks.
     """
     tau = []; lagvec = []
 
@@ -469,39 +525,62 @@ def hurst(signal):
 
     return hurst
 
-def hfd(X, Kmax):
-    """ Compute Higuchi Fractal Dimension of a time series X, kmax
-     is an HFD parameter
+
+def hfd(a, k_max):
+
+    r"""
+    Compute Higuchi Fractal Dimension of a time series.
+    Vectorised version of the eponymous [PYEEG]_ function.
+
+    .. note::
+
+        **Difference with PyEEG:**
+
+        Results is different from [PYEEG]_ which appears to have implemented an erroneous formulae.
+        [HIG88]_ defines the normalisation factor as:
+
+        .. math::
+
+            \frac{N-1}{[\frac{N-m}{k} ]\dot{} k}
+
+        [PYEEG]_ implementation uses:
+
+        .. math::
+
+            \frac{N-1}{[\frac{N-m}{k}]}
+
+        The latter does *not* give the expected fractal dimension of approximately `1.50` for brownian motion (see example bellow).
+
+
+
+    :param a: a one dimensional floating-point array representing a time series.
+    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`
+    :param k_max: the maximal value of k
+    :type k_max: int
+
+    :return: Higuchi's fractal dimension; a scalar
+    :rtype: float
+
+    Example from [HIG88]_. This should produce a result close to `1.50`:
+
+    >>> import numpy as np
+    >>> import pyrem as pr
+    >>> i = np.arange(2 ** 15) +1001
+    >>> z = np.random.normal(size=int(2 ** 15) + 1001)
+    >>> y = np.array([np.sum(z[1:j]) for j in i])
+    >>> pr.univariate.hfd(y,2**8)
+
+
+
+    .. [HIG88] T. Higuchi, "Approach to an irregular time series on the basis of the fractal theory," Physica D: Nonlinear Phenomena, vol. 31, no. 2, pp. 277-283, Jun. 1988.
+    .. [PYEEG] F. S. Bao, X. Liu, and C. Zhang, PyEEG: An Open Source Python Module for EEG/MEG Feature Extraction,
+        Computational Intelligence and Neuroscience, vol. 2011, p. e406391, Mar. 2011.
+
     """
+
     L = []
     x = []
-    N = len(X)
-    for k in xrange(1,Kmax):
-        Lk = []
-        for m in xrange(0,k):
-            Lmk = 0
-            test = []
-
-            for i in xrange(1,int(np.floor((N-m)/k))):
-                test.append(X[m+i*k])
-                Lmk += abs(X[m+i*k] - X[m+i*k-k])
-            #print k,m, Lmk
-            # print k,m,len(test)
-            # print k,m,Lmk
-            Lmk = Lmk*(N - 1)/np.floor((N - m) / float(k)) / k
-            Lk.append(Lmk)
-
-
-        L.append(np.log(np.mean(Lk)))
-        x.append([np.log(float(1) / k), 1])
-    (p, r1, r2, s)=np.linalg.lstsq(x, L)
-    return p[0]
-
-
-def hfd_new(X, Kmax):
-    L = []
-    x = []
-    N = len(X)
+    N = a.size
 
 
     # TODO this could be used to pregenerate k and m idxs
@@ -510,13 +589,13 @@ def hfd_new(X, Kmax):
     # km_idxs[:,1] -= 1
     # km_idxs
 
-    for k in xrange(1,Kmax):
+    for k in xrange(1,k_max):
         Lk = 0
         for m in xrange(0,k):
             #we pregenerate all idxs
             idxs = np.arange(1,int(np.floor((N-m)/k)),dtype=np.int64)
-            Lmk = np.sum(np.abs(X[m+idxs*k] - X[m+k*(idxs-1)]))
-            Lmk = Lmk*(N - 1)/np.floor((N - m) / float(k)) / k
+            Lmk = np.sum(np.abs(a[m+idxs*k] - a[m+k*(idxs-1)]))
+            Lmk = (Lmk*(N - 1)/(((N - m)/ k)* k)) / k
             Lk += Lmk
 
 
