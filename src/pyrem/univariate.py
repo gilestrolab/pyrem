@@ -56,6 +56,21 @@ def _make_cmp(X, M, R, in_range_i, in_range_j):
 
     return Cmp.astype(np.float)
 
+def _coarse_grainning(a, tau):
+    """
+    Coarse grainning for multiscale (sample) entropy.
+
+    """
+
+    if tau ==1:
+        return a
+    length_out = a.size / tau
+
+    n_dropped = a.size % tau
+    mat = a[0:a.size - n_dropped].reshape((tau, length_out))
+    return np.mean(mat, axis=0)
+
+
 def _make_cm(X,M,R):
     N = len(X)
 
@@ -259,19 +274,6 @@ def ap_entropy(a, m, R):
     Ap_En = (Phi_m - Phi_mp) / (N - m)
     return Ap_En
 
-def _coarse_grainning(a, tau):
-    """	
-    Coarse grainning for multiscale (sample) entropy.
-
-    """
-    
-    if tau ==1:
-        return a
-    length_out = a.size / tau
-
-    n_dropped = a.size % tau
-    mat = a[0:a.size - n_dropped].reshape((tau, length_out))
-    return np.mean(mat, axis=0)
 
 
 def samp_entropy(a, m, r, tau=1, relative_r=True):
@@ -467,7 +469,6 @@ def hurst(signal):
 
     return hurst
 
-
 def hfd(X, Kmax):
     """ Compute Higuchi Fractal Dimension of a time series X, kmax
      is an HFD parameter
@@ -485,7 +486,7 @@ def hfd(X, Kmax):
                 test.append(X[m+i*k])
                 Lmk += abs(X[m+i*k] - X[m+i*k-k])
             #print k,m, Lmk
-            print k,m,len(test)
+            # print k,m,len(test)
             # print k,m,Lmk
             Lmk = Lmk*(N - 1)/np.floor((N - m) / float(k)) / k
             Lk.append(Lmk)
@@ -495,6 +496,36 @@ def hfd(X, Kmax):
         x.append([np.log(float(1) / k), 1])
     (p, r1, r2, s)=np.linalg.lstsq(x, L)
     return p[0]
+
+
+def hfd_new(X, Kmax):
+    L = []
+    x = []
+    N = len(X)
+
+
+    # TODO this could be used to pregenerate k and m idxs
+    # km_idxs = np.triu_indices(Kmax - 1)
+    # km_idxs = Kmax - np.flipud(np.column_stack(km_idxs)) -1
+    # km_idxs[:,1] -= 1
+    # km_idxs
+
+    for k in xrange(1,Kmax):
+        Lk = 0
+        for m in xrange(0,k):
+            #we pregenerate all idxs
+            idxs = np.arange(1,int(np.floor((N-m)/k)),dtype=np.int64)
+            Lmk = np.sum(np.abs(X[m+idxs*k] - X[m+k*(idxs-1)]))
+            Lmk = Lmk*(N - 1)/np.floor((N - m) / float(k)) / k
+            Lk += Lmk
+
+
+        L.append(np.log(Lk/(m+1)))
+        x.append([np.log(1.0/ k), 1])
+
+    (p, r1, r2, s)=np.linalg.lstsq(x, L)
+    return p[0]
+
 
 
 

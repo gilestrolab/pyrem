@@ -57,6 +57,16 @@ class TestFeatures(unittest.TestCase):
 
         self.assertAlmostEqual(ref, ans)
 
+    def test_hfd(self):
+
+        ans = univariate.hfd_new(white_noise[:100], 10)
+        ref = 1.0703560530609153
+        self.assertAlmostEqual(ref, ans)
+        ans = univariate.hfd_new(white_noise[:10000], 20)
+        ref = 1.0087282626050618
+        self.assertAlmostEqual(ref, ans)
+
+
     def test_hjorth(self):
         ans_activity, ans_morbidity, ans_complexity= univariate.hjorth(white_noise)
         
