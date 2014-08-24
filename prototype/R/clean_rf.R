@@ -818,26 +818,38 @@ N_THREADS <- 3
 
 #~ df <- add_lagged_time_features_to_whole(df, min_max_lag=c(7,11, 15, 21), use_window=TRUE)
 stop("eos")
-df2 <- strip_df_for_ml(dfo, keep_animal=T)
 
-#~ 
-#~ df2 <- df2[grep("TelC_", df2$animal),]
+#~ for (db in 2:5){
+#~ 	print("========================")
+#~ 	print(db)
+	input <- "/data/pyrem/Ellys/all_features_e5s_eeg_more_features_plus_raw"	
+	dfo <- cache_load_file(input)
 
-anim <- "GFP_F"
-train <- df2[df2$animal != anim,]
-#~ 
-test =df2[df2$animal == anim,]
+	dfo <- curate_df(dfo,F)
+
+	df2 <- strip_df_for_ml(dfo, keep_animal=T)
+
+	#~ 
+	#~ df2 <- df2[grep("TelC_", df2$animal),]
+
+	anim <- "GFP_F"
+	train <- df2[df2$animal != anim,]
+	#~ 
+	test =df2[df2$animal == anim,]
 
 
-train$animal <- NULL
-test$animal <- NULL
+	train$animal <- NULL
+	test$animal <- NULL
 
-rf <- randomForest(subset(train, select=-y),train$y, 
+	rf <- randomForest(subset(train, select=-y),train$y, 
 
-		sampsize=c(5000,1000,4000),
-		ytest=test$y, xtest=subset(test, select=-y), 
-		 ntree=100, do.trace=T )
-		 
+			sampsize=c(5000,1000,4000),
+			ytest=test$y, xtest=subset(test, select=-y), 
+			 ntree=100, do.trace=T)
+	
+	print(rf)
+#~ }
+
 #~ 
 #~ rf <- randomForest(subset(train, select=-y),train$y, 
 #~ 		ytest=test$y, xtest=subset(test, select=-y), 

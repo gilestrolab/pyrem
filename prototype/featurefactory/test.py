@@ -19,7 +19,7 @@ DATA_FILE_PATTERN= "/data/pyrem/Ellys/pkls/*.pkl"
 
 
 #OUT_CSV = "/data/pyrem/Ellys/all_features_e5s_plus_raw.csv"
-OUT_CSV = "/data/pyrem/Ellys/all_features_e5s_eeg_dwt_1_to_7.csv"
+OUT_CSV = "/data/pyrem/Ellys/all_features_e5s_eeg_more_features_plus_raw.csv"
 WINDOW_SIZE = 5
 WINDOW_LAG = 1
 
@@ -34,11 +34,13 @@ def features_one_file(f):
     pol = polygram_from_pkl(f)
 
     #eegs = decompose_signal(pol["EEG_parietal_cereb"], levels=[1,2,3,4,5,6])
-    eegs = decompose_signal(pol["EEG_parietal_frontal"], levels=[1,2,3,4,5,6,7])
-    emgs = decompose_signal(pol["EMG_REF"],[1,2,3, 4,5,6,7])
+    eegs = decompose_signal(pol["EEG_parietal_frontal"], levels=[1,2,3,4,5,6])
+    emgs = decompose_signal(pol["EMG_REF"],[1,2,3, 4], keep_a=False)
 
     #
-    pol2 = eegs.merge(emgs)
+    pol2 = eegs.merge(pol["EEG_parietal_frontal"])
+    pol2 = pol2.merge(emgs)
+    pol2 = pol2.merge(pol["EMG_REF"])
     pol2 = pol2.merge(pol["vigilance_state"])
 
     ##normalise
@@ -52,7 +54,8 @@ def features_one_file(f):
                         # NonLinearFeatures(),
                         #
                         # # FIXME skip for now -> speed
-                        # EntropyFeatures(),
+                        EntropyFeatures(),
+                        FractalFeatures(),
                         VigilState(),]
 
     all_rows = []
@@ -100,3 +103,12 @@ if __name__ == "__main__":
 
     out_df.to_csv(OUT_CSV, float_format="%e")
 
+
+"""
+library(ggplot2)
+df <- read.csv("/tmp/out.csv")
+dfm <- aggregate(log10_dt ~ is_original * name * n,df, mean)
+ggplot(dfm,aes(y = log10_dt, x = n, color=name, shape=name,  linetype=is_original)) +
+        geom_point(size=2) + geom_smooth(method="lm", fill=NA, size=1.5)
+mod <- lm(log10_dt ~ is_original * name * n,df)
+"""
