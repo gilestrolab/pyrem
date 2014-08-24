@@ -3,15 +3,32 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to ..'s documentation!
-==============================
+Welcome to pyrem's documentation!
+=================================
 
-Contents:
+Module contents
+---------------
 
+.. automodule:: pyrem
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Submodules
+----------
 .. toctree::
-   :maxdepth: 1
 
-   pyrem
+
+
+   pyrem.time_series
+   pyrem.polygram
+   pyrem.univariate
+   pyrem.visualization
+   pyrem.wavelet_decomposition
+   pyrem.feature_families
+   pyrem.io
+   pyrem.utils
 
 
 Indices and tables

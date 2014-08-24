@@ -7,14 +7,15 @@ Submodules
 
 .. toctree::
 
-   pyrem.feature_families
-   pyrem.io
-   pyrem.polygram
+
    pyrem.time_series
+   pyrem.polygram
    pyrem.univariate
-   pyrem.utils
    pyrem.visualization
    pyrem.wavelet_decomposition
+   pyrem.feature_families
+   pyrem.io
+   pyrem.utils
 
 Module contents
 ---------------
