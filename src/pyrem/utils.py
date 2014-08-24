@@ -8,6 +8,7 @@ __REGEX__ = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d
 def str_to_time(str):
     """
     Parse a string describing a duration as a :class:`~datetime.timedelta`
+
     :param str: a string with the format "XhYmZs". where XYZ are integers (or floats)
     :type str: str
     :return: a timedelta corresponding to the `str` argument

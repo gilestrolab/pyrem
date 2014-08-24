@@ -54,7 +54,7 @@ Since time series are derived from numpy array, the numpy indexing rule apply:
 See numpy documentation for more info.
 
 ----------------------------
-With strings
+With strings and time-deltas
 ----------------------------
 
 It is common to have to extract a signal between two different time points.
@@ -92,9 +92,9 @@ Example:
 >>> sig["0s":"0.001s"])
 >>> sig["0s":"0.011s"])
 
-============================
+----------------------------
 Epoch iteration
-============================
+----------------------------
 
 A common task is to extract successive temporal slices (i.e. epochs) of a signal, for instance, in order to compute features.
 :func:`~pyrem.time_series.BiologicalTimeSeries.iter_window` iterator facilitates this.
@@ -194,6 +194,15 @@ class BiologicalTimeSeries(np.ndarray):
         return np.ndarray.__setstate__(self,tuple(list_state))
     #
     def save(self, filename, compression_level=5):
+        """
+        Efficiently save a time series using joblib
+
+        :param filename: the output file name
+        :type filename: str
+        :param compression_level: an integer between 1 and 9. More is better, but slower. 5 is generally a good compromise
+        :type compression_level: int
+        """
+
         pkl.dump(self,filename,compression_level)
 
     def __array_finalize__(self, obj):
@@ -419,10 +428,12 @@ class Signal(BiologicalTimeSeries):
         """
         Resample the signal. One implication of the signal being digital, is that the resulting sampling
         frequency is not guaranteed to be exactly at `target_fs`.
-        This method wraps :method:`~scikits.samplerate.resample`
+        This method wraps :func:`~samplerate.resample`
 
         :param target_fs: The new sampling frequency
-        :param mode:
+        :type target_fs: float
+        :param mode: to be passed to :func:`~scikits.samplerate.resample`
+        :type mode: str
         :return:
         """
         # num = target_fs * self.size / self.fs

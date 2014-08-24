@@ -1,4 +1,12 @@
+"""
+This is prototypical early visualisation module.
+It allows visualisation of :class:`~pyrem.polygram.Polygram` objects using matplotlib.
+In the future, The visualisation tool should be faster and more interactive.
+It is likely to become independent of matplotlib.
+"""
+
 __author__ = 'quentin'
+
 from datetime import timedelta
 
 from scipy.ndimage.interpolation import zoom

@@ -1,27 +1,14 @@
 r"""
-====
+==================================================
 Feature computation for univariate time series
-====
+==================================================
+
 
 This sub-module provides routines for computing features on univariate time series.
 Many functions are improved version of PyEEG [PYEEG]_ functions.
-Here is a comprehensive list of functions
+Here is a comprehensive list of functions:
 
-+-------------------+------------------+-----------+----------+-----------+
-|      Feature      |     Function     | Speed-up* | Currated | Reference |
-+-------------------+------------------+-----------+----------+-----------+
-|    Approximate    |                  |    100    |    No    | mklmlkm   |
-|      Entropy      |                  |           |          |           |
-+-------------------+------------------+-----------+----------+-----------+
-|   Sample entropy  | sample_entropy() |    1000   |    Yes   |           |
-+-------------------+------------------+-----------+----------+-----------+
-| Petrosian Fractal |       pfd()      |           |    Yes   | [PET95]_  |
-|     Dimension     |                  |           |          |           |
-+-------------------+------------------+-----------+----------+-----------+
-|    SVD entropy    |                  |           |          |           |
-+-------------------+------------------+-----------+----------+-----------+
-|                   |                  |           |          |           |
-+-------------------+------------------+-----------+----------+-----------+
+todo
 
 
 .. [PET95]  A. Petrosian, Kolmogorov complexity of finite sequences and recognition of different preictal EEG patterns, in ,
@@ -35,11 +22,14 @@ Here is a comprehensive list of functions
 
 .. [COS05] M. Costa, A. L. Goldberger, and C.-K. Peng, "Multiscale entropy analysis of biological signals," Phys. Rev. E, vol. 71, no. 2, p. 021906, Feb. 2005.
 
-.. [RIC00][1]J. S. Richman and J. R. Moorman, "Physiological time-series analysis using approximate entropy and sample entropy,"
+.. [RIC00] J. S. Richman and J. R. Moorman, "Physiological time-series analysis using approximate entropy and sample entropy,"
     American Journal of Physiology - Heart and Circulatory Physiology, vol. 278, no. 6, pp. H2039-H2049, Jun. 2000.
+
+.. [HIG88] T. Higuchi, "Approach to an irregular time series on the basis of the fractal theory," Physica D: Nonlinear Phenomena, vol. 31, no. 2, pp. 277-283, Jun. 1988.
 
 
 """
+
 
 __author__ = 'quentin'
 import numpy as np
@@ -257,7 +247,7 @@ def svd_entropy(a, tau, de):
         **Difference with PyEEG:**
 
         The result differs from PyEEG implementation because :math:`log_2` is used (as opposed to natural logarithm in PyEEG code),
-        according to the definition in the paper [PYEEG]_ (eq. 9):
+        according to the definition in their paper [PYEEG]_ (eq. 9):
 
         .. math::
             H_{SVD} = -\sum{\bar\sigma{}_i log_2 \bar\sigma{}_i}
@@ -466,6 +456,9 @@ def spectral_entropy(a, sampling_freq, bands=None):
     return - np.sum(power_per_band * np.log2(power_per_band))
 
 def dfa(X, Ave = None, L = None, sampling= 1):
+    """
+    WIP on this function. It is basicaly copied and pasted from [PYEEG]_, without verification of the maths or unittests.
+    """
     X = np.array(X)
     if Ave is None:
         Ave = np.mean(X)
@@ -491,8 +484,6 @@ def dfa(X, Ave = None, L = None, sampling= 1):
     LF = np.array([(l,f) for l,f in zip(L,F) if l>0]).T
 
     F = np.sqrt(LF[1])
-    print LF
-    print F
     Alpha = np.polyfit(np.log(LF[0]), np.log(F),1)[0]
     return Alpha
 
@@ -572,10 +563,6 @@ def hfd(a, k_max):
 
 
 
-    .. [HIG88] T. Higuchi, "Approach to an irregular time series on the basis of the fractal theory," Physica D: Nonlinear Phenomena, vol. 31, no. 2, pp. 277-283, Jun. 1988.
-    .. [PYEEG] F. S. Bao, X. Liu, and C. Zhang, PyEEG: An Open Source Python Module for EEG/MEG Feature Extraction,
-        Computational Intelligence and Neuroscience, vol. 2011, p. e406391, Mar. 2011.
-
     """
 
     L = []
@@ -583,17 +570,18 @@ def hfd(a, k_max):
     N = a.size
 
 
-    # TODO this could be used to pregenerate k and m idxs
-    # km_idxs = np.triu_indices(Kmax - 1)
-    # km_idxs = Kmax - np.flipud(np.column_stack(km_idxs)) -1
+    # TODO this could be used to pregenerate k and m idxs ... but memory pblem?
+    # km_idxs = np.triu_indices(k_max - 1)
+    # km_idxs = k_max - np.flipud(np.column_stack(km_idxs)) -1
     # km_idxs[:,1] -= 1
-    # km_idxs
+    #
 
     for k in xrange(1,k_max):
         Lk = 0
         for m in xrange(0,k):
             #we pregenerate all idxs
-            idxs = np.arange(1,int(np.floor((N-m)/k)),dtype=np.int64)
+            idxs = np.arange(1,int(np.floor((N-m)/k)),dtype=np.int32)
+
             Lmk = np.sum(np.abs(a[m+idxs*k] - a[m+k*(idxs-1)]))
             Lmk = (Lmk*(N - 1)/(((N - m)/ k)* k)) / k
             Lk += Lmk

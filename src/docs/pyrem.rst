@@ -10,7 +10,6 @@ Submodules
    pyrem.feature_families
    pyrem.io
    pyrem.polygram
-   pyrem.preprocessing
    pyrem.time_series
    pyrem.univariate
    pyrem.utils

@@ -42,6 +42,8 @@ intersphinx_mapping = {
     'numpy':('http://docs.scipy.org/doc/numpy',None),
     'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None),
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
+    'samplerate': ('http://www.ar.media.kyoto-u.ac.jp/members/david/softwares/samplerate/sphinx/', None),
+    'pywt': ('http://www.pybytes.com/pywavelets/', None),
     #'sklearn': ('http://scikit-learn.org/stable/documentation.html', None),
 }
 

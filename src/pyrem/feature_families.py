@@ -151,6 +151,17 @@ class NonLinearFeatures(SignalFeatureBase):
         #out["dfa"] = dfa(data)
         return out
 #
+
+class FractalFeatures(SignalFeatureBase):
+    prefix = "fractal"
+    def _make_feature_vec(self,channel):
+        out = dict()
+        out["hfd"] = hfd(channel, 8)
+
+        out["pfd"] = pfd(channel)
+
+        return out
+
 #
 class HjorthFeatures(SignalFeatureBase):
     prefix = "hjorth"
@@ -169,8 +180,7 @@ class EntropyFeatures(SignalFeatureBase):
         out["fisher"] = fisher_info(channel, 3,3)
         #out["apent"] = ap_entropy(data, 2,5000)
         for scale in [2]:
-            #for r in [1, 2, 3]:
-            for r in [.5]:
+            for r in [0.2, 1.0, 1.5]:
                 out["sample_%i_%s" % (scale, str(np.round(r, 3)))] = samp_entropy(channel, scale, r)
 
 
