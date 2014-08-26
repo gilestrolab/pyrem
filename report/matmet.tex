@@ -1,21 +1,100 @@
 \section{Material and Methods} \label{matmet}
 
-lorem ipsum ...
-\TODO{an intro is needed}
+
 \subsection{Data}
+
+
 \subsection{Preprocessing}
 
-First of all, \gls{EEG} and \gls{EMG} signals were resampled from approximatly 200.0Hz to 256.0Hz using
+\gls{eeg} and \gls{emg} signals were resampled from approximatly 200.0Hz to 256.0Hz using
 conservative sinc interpolation\citationneeded{Putman}. 
-256.0Hz was prefered to 200.0Hz because
-Annotations labels were resampled at 0.20Hz using nearest neghbour interpolation.
+A Frequency of 256.0Hz is convenient since is implies that discrete wavelet decomposition (see feature extraction strategy\TODO{link}) will separate 
+frequencies above 4.0Hz from those below 4.0Hz (since $4 = 256.0/{2^6} $).
+This frequency is typicaly uses as a cut-off value between theta and delta waves \citationneeded{}.
+
+Annotations labels were resampled at exactly 0.20Hz using nearest neighbour interpolation.
+
+\subsection{Feature exctraction}
+
+In order to avoid edge effects, discrete Wavelet decomposition, using Daubechies wavelet, with four vanishing mooments ("db4"),
+was applied \emph{a priory} to the entiere \gls{eeg} and \gls{emg} signals.
+This contrasts with applying decomposition for each sucessive temporal segment(\ie{} epoch).
+The latter method results in edge effects which would typicaly need to be attenualed by convolving every epoch with a window function (\eg Hamming window).
+The decomposition levels were from one to six for the \gls{eeg} and from one to four for the \gls{emg} \TODO{ref figureA}.
+
+Then, each 24h recordings were subdivided in non-overlaping epochs of five seconds.
+For both \gls{eeg} and \gls{emg} raw signals, as well as for all their respective wavelet coefficents, an list of \TODO{N} features was computed \TODO{ref figureA, table 2}.
+Thus, a total of \TODO{N} features were obtained for each epochs.
+
+A \py{} package, \pr{} (full documentation provided in the appendix), was developed to facilitate feature extraction.
+
+\subsection{Addition of temporal features}
+In order to integrate temporal information, new variables, depending on past, and future values of predictors, were added for each epochs.
+Given a $\mathbf{X_t}$ is a vector of feature at at time $t$,
+A first strategy was to define a new vector of feature $\mathbf{{X'}_t}$ as
+\[
+\mathbf{{X'}_t} = \{\mathbf{X_{t-\tau}}, ..., \mathbf{X_t}, ..., \mathbf{X_{t+\tau}}\}
+\]
+where $\tau$ is a discrete lag.
+
+Another strategy was to add features representing the local average $\mathbf{W^n_t}$ of each variable over several window sizes $n$.
+\[
+\mathbf{{X'}_t} = \{W^{n_1}_t, W^{n_2}_t, ...\}
+\]
+where
+\[
+\mathbf{W^n_t} = \frac{1}{2n+1} \sum_{i = t-n}^{t+n}{X_i}
+\]
+and $n$ is a set of odd integers representing window sizes (\eg $\{1,3,7,15\}$).
+
+
 
 
 
 \subsection{Stratified Cross Validation}
-why this is super important
+Generally, success of classification of sleep stages has been assessed by cross-validation \citationneeded{}.
+In many studies, it is implied that cross-validation was performed by making $k$ random training subsets 
+of the whole data and assessing the model trained by the remaining subsets (\ie{} k-fold crossvalidation).
+
+When working with dense time series (or, for instance, spatial data), it can be suspected that within a statistical block (group),
+both features and response variables are very correlated with neighbouring data points.
+For instance, the features and label at $t_n$ are expected to be largely similar to the features, and labels at $t_{n+1}$ and $t_{n-1}$.
+In statistical terms, $t_{n+1}$ is not independent of $t_{n}$.
+
+If the training sets are drawn completely at random, form a dataset containing multiple long recordings, 
+the underlying time series would be made only marginaly sparcer, and the datapoints missing from
+a time series could simply be infered from the neighbouring points which remain in the training set.
+%~ In this case, the predicting power could be greatly affected by (\ie overlaping short epochs would be very dense).
+
+This could give the impression that the model has a very strong predictive power.
+However, the goal of cross validation is to assess how well a predictive model would perform on \emph{new data}. 
+The goal of this study, and most similar studies, is to provide a tool to automatically annotate \emph{new recordings}. 
+Therefore, it is fairer to perform \emph{stratified cross-validation}, using the different recordings as the stratum levels.
+In this study, all cross-validation were performed by training the model with all but one recordings,
+and testing it on the recording kept out. This was repeated by successively leaving each recording out.
+
+As shown in \TODO{figure intro}, the prevalence of different states is not balanced. Noticably, \gls{rem} sleep represents only $10\%$ of all epochs.
+This means that if all \gls{rem} epoch were misclassified, we could still achieve $90\%$ accuracy.
+For this reason, the importance of the variables contributing to segregate the majority classes (wake \emph{vs.} \gls{nrem}) could be overestimated.
+Therefore, for the variable elimination\TODO{ref fig} stage and for defining new variables\TODO{fig ref here},
+balanced subsampled testing sets (750 epochs of each class) were used.
+
+
 
 
 \subsection{Random forests}
 mtry, n-tree, entropy-based confidence.
 \subsection{Statistics}
+
+\subsection{Performance assesments}
+Comparisons of performance between \pr{} and \pyeeg{} were realised by meseauring the average (between 2 and 100 run, depending on the algorithm) duration of runtime of algorithms on six
+normaly distributed ($\mathcal{N}(\mu=0,\sigma=1)$) time series (\ie white noise) of size $n$,
+with $n$ between $256 \times{} 5$ and $256 \times{} 30$.
+This was repeated five times for each time series.
+For computing  Higuchi fractal dimension, $k_{max}$ was set to $2^3$.
+For both approximate entropy and sample entropy, the embedding dimension $m$ was set to $2$, and the distance threshold, $r$, to $1.5$.
+For fisher information, the embeding dimension and the delay, $\tau$ were set to $3$ and $2$, respectively.
+Finally, spectral entropy was computed for the frequency bands bounded by $\{0, 2^0, 2^1, ..., 2^6\}$.
+
+
+

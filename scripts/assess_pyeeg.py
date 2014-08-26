@@ -37,7 +37,7 @@ import sys
 MIN_EPOCH_N = 256 * 5
 MAX_EPOCH_N = 256 * 30
 EPOCH_STEP = 256 * 5
-N_REPLICATES = 1
+N_REPLICATES = 5
 
 SPECT_ENT_BANDS = 2 ** np.arange(0,8)/2
 
