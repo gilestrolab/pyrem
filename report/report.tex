@@ -14,6 +14,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 
+
 %~ \usepackage[colorinlistoftodos,disable]{todonotes}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage{csquotes}
@@ -35,9 +36,12 @@
 \newcommand{\py}{\texttt{python}}
 \newcommand{\pr}{\texttt{pyrem}}
 \newcommand{\pyeeg}{\texttt{PyEEG}}
+\newcommand{\ctit}{\emph}
 
 \newcommand{\eg}{\emph{e.g.}}
 \newcommand{\ie}{\emph{i.e.}}
+
+\newcommand{\specialcell}[2][c]{\begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
 
 %~ \newcommand{\sauliustodo}[2][]{\todo[color=cyan, #1]{\textbf{SL:} #2}}
 %~ \newcommand{\sisitodo}[2][]{\todo[color=yellow, #1]{\textbf{SF:} #2}}
@@ -104,6 +108,7 @@ Imperial College London
 \input{results}
 \newpage{}
 \input{discussion}
+
 \newpage{}
 %~ \bibliography{report.bib}{}
 %~ \bibliographystyle{ieeetr}

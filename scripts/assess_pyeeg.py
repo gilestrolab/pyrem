@@ -48,9 +48,9 @@ fun_to_test = [
                   {"times":100,"name":"hjorth", "is_original":False,"fun": lambda x: univ.hjorth(x)},
                   {"times":100,"name":"pfd", "is_original":True, "fun":lambda x: pyeeg.pfd(x)},
                   {"times":100,"name":"pfd", "is_original":False, "fun":lambda x: pyeeg.pfd(x)},
-                  {"times":1,"name":"samp_ent", "is_original":True, "fun":lambda x: pyeeg.samp_entropy(x,2,1.5)},
+                  {"times":2,"name":"samp_ent", "is_original":True, "fun":lambda x: pyeeg.samp_entropy(x,2,1.5)},
                   {"times":10,"name":"samp_ent", "is_original":False, "fun":lambda x: univ.samp_entropy(x,2,1.5,relative_r=False)},
-                  {"times":1,"name":"ap_ent", "is_original":True, "fun":lambda x: pyeeg.ap_entropy(x,2,1.5)},
+                  {"times":2,"name":"ap_ent", "is_original":True, "fun":lambda x: pyeeg.ap_entropy(x,2,1.5)},
                   {"times":10,"name":"ap_ent", "is_original":False, "fun":lambda x: univ.ap_entropy(x,2,1.5)},
                   {"times":10,"name":"svd_ent", "is_original":True, "fun":lambda x: pyeeg.svd_entropy(x,2,3)},
                   {"times":100,"name":"svd_ent", "is_original":False, "fun":lambda x: univ.svd_entropy(x,2,3)},
@@ -75,8 +75,8 @@ def make_one_rep():
             fun["n"] = n
 
         df = pd.DataFrame(fun_to_test)
-        print df
         ldfs.append(df)
+        print n
     return pd.concat(ldfs)
 
 if __name__ == "__main__":
@@ -90,11 +90,35 @@ if __name__ == "__main__":
 
 
 r"""
-df <- read.csv("/tmp/out.csv")
+rm(list=ls())
+
+library(ggplot2)
+library(nlme)
+
+make_coeffs <- function(df, is_ori){
+
+    out <- data.frame(t(sapply(lmList(log10_dt ~ n | name  , subset(df, is_original == is_ori)), function(c)c$coefficients)))
+    print(out)
+    colnames(out) <- c("b","a")
+
+    out$orig <- out$b + out$a * 256*5
+    out$b <- NULL
+    out$a <- round(1/out$a)
+    out$orig <- round(10^(out$orig + 3),3)
+    colnames(out) <- sprintf("%s_%s", is_ori, c("a","tn1000"))
+    out
+}
+df <- read.csv("./assess_pyeeg_out_2.csv")
+df$n <- df$n - 1280
 means_df <- aggregate(log10_dt ~ n* name* is_original, df, mean)
 ggplot(means_df, aes(x=n, y=log10_dt, colour=name, linetype=is_original)) + geom_line() + geom_point()
-means_df <- aggregate(log10_dt ~ n* name* is_original, df)
-original <- sapply(lmList(log10_dt ~ n | name  , subset(df, is_original =="True")), function(c)c$coefficients["n"])
-pyrem <- sapply(lmList(log10_dt ~ n | name  , subset(df, is_original =="False")), function(c)c$coefficients["n"])
+means_df <- aggregate(log10_dt ~ n* name* is_original, df, mean)
 
+original <- make_coeffs(df, "True")
+pr <- make_coeffs(df, "False")
+cbind(original,pr)
+
+
+
+summary(lmList(log10_dt ~ n * is_original | name ,df))
 """
