@@ -1,16 +1,42 @@
 \section{Results} \label{results}
 
 lorem ipsum ...
+
+\subsection{DWT, feature extraction strategy}
+Explain typycal approach, and why using DWT and then epoching is advantageaous while remaing fast.
+
+
 \subsection{\texttt{Python} package}
-Speed Improvement. correction of math formulae.
+Several algorithms to extract features from univariate time series had already been implemented in the \py{} package \pyeeg{}\citationneeded{}.
+Unfortunately, some of them were critically slow, and could not realistically have been used in the present study.
+Preliminary investigation of the source code revealed that runtimes may be improved by vectorising expressions and pre-allocating of temporary arrays.
+Therefore, systematic reimplementation of all algorithms in \pyeeg{} was undertaken.
+Very significant improvement in performance and scalability were achieved (table~\ref{tab:benchmark}).
+
+Importantly, several mathematical inconsistancies between the original code and the mathematical definitions were also noticed.
+This affected five of the eight reimplemented functions(table~\ref{tab:benchmark}). 
+Detail of the corrections performed are provided, as notes, in the documentation of the new package\TODO{ref appendix}.
+Numerical results for the three remaining functions were consitstant throughout optimisation.
+
+In order to facilitate feature extrcation, several data structures and routines were also implemented 
+in a new python package named \pr{}.
+Briefly, extentions of \texttt{numpy} arrays providing metadata, sampling frequency, and other attributes were used to represent time series. 
+User friencly indexing with string representing time was also developed.
+In addition, a container for time series of discrete anotation levels, each linked to a confidence level, was built.
+Importantly, a container for multiple time series, which supports different sampling frequencies
+between time series was implemented.
+The new package also provides visualisation, input/output, and wrappers for resampling and discrete wavelet decomposition.
+Finally, unittests were implemented to ensure presistance of mathematical and programmatic validity though-out developmental stage.
+A full documentation of \pr{} is provided in the appendix\TODO{ref} of the report herein.
+
 
 \input{./tables/benchmark}
+
+
 Interface imporvement (see package doc)
 
 Visualisation (explain why it is important)
 
-\subsection{DWT, feature extraction strategy}
-Explain typycal approach, and why using DWT and then epoching is advantageaous while remaing fast.
 
 \subsection{Important features}
 $n$ is large, reducing $p$ could make the analysis faster. computing each $p$ feature is slow.
