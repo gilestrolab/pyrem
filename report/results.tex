@@ -21,7 +21,7 @@ Numerical results for the three remaining functions were consitstant throughout 
 In order to facilitate feature extrcation, several data structures and routines were also implemented 
 in a new python package named \pr{}.
 Briefly, extentions of \texttt{numpy} arrays providing metadata, sampling frequency, and other attributes were used to represent time series. 
-User friencly indexing with string representing time was also developed.
+User friendly indexing with string representing time was also developed.
 In addition, a container for time series of discrete anotation levels, each linked to a confidence level, was built.
 Importantly, a container for multiple time series, which supports different sampling frequencies
 between time series was implemented.
@@ -48,5 +48,33 @@ The analysis can be rendered faster
 \subsection{Including temporal information}
 Using features at $\mathbf{Z} = \{\mathbf{X_{t-\tau}}, ..., \mathbf{X_{t}}, ..., \mathbf{X_{t+\tau}}\}$ provide a significant improvement over $\mathbf{Z} = \mathbf{X_{t}}$.
 
-It does not seem adventageous to use $\tau > 3$.
-\subsection{Deeper assesment}
+
+\subsection{Confidence assesments}
+For a classification algorithm, it is interesting to be able to provide a assotiate a confidence value to a prediction.
+It is possible to interpret prediction by ensemble learning methods in a probabilistic context.
+An entropy based value of confidence $c$ was defined as:
+\begin{equation}
+%~ \[
+c = 1 + \frac{1}{log_2(|v|)}\sum{v_i  log_2(v_i)}
+%~ \]
+\end{equation}
+where $v_i$ is the proportion of votes for the class $i$.
+This definition has the property $c \in [0;1]$.
+In order to study the relationship between $c$ and the probability of error,
+the average cross-validation error was computed for different degrees of confidence (fig\ref{fig:error}A).
+As expected, the probability of misclassification decreases monotonicaly with $c$.
+
+The distibution of confidence levels(\ref{fig:error}B) shows that high confidences are more frequent... 
+
+%~ 
+%~ 
+%~ It does not seem adventageous to use $\tau > 3$.
+\subsection{Prediction results}
+
+In order to assess the predictor in a ...
+
+As oposed to previous results, the final random forests were trained, and tested, with sub-samples accounting for the respective biological prevalence of the three stages (\ie{} unbalanced).
+Only the top N\TODO{} important variables \TODO{ref table}, were used. Temporal information was included using eq.\ref{eq:lag}\TODO{ref}.
+
+
+
