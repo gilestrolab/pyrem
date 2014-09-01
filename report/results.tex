@@ -1,11 +1,5 @@
 \section{Results} \label{results}
 
-lorem ipsum ...
-
-\subsection{DWT, feature extraction strategy}
-Explain typycal approach, and why using DWT and then epoching is advantageaous while remaing fast.
-
-
 \subsection{\texttt{Python} package}
 Several algorithms to extract features from univariate time series had already been implemented in the \py{} package \pyeeg{}\citationneeded{}.
 Unfortunately, some of them were critically slow, and could therefore not realistically have been used in the present study.
@@ -31,46 +25,47 @@ The new package also provides visualisation, input/output, and wrappers for resa
 Finally, unittests were implemented to ensure presistance of mathematical and programmatic validity though-out developmental stage.
 A full documentation of \pr{} is provided in the appendix\TODO{ref} of the report herein.
 
-\subsection{Feature extraction}
+\subsection{Variable elimination}
+Including temporal features by the lag (eq.~\ref{eq:tau}) or the convolution (eq.~\ref{eq:window}) strategies, involves multiplying the number of variable, rendering computation difficult.
+Therefore, variable importance was nivestigate in order to iteratively eliminate variables that did not improve predictive power.
+Starting with all 164 variables, a random forests were trained, and the $1/3$ least important variables were elimitated.
+This procedure was repeated iteratively and, for each iteration, the stratified cross validation error (see material and methods) was computed (fig.~\ref{fig:variable_elimination}).
 
+\input{./figures/variable_elimination}
 
+The predictive accuracy globally increases with the number of variables.
+...
+No stats?!
+...
+However, this increase is very moderate for ($p>8$) this indicates that complexity can be reduces without largely impacting accuracy.
+For further investigation, $p=20$ was considered to be a good compromise between error and computationnal load.
+\TODO{table importance of the 20 variables ?!}
 
-$n$ is large, reducing $p$ could make the analysis faster. computing each $p$ feature is slow.
-variable importance can be used to select a subset of informative variable.
-
-20ish variable are good enough.
-
-The analysis can be rendered faster
 \subsection{Including temporal information}
-Using features at $\mathbf{Z} = \{\mathbf{X_{t-\tau}}, ..., \mathbf{X_{t}}, ..., \mathbf{X_{t+\tau}}\}$ provide a significant improvement over $\mathbf{Z} = \mathbf{X_{t}}$.
+Manual scorer usualy use contextual information in order to make a decision conserning a given state.
+For instance, implicit assumptions are made on the temporal consistency of the states (personal communications).
+Therefore, it seems fair to include contextual information into an a predictor.
+In this study, two different appraoches were pursued.
+Either the local means of features over different ranges were added to the features of each epochs (eq.~\ref{eq:window}), 
+or the features of neighbouring time points were included (eq.~\ref{eq:tau}).
 
+A comparison of both approaches is proposed in figure \ref{fig:temporal_integration}.
+Significant improvement was acchieved by both methods by including even little temporal information ($\tau = 1$, $n=\{1,3\}$).
+The best accuracy was acchieved with $\tau = 2$. 
+This value is also a good compromise because it only inflates $p$ by five fold.
+In addition, it is advantageaout to requiere only the two previous and next values as oposed to have to integrates minutes of information around the epoch of interest.
 
-\subsection{Confidence assesments}
-For a classification algorithm, it is interesting to be able to provide a assotiate a confidence value to a prediction.
-It is possible to interpret prediction by ensemble learning methods in a probabilistic context.
-An entropy based value of confidence $c$ was defined as:
-\begin{equation}
-%~ \[
-c = 1 + \frac{1}{log_2(|v|)}\sum{v_i  log_2(v_i)}
-%~ \]
-\end{equation}
-where $v_i$ is the proportion of votes for the class $i$.
-This definition has the property $c \in [0;1]$.
+\input{./figures/temporal_integration}
+Combining both approches did not improve the predictor any further (data not shown).
+
+\subsection{Prediction results}
+
 In order to study the relationship between $c$ and the probability of error,
 the average cross-validation error was computed for different degrees of confidence (fig\ref{fig:error}A).
 As expected, the probability of misclassification decreases monotonicaly with $c$.
 
-The distibution of confidence levels(\ref{fig:error}B) shows that high confidences are more frequent... 
-
-%~ 
-%~ 
-%~ It does not seem adventageous to use $\tau > 3$.
-\subsection{Prediction results}
-
-In order to assess the predictor in a ...
-
 As oposed to previous results, the final random forests were trained, and tested, with sub-samples accounting for the respective biological prevalence of the three stages (\ie{} unbalanced).
-Only the top N\TODO{} important variables \TODO{ref table}, were used. Temporal information was included using eq.\ref{eq:lag}\TODO{ref}.
+Only the top N\TODO{} important variables \TODO{ref table}, were used. Temporal information was included using eq.\ref{eq:tau}\TODO{ref}.
 
 
 

@@ -11,7 +11,7 @@ conservative sinc interpolation\citationneeded{Putman}.
 A Frequency of 256.0Hz is convenient since is implies that discrete wavelet decomposition (see subsection~\ref{sub:features} and fig.~\ref{fig:dwd}) will separate 
 frequencies above 4.0Hz from those below 4.0Hz (since $4 = 256.0/{2^6} $).
 This frequency is typically uses as a cut-off value between theta and delta waves \citationneeded{}.
-In addition, \gls{eeg} and \gls{emg} signals were standardised ($E[x] = 0, \sigma = 1$) to account for the differences in baseline amplitude due to acquisition.
+In addition, \gls{eeg} and \gls{emg} signals were standardised ($E[x] = 0, Var[x] = 1$) to account for the differences in baseline amplitude due to acquisition.
 Annotations labels were resampled at exactly 0.20Hz using nearest neighbour interpolation.
 
 \subsection{Feature extraction}
@@ -33,7 +33,9 @@ Daubechies wavelet, with four vanishing moments ("db4") was used.
 
 For both \gls{eeg} and \gls{emg} raw signals, as well as for all their respective wavelet coefficents,
 a list of 16 features (see table~\ref{tab:features}) was computed within each subsequent non-overlaping five seconds epochs.
-Thus, defining a total of $p=192$ variables. For each recording ($\simeq 24h$) there were approximatly $17280$ epochs.
+Thus, defining a total of $p=192$ variables. For each recording ($\simeq 24h$) there were approximatly $17280$ epochs. 
+Some combinations of variables and signals generated incalculable values.
+Therefore, these variables and were removed resulting in an actual number of variables $p=164$.
 
 \input{./tables/features}
 
@@ -43,15 +45,17 @@ A \py{} package, \pr{} (full documentation provided in the appendix), was develo
 In order to integrate temporal information, new variables, depending on past, and future values of predictors, were added for each epochs.
 Given a vector $\mathbf{X_t}$ of feature at time $t$,
 A first strategy was to define a new vector of feature $\mathbf{{X'}_t}$ as
-\[
+\begin{equation}
 \mathbf{{X'}_t} = \{\mathbf{X_{t-\tau}}, ..., \mathbf{X_t}, ..., \mathbf{X_{t+\tau}}\}
-\]
+\label{eq:tau}
+\end{equation}
 with $\tau \in \mathbb{N}$.
 
 Another strategy was to add features representing the local average $\mathbf{W^n_t}$ of each variable over several window sizes $n$.
-\[
+\begin{equation}
 \mathbf{{X'}_t} = \{W^{n_1}_t, W^{n_2}_t, ...\}
-\]
+\label{eq:window}
+\end{equation}
 where
 \[
 \mathbf{W^n_t} = \frac{1}{2n+1} \sum_{i = t-n}^{t+n}{X_i}
@@ -60,11 +64,9 @@ and $n$ is a set of odd integers representing window sizes (\eg $\{1,3,7,15\}$).
 
 
 
-
-
 \subsection{Stratified Cross Validation}
-Generally, success of classification of sleep stages has been assessed by cross-validation \citationneeded{}.
-In many studies, it is implied that cross-validation was performed by making $k$ random training subsets 
+Generally, success of classification of sleep stages has been assessed by cross-validation.
+In many studies\citationneeded{}, it is implied that cross-validation was performed by making $k$ random training subsets 
 of the whole data and assessing the model trained by the remaining subsets (\ie{} k-fold crossvalidation).
 
 When working with dense time series (or, for instance, spatial data), it can be suspected that within a statistical block (group),
@@ -84,22 +86,33 @@ Therefore, it is fairer to perform \emph{stratified cross-validation}, using the
 In this study, all cross-validation were performed by training the model with all but one recordings,
 and testing it on the recording kept out. This was repeated by successively leaving each recording out.
 
-As shown in \TODO{figure intro}, the prevalence of different states is not balanced. Noticably, \gls{rem} sleep represents only $10\%$ of all epochs.
+As shown in figure~\ref{fig:sleep_description}, the prevalence of different states is not balanced. Noticably, \gls{rem} sleep represents only $10\%$ of all epochs.
 This means that if all \gls{rem} epoch were misclassified, we could still achieve $90\%$ accuracy.
 For this reason, the importance of the variables contributing to segregate the majority classes (wake \emph{vs.} \gls{nrem}) could be overestimated.
 Therefore, for the variable elimination\TODO{ref fig} stage and for defining new variables\TODO{fig ref here},
 balanced subsampled testing sets (750 epochs of each class) were used.
 
-
-
-
 \subsection{Random forests}
-mtry, n-tree, entropy-based confidence.
+Unless specified otherwise, random forests \citationneeded{} were trained with balanced samples of 1000 epochs per class,
+50 classification trees and $mtry =\sqrt{p}$.
+\texttt{R} software \citationneeded{} was used for prototytping.
+
+In order to enrich every prediction with an assossiated convidence level, a probabilistic interpretation of random forest was adopted\citationneeded{}.
+Then, to produce an overall summary value of confidence, an entropy based metric $c$ was defined as:
+\begin{equation}
+%~ \[
+c = 1 + \frac{1}{log_2(|v|)}\sum{v_i  log_2(v_i)}
+%~ \]
+\label{eq:entropy}
+\end{equation}
+where $v_i$ is the proportion of votes for the class $i$. This definition has the property $c \in [0;1]$.
+
 \subsection{Statistics}
+
 
 \subsection{Performance assesments}
 Comparisons of performance between \pr{} and \pyeeg{} were realised by meseauring the average (between 2 and 100 run, depending on the algorithm) duration of runtime of algorithms on six
-normaly distributed ($\mathcal{N}(\mu=0,\sigma=1)$) time series (\ie white noise) of size $n$,
+normaly distributed ($\mathcal{N}(\mu=0,\sigma=1)$) random time series (\ie white noise) of size $n$,
 with $n$ between $256 \times{} 5$ and $256 \times{} 30$.
 This was repeated five times for each time series.
 For computing  Higuchi fractal dimension, $k_{max}$ was set to $2^3$.
