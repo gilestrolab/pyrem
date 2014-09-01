@@ -1,0 +1,33 @@
+
+
+\begin {table}[!h]
+\begin{center}
+\caption{\ctit{List of features.}
+For clarity, features were classified in four functionnal families.
+16 scalar features, in four families, are computed for each epoch.
+Since all features are computed for all wavelet coefficients and raw signals (\gls{eeg} and \gls{emg}), a total of 
+$16 \times (1+7 + 1 + 3) = 192$ features are generated every five secon of recording.
+The mathematical detail of the algorithms is provided in the documentation of \pr{} (see appendix).
+\label{tab:features}}
+
+\small
+\begin{tabular}{|c|c|}
+  \hline
+  Feature family & features\\
+ \hline
+ \hline
+  Power & \specialcell{\texttt{mean}, \texttt{sd}, \texttt{skewness}, \texttt{kurtosis}\\\texttt{median}, \texttt{min}, \texttt{max}}\\
+  \hline
+  Hjorth & \texttt{morbidity}, \texttt{complexity}\\
+  \hline
+  Fractal & \texttt{Petrosian} and \texttt{Higuchi} fractal dimensions\\
+  \hline
+  Entropy & \specialcell{\texttt{SVD} and \texttt{Fisher} entropy.\\\texttt{Sample entropy} with $m=2$, and $ r \in \{ 0.2, 1.0, 1.5\}$}\\
+ \hline
+
+
+
+\end{tabular}
+\end{center}
+\end{table}
+

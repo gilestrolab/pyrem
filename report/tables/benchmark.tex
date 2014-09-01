@@ -1,6 +1,6 @@
 
 
-\begin {table}[H]
+\begin {table}[!h]
 \begin{center}
 \caption{\ctit{Performance improvements over \texttt{PyEEG}.}
  In order to improve efficiency, modification of the algorithms implemented in \texttt{PyEEG} were caried out.
@@ -18,17 +18,18 @@ Each alteration is mathematically justified in the section \texttt{pyrem.univari
 Significance levels: $^{***}$, $p-value < 10^{-3}$; $^{**}$, $p-value < 10^{-2}$.
 \label{tab:benchmark}
 }
-\small
+\footnotesize
 \begin{tabular}{|c|c|c|c|c|c|c|}
   \hline
   &  & \multicolumn{2}{|c|}{\texttt{PyEEG}} & \multicolumn{2}{|c|}{\pr} & \\
+ \hline
  \hline
  
   algorithm & function & \specialcell{$t$(ms) for \\$n = 1280$} & \specialcell{$n$ for $\times 10$\\increase} & \specialcell{$t$(ms) for \\$n = 1280$} & \specialcell{$n$ for $\times 10$\\ increase} & fix$^1$\\
   
   \hline
   \hline
-\specialcell{Approximate\\Entropy} & \texttt{ap\_ent} & 									9970 & 4288 & $487^{***}$ & $3478^{***}$ & No\\
+\specialcell{Approximate\\Entropy} & \texttt{ap\_ent} & 									9970 & 4288 & $487^{***}$ & $3478^{***}(-)$ & No\\
 \hline
 Fisher Information & \texttt{fisher\_info} & 								3.24 & 8673 & $0.121^{***}$ & $12427^{***}$ & No\\
 \hline
@@ -38,7 +39,7 @@ Hjorth parameters & \texttt{hjorth} & 										5.14 & 8633 & $0.088^{***}$ & $3
 \hline
 \specialcell{Petrosian\\Fractal Dimension} & \texttt{pfd} & 				2.66 & 8606 & 2.65 & 8579 & Yes\\
 \hline
-Sample Entropy & \texttt{samp\_ent} & 										8305 & 4276 & $188^{***}$ & $5483^{***}$ & No\\
+Sample Entropy & \texttt{samp\_ent} & 										8305 & 4276 & $188^{***}$ & $5483^{***}(-)$ & No\\
 \hline
 Spectral Entropy & \texttt{spectral\_entropy} & 								0.309 & 11459 & $0.227^{***}$ & $22133^{***}$ & Yes\\
 \hline

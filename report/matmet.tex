@@ -8,34 +8,45 @@
 
 \gls{eeg} and \gls{emg} signals were resampled from approximatly 200.0Hz to 256.0Hz using
 conservative sinc interpolation\citationneeded{Putman}. 
-A Frequency of 256.0Hz is convenient since is implies that discrete wavelet decomposition (see feature extraction strategy\TODO{link}) will separate 
+A Frequency of 256.0Hz is convenient since is implies that discrete wavelet decomposition (see subsection~\ref{sub:features} and fig.~\ref{fig:dwd}) will separate 
 frequencies above 4.0Hz from those below 4.0Hz (since $4 = 256.0/{2^6} $).
-This frequency is typicaly uses as a cut-off value between theta and delta waves \citationneeded{}.
-
+This frequency is typically uses as a cut-off value between theta and delta waves \citationneeded{}.
+In addition, \gls{eeg} and \gls{emg} signals were standardised ($E[x] = 0, \sigma = 1$) to account for the differences in baseline amplitude due to acquisition.
 Annotations labels were resampled at exactly 0.20Hz using nearest neighbour interpolation.
 
-\subsection{Feature exctraction}
+\subsection{Feature extraction}
+\label{sub:features}
 
-In order to avoid edge effects, discrete Wavelet decomposition, using Daubechies wavelet, with four vanishing mooments ("db4"),
-was applied \emph{a priory} to the entiere \gls{eeg} and \gls{emg} signals.
-This contrasts with applying decomposition for each sucessive temporal segment(\ie{} epoch).
-The latter method results in edge effects which would typicaly need to be attenualed by convolving every epoch with a window function (\eg Hamming window).
-The decomposition levels were from one to six for the \gls{eeg} and from one to four for the \gls{emg} \TODO{ref figureA}.
+A wavelet transform based feature extraction strategy was adopted.
+In summary, discrete wavelet decomposition was used on \gls{eeg}, and \gls{emg} 
+in order to separate frequency bands (fig.~\ref{fig:dwd}).
+Then all features were computed on five second epochs for all wavelet coefficents as well as raw signals.
 
-Then, each 24h recordings were subdivided in non-overlaping epochs of five seconds.
-For both \gls{eeg} and \gls{emg} raw signals, as well as for all their respective wavelet coefficents, an list of \TODO{N} features was computed \TODO{ref figureA, table 2}.
-Thus, a total of \TODO{N} features were obtained for each epochs.
+\input{./figures/dwd}
 
-A \py{} package, \pr{} (full documentation provided in the appendix), was developed to facilitate feature extraction.
+
+Importantly, discrete wavelet decomposition was applied \emph{a priory} to the whole signals.
+This contrasts with applying decomposition for each epoch \citationneeded{}.
+The latter method results in edge effects which would typically need to be attenualed by convolving every epoch with a window function (\eg Hamming window).
+The maximum decomposition levels for the \gls{eeg} and \gls{emg} signals were six and four, respectively.
+Daubechies wavelet, with four vanishing moments ("db4") was used.
+
+For both \gls{eeg} and \gls{emg} raw signals, as well as for all their respective wavelet coefficents,
+a list of 16 features (see table~\ref{tab:features}) was computed within each subsequent non-overlaping five seconds epochs.
+Thus, defining a total of $p=192$ variables. For each recording ($\simeq 24h$) there were approximatly $17280$ epochs.
+
+\input{./tables/features}
+
+A \py{} package, \pr{} (full documentation provided in the appendix), was developed to facilitate feature calculation and extraction.
 
 \subsection{Addition of temporal features}
 In order to integrate temporal information, new variables, depending on past, and future values of predictors, were added for each epochs.
-Given a $\mathbf{X_t}$ is a vector of feature at at time $t$,
+Given a vector $\mathbf{X_t}$ of feature at time $t$,
 A first strategy was to define a new vector of feature $\mathbf{{X'}_t}$ as
 \[
 \mathbf{{X'}_t} = \{\mathbf{X_{t-\tau}}, ..., \mathbf{X_t}, ..., \mathbf{X_{t+\tau}}\}
 \]
-where $\tau$ is a discrete lag.
+with $\tau \in \mathbb{N}$.
 
 Another strategy was to add features representing the local average $\mathbf{W^n_t}$ of each variable over several window sizes $n$.
 \[
