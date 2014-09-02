@@ -12,10 +12,10 @@
    id="svg4240"
    version="1.1"
    inkscape:version="0.48.5 r10040"
-   width="1080"
-   height="1080"
+   width="1010.007"
+   height="1193.6036"
    xml:space="preserve"
-   sodipodi:docname="Rout_2014_08_28-18:28:44.pdf"><metadata
+   sodipodi:docname="temporal_integration.pdf"><metadata
      id="metadata4246"><rdf:RDF><cc:Work
          rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
@@ -23,15 +23,18 @@
        clipPathUnits="userSpaceOnUse"
        id="clipPath4256"><path
          d="m 59.04,73.44 774.72,0 0,731.52 -774.72,0 0,-731.52 z"
-         id="path4258" /></clipPath><clipPath
+         id="path4258"
+         inkscape:connector-curvature="0" /></clipPath><clipPath
        clipPathUnits="userSpaceOnUse"
        id="clipPath4264"><path
          d="m 59.04,73.44 774.72,0 0,731.52 -774.72,0 0,-731.52 z"
-         id="path4266" /></clipPath><clipPath
+         id="path4266"
+         inkscape:connector-curvature="0" /></clipPath><clipPath
        clipPathUnits="userSpaceOnUse"
        id="clipPath4494"><path
          d="m 59.04,73.44 774.72,0 0,731.52 -774.72,0 0,-731.52 z"
-         id="path4496" /></clipPath><clipPath
+         id="path4496"
+         inkscape:connector-curvature="0" /></clipPath><clipPath
        clipPathUnits="userSpaceOnUse"
        id="clipPath4494-4"><path
          inkscape:connector-curvature="0"
@@ -49,17 +52,21 @@
      inkscape:window-height="1014"
      id="namedview4242"
      showgrid="false"
-     inkscape:zoom="0.35355339"
-     inkscape:cx="-356.884"
-     inkscape:cy="492.41782"
+     inkscape:zoom="0.5"
+     inkscape:cx="-37.698765"
+     inkscape:cy="598.75622"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g4248" /><g
+     inkscape:current-layer="g4248"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" /><g
      id="g4248"
      inkscape:groupmode="layer"
      inkscape:label="Rout_2014_08_28-18:28:44"
-     transform="matrix(1.25,0,0,-1.25,0,1080)"><g
+     transform="matrix(1.25,0,0,-1.25,-32.649217,1038.6719)"><g
        clip-path="url(#clipPath4256)"
        id="g4254" /><path
        d="m 94.25,413.73 52.17,0"
@@ -103,7 +110,7 @@
        id="path4286"
        inkscape:connector-curvature="0" /><path
        d="m 172.51,694.85 26.08,0"
-       style="fill:#666666;stroke:#000000;stroke-width:0.75000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+       style="fill:#666666;stroke:#000000;stroke-width:0.75;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
        id="path4288"
        inkscape:connector-curvature="0" /><path
        d="m 159.47,227.89 52.17,0 0,220.74 -52.17,0 0,-220.74"
@@ -601,7 +608,7 @@
    id="tspan5277-8">τ</tspan> = 2</tspan></text>
 <text
        xml:space="preserve"
-       style="font-size:347.11880493000001024px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#666666;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       style="font-size:347.11880493px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#666666;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
        x="-920.46661"
        y="362.83508"
        id="text5325"
@@ -611,11 +618,12 @@
          id="tspan5327"
          x="-920.46661"
          y="362.83508"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;word-spacing:99.71012115000000620px;text-anchor:middle;font-family:Times New Roman;-inkscape-font-specification:Times New Roman;fill:#666666">{</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;word-spacing:99.71012115px;text-anchor:middle;fill:#666666;font-family:Times New Roman;-inkscape-font-specification:Times New Roman">{</tspan></text>
 <flowRoot
        xml:space="preserve"
        id="flowRoot5336"
-       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Liberation Sans;font-style:normal;font-weight:normal;font-size:72px;line-height:125%;letter-spacing:0px;word-spacing:0px;-inkscape-font-specification:Liberation Sans;font-stretch:normal;font-variant:normal"><flowRegion
+       style="font-size:72px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Liberation Sans;-inkscape-font-specification:Liberation Sans"
+       transform="matrix(0.8,0,0,-0.8,0,864)"><flowRegion
          id="flowRegion5338"><rect
            id="rect5340"
            width="370.52396"
@@ -624,7 +632,7 @@
            y="-10.358656" /></flowRegion><flowPara
          id="flowPara5342"></flowPara></flowRoot><text
        xml:space="preserve"
-       style="font-size:287.79818726000002016px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#666666;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       style="font-size:287.79818726px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#666666;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
        x="-763.16345"
        y="726.86835"
        id="text5325-9"
@@ -634,10 +642,10 @@
          id="tspan5327-7"
          x="-763.16345"
          y="726.86835"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;word-spacing:82.67024231000000611px;text-anchor:middle;fill:#666666;font-family:Times New Roman;-inkscape-font-specification:Times New Roman">{</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;word-spacing:82.67024231px;text-anchor:middle;fill:#666666;font-family:Times New Roman;-inkscape-font-specification:Times New Roman">{</tspan></text>
 <text
        xml:space="preserve"
-       style="font-size:57.59999847000000273px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#666666;fill-opacity:1;stroke:none;font-family:Liberation Sans;-inkscape-font-specification:Liberation Sans"
+       style="font-size:57.59999847px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#666666;fill-opacity:1;stroke:none;font-family:Liberation Sans;-inkscape-font-specification:Liberation Sans"
        x="216"
        y="-779.20001"
        id="text5365"
@@ -649,7 +657,7 @@
          y="-779.20001">convolution</tspan></text>
 <text
        xml:space="preserve"
-       style="font-size:57.59999847000000273px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#666666;fill-opacity:1;stroke:none;font-family:Liberation Sans;-inkscape-font-specification:Liberation Sans"
+       style="font-size:57.59999847px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#666666;fill-opacity:1;stroke:none;font-family:Liberation Sans;-inkscape-font-specification:Liberation Sans"
        x="640.46088"
        y="-781.01263"
        id="text5365-6"
