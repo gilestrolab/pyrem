@@ -1,0 +1,28 @@
+
+
+\begin {table}[!h]
+\begin{center}
+\caption{\ctit{Relative confusion matrix.}
+Agreement between reference scoring (rows) and proposed classifier (column).
+For clarity, only the percentage of all epochs is shown.  The total number of epochs was 202171.
+$a$, PPV (Positive Predictive Value = 1 - False Detection Rate); $b$, Overall Accuracy.
+\label{tab:confus}
+}
+\footnotesize
+\begin{tabular}{|c|c|c|c|c|c|}
+  \hline
+  & &   \multicolumn{3}{|c|}{Prediction} & \multirow{2}{*}{PPV$^a$} \\ 
+  & & NREM& REM& WAKE &\\
+  \hline
+ \multirow{3}{*}{\specialcell{Ground\\truth}}
+ 
+   & NREM & 47.9& 1.36& 3.03 & 0.92\\
+   & REM & 0.63 & 5.14& 0.25 & 0.85\\
+   & WAKE & 2.24& 0.42& 39.3 & 0.94\\
+   \hline
+   \multicolumn{2}{|c|}{Sensitivity} &  0.94  & 0.74 &   0.92 &$0.92^b$\\
+ \hline
+
+\end{tabular}
+\end{center}
+\end{table}

@@ -1,11 +1,9 @@
 \begin {table}[!h]
 \begin{center}
-\caption{\ctit{List of computed features.}
-For clarity, the 16 calculated features were classified into four functional families.
-For all epochs, all features were computed on all wavelet coefficients and raw (\gls{eeg} and \gls{emg}) signals. Therefore, a total of
-$16 \times (1+7 + 1 + 3) = 192$ features were generated for each five seconds of recording.
-The mathematical detail of the algorithms is provided in the documentation of \pr{} (see appendix).
-\label{tab:features}}
+\caption{\ctit{Relative variable importance of the 20 selected features.}
+After recursive variable elimination, the 20 most important remaining features were used.
+
+\label{tab:importances}}
 
 \small
 \begin{tabular}{|c|c|}
@@ -21,7 +19,6 @@ The mathematical detail of the algorithms is provided in the documentation of \p
   \hline
   Entropy & \specialcell{\texttt{Fisher information}, \texttt{SVD entropy}\\and \texttt{Sample entropy} with $m=2$, and $ r \in \{ 0.2, 1.0, 1.5\}$}\\
  \hline
-
 
 
 \end{tabular}

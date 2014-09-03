@@ -1,15 +1,12 @@
-
 \section{Material and Methods} \label{matmet}
-
 
 \subsection{Data}
 
-
 \subsection{Preprocessing}
 
-\gls{eeg} and \gls{emg} signals were resampled from approximatly 200.0Hz to 256.0Hz using
-conservative sinc interpolation\citationneeded{Putman}. 
-A Frequency of 256.0Hz is convenient since is implies that discrete wavelet decomposition (see subsection~\ref{sub:features} and fig.~\ref{fig:dwd}) will separate 
+\gls{eeg} and \gls{emg} signals were resampled from approximately 200.0Hz to 256.0Hz using
+conservative sinc interpolation\citationneeded{Putman}.
+A Frequency of 256.0Hz is convenient since is implies that discrete wavelet decomposition (see subsection~\ref{sub:features} and fig.~\ref{fig:dwd}) will separate
 frequencies above 4.0Hz from those below 4.0Hz (since $4 = 256.0/{2^6} $).
 This frequency is typically uses as a cut-off value between theta and delta waves \citationneeded{}.
 In addition, \gls{eeg} and \gls{emg} signals were standardised ($E[x] = 0, Var[x] = 1$) to account for the variability in baseline amplitude due to acquisition.
@@ -19,28 +16,29 @@ Annotations labels were resampled at exactly 0.20Hz using nearest neighbour inte
 \label{sub:features}
 
 A wavelet transform based feature extraction strategy was adopted.
-In summary, discrete wavelet decomposition was used on \gls{eeg} and \gls{emg} 
+In summary, discrete wavelet decomposition was used on \gls{eeg} and \gls{emg}
 in order to separate frequency bands (fig.~\ref{fig:dwd}).
-Then all features were computed on five second epochs for all wavelet coefficents as well as raw signals.
+Then all features were computed on five second epochs for all wavelet coefficients as well as raw signals.
 
 \input{./figures/dwd}
 
-
 Importantly, discrete wavelet decomposition was applied \emph{a priory} to the whole signals.
 This contrasts with applying decomposition for each epoch \citationneeded{}.
-The latter method results in edge effects which would typically need to be attenualed by convolving every epoch with a window function (\eg{} Hamming window).
+The latter method results in edge effects which would typically need to be attenuated by convolving every epoch with a window function (\eg{} Hamming window).
 The maximum decomposition levels for the \gls{eeg} and \gls{emg} signals were six and four, respectively.
-Daubechies wavelet, with four vanishing moments ("db4") was used.
+Daubechies wavelet, with four vanishing moments (``db4'') was used.
 
-For both \gls{eeg} and \gls{emg} raw signals, as well as for all their respective wavelet coefficents,
-a list of 16 features (see table~\ref{tab:features}) was computed in each subsequent non-overlaping five seconds epochs.
-Thus, defining a total of $p=192$ variables. For each recording ($\simeq 24h$) there were approximatly $17000$ epochs. 
+Discrete wavelet decomposition generated seven and five additional time series for \gls{eeg} and \gls{emg}, respectively.
+For all 14 time series, a list of 16 features (see table~\ref{tab:features}) was computed in each subsequent non-overlapping five seconds epochs.
+Thus, resulting in a total of $p=192$ variables. For each recording ($\simeq 24h$) there were approximately $17000$ epochs.
 Some combinations of variables and signals were incalculable.
-Therefore, these variables and were removed resulting in an actual number of variables $p=164$.
+Therefore, they were removed resulting in an actual number of variables $p=164$.
 
 \input{./tables/features}
 
-A \py{} package, \pr{}, was developed in order to efficiently calculate features. The complete documentation provided in the appendix of this document.
+A \py{} package, \pr{}, was developed in order to efficiently
+calculate features on heterogeneous time series.
+Its complete documentation provided in the appendix of the present document.
 
 \subsection{Addition of temporal features}
 In order to integrate temporal information, new variables, depending on past, and future values of predictors, were added for each epochs.
@@ -67,37 +65,37 @@ and $n$ is a set of odd integers representing window sizes (\eg $\{1,3,7,15\}$).
 
 \subsection{Stratified Cross Validation}
 Generally, success of classification of sleep stages is assessed by cross-validation.
-In many studies\citationneeded{}, it is implied that cross-validation was performed by making $k$ random training subsets 
-of the whole data and assessing the model fitted on the remaining subsets (\ie{} k-fold crossvalidation).
+In many studies\citationneeded{}, it is implied that cross-validation was performed by making $k$ random training subsets
+of the whole data and assessing the model fitted on the remaining subsets (\ie{} k-fold cross-validation).
 
 When working with dense time series (or, for instance, spatial data), it can be suspected that within a statistical block (group),
 both features and response variables are very correlated with neighbouring data points.
 For instance, the features and label at $t_n$ are expected to be largely similar to the features, and labels at $t_{n+1}$ and $t_{n-1}$.
 In statistical terms, $t_{n+1}$ is not independent of $t_{n}$.
 
-If the training sets are drawn completely at random, from a dataset containing multiple long recordings, 
-the underlying time series would only be made marginally sparcer, and the datapoints missing from
-a time series could simply be infered from the neighbouring points which remain in the training set.
+If the training sets are drawn completely at random, from a dataset containing multiple long recordings,
+the underlying time series would only be made marginally sparser, and the data points missing from
+a time series could simply be inferred from the neighbouring points which remain in the training set.
 
 This could give the impression that the model has a very strong predictive power.
-However, the goal of cross validation is to assess how well a predictive model would perform on \emph{new data}. 
-The goal of this study, and most similar studies, was to provide a tool to automatically annotate \emph{new recordings}. 
+However, the goal of cross validation is to assess how well a predictive model would perform on \emph{new data}.
+The goal of this study, and most similar studies, was to provide a tool to automatically annotate \emph{new recordings}.
 Therefore, it is fairer to perform \emph{stratified cross-validation}, using the different recordings as the stratum levels.
 In this study, all cross-validation were performed by training the model with all but one recordings,
 and testing it on the recording kept out. This was repeated by successively leaving each recording out.
 
-As shown in figure~\ref{fig:sleep_description}, the prevalence of different states is not balanced. Noticably, \gls{rem} sleep represents only $10\%$ of all epochs.
-This implies that $90\%$ accuracy could be acchieved even if all \gls{rem} epoch were misclassified.
+As shown in figure~\ref{fig:sleep_description}, the prevalence of different states is not balanced. Noticeably, \gls{rem} sleep represents only $10\%$ of all epochs.
+This implies that $90\%$ accuracy could be achieved even if all \gls{rem} epoch were misclassified.
 For the same reason, the importance of the variables contributing to segregate the minority class (\gls{rem}) could be underestimated.
 Therefore, for variable elimination (fig.~\ref{fig:variable_elimination}) and for defining new variables (fig.~\ref{fig:temporal_integration}),
-balanced subsampled testing sets (750 epochs of each class) were used.
+balanced sub-sampled testing sets (750 epochs of each class) were used.
 
 \subsection{Random forests}
 Unless specified otherwise, random forests \citationneeded{} were trained with balanced samples of 1000 epochs per class,
 50 classification trees and $mtry =\sqrt{p}$.
 \texttt{R} software \citationneeded{} was used for prototytping.
 
-In order to enrich every prediction with an assossiated convidence level, a probabilistic interpretation of random forest was adopted\citationneeded{}.
+In order to enrich every prediction with an associated confidence level, a probabilistic interpretation of random forest was adopted\citationneeded{}.
 Then, to produce an overall summary value of confidence, an entropy based metric $c$ was defined as:
 \begin{equation}
 %~ \[
@@ -110,15 +108,12 @@ where $v_i$ is the proportion of votes for the class $i$. This definition has th
 \subsection{Statistics}
 
 
-\subsection{Performance assesments}
-Comparisons of performance between \pr{} and \pyeeg{} were realised by meseauring the average (between 2 and 100 run, depending on the algorithm) duration of runtime of algorithms on six
-normaly distributed ($\mathcal{N}(\mu=0,\sigma=1)$) random time series (\ie white noise) of size $n$,
+\subsection{Performance assessments}
+Comparisons of performance between \pr{} and \pyeeg{} were realised by measuring the average (between 2 and 100 run, depending on the algorithm) duration of runtime of algorithms on six
+normally distributed ($\mathcal{N}(\mu=0,\sigma=1)$) random time series (\ie white noise) of size $n$,
 with $n$ between $256 \times{} 5$ and $256 \times{} 30$.
 This was repeated five times for each time series.
 For computing  Higuchi fractal dimension, $k_{max}$ was set to $2^3$.
 For both approximate entropy and sample entropy, the embedding dimension $m$ was set to $2$, and the distance threshold, $r$, to $1.5$.
-For fisher information, the embeding dimension and the delay, $\tau$ were set to $3$ and $2$, respectively.
-Finally, spectral entropy was computed for the frequency bands bounded by $\{0, 2^0, 2^1, ..., 2^6\}$.
-
-
-
+For fisher information, the embedding dimension and the delay, $\tau$ were set to $3$ and $2$, respectively.
+Finally, spectral entropy was computed for the frequency bands bounded by $\{0, 2^0, 2^1, ..., 2^6\}$Hz, with $f_s = 256.0$.

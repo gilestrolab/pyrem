@@ -1,18 +1,15 @@
-
-
 \begin {table}[!h]
 \begin{center}
 \caption{\ctit{Performance improvements over \texttt{PyEEG}.}
- In order to improve efficiency, modifications of the algorithms implemented in \texttt{PyEEG} were caried out.
-Several mathematical inconsistancies were also discovered and corrected.
+ In order to improve performance modifications of the algorithms implemented in \texttt{PyEEG} were carried out.
+In addition, several mathematical inconsistencies were also discovered and corrected.
 The table compares how long, on average, each algorithm would take, for a random sequence of length $1280$($5s$ at $256Hz$).
-In addition, it represents how many added points would lead to a tenfold runtime increase.
-For the tested range ($n \in [1280;7680] $), all algorithms add approximatly an 
+It also represents how many added points would lead to a tenfold runtime increase.
+For the tested range ($n \in [1280;7680] $), all algorithms add approximately an
 exponential time complexity ($10^{O(n)}$), $R^2 > 0.95$, for all.
-Significance levels were assessed by fitting linear models, on the log-transformed runtimes.
-t-tests on the effect of the implementation (\ie{} whether \pr{} or \texttt{PyEEG} was used) on the intercept (at 1280, as oposed to 0) were used to compute $p-values$ at $n=1280$.
+Significance levels were assessed by fitting linear models, on the log-transformed runtime.
+t-tests on the effect of the implementation (\ie{} whether \pr{} or \texttt{PyEEG} was used) on the intercept (at 1280, as opposed to 0) were used to compute $p-values$ at $n=1280$.
 $p-values$ for the differences in scaling were obtained through t-tests on the interaction between $n$ and the implementation.
-\emph{No} multiple test correction was applied to account for testing significances on different algorithms.
 \textbf{1}: whether the original implementation was corrected in order to match mathematical definition.
 Each alteration is mathematically justified in the section \texttt{pyrem.univariate} of the \pr{} documentation (see appendix).
 Significance levels: $^{***}$, $p-value < 10^{-3}$; $^{**}$, $p-value < 10^{-2}$.
@@ -26,28 +23,25 @@ Significance levels: $^{***}$, $p-value < 10^{-3}$; $^{**}$, $p-value < 10^{-2}$
  \hline
  
   algorithm & function & \specialcell{$t$(ms) for \\$n = 1280$} & \specialcell{$n$ for $\times 10$\\increase} & \specialcell{$t$(ms) for \\$n = 1280$} & \specialcell{$n$ for $\times 10$\\ increase} & fix$^1$\\
-  
+ 
   \hline
   \hline
-\specialcell{Approximate\\Entropy} & \texttt{ap\_ent} & 									9970 & 4288 & $487^{***}$ & $3478^{***}(-)$ & No\\
+\specialcell{Approximate\\Entropy} & \texttt{ap\_ent} &                                     9970 & 4288 & $487^{***}$ & $3478^{***}(-)$ & No\\
 \hline
-Fisher Information & \texttt{fisher\_info} & 								3.24 & 8673 & $0.121^{***}$ & $12427^{***}$ & No\\
+Fisher Information & \texttt{fisher\_info} &                                 3.24 & 8673 & $0.121^{***}$ & $12427^{***}$ & No\\
 \hline
-\specialcell{Higuchi\\Fractal Dimension} & \texttt{hfd} &	 				11.7 & 8833 & $1.39^{***}$ & $28329^{***}$ & Yes\\
+\specialcell{Higuchi\\Fractal Dimension} & \texttt{hfd} &                     11.7 & 8833 & $1.39^{***}$ & $28329^{***}$ & Yes\\
 \hline
-Hjorth parameters & \texttt{hjorth} & 										5.14 & 8633 & $0.088^{***}$ & $36354^{***}$ & Yes\\
+Hjorth parameters & \texttt{hjorth} &                                         5.14 & 8633 & $0.088^{***}$ & $36354^{***}$ & Yes\\
 \hline
-\specialcell{Petrosian\\Fractal Dimension} & \texttt{pfd} & 				2.66 & 8606 & 2.65 & 8579 & Yes\\
+\specialcell{Petrosian\\Fractal Dimension} & \texttt{pfd} &                 2.66 & 8606 & 2.65 & 8579 & Yes\\
 \hline
-Sample Entropy & \texttt{samp\_ent} & 										8305 & 4276 & $188^{***}$ & $5483^{***}(-)$ & No\\
+Sample Entropy & \texttt{samp\_ent} &                                         8305 & 4276 & $188^{***}$ & $5483^{***}(-)$ & No\\
 \hline
-Spectral Entropy & \texttt{spectral\_entropy} & 								0.309 & 11459 & $0.227^{***}$ & $22133^{***}$ & Yes\\
+Spectral Entropy & \texttt{spectral\_entropy} &                                 0.309 & 11459 & $0.227^{***}$ & $22133^{***}$ & Yes\\
 \hline
-\specialcell[l]{Singular Value \\Decomposition\\ entropy} & \texttt{svd\_ent} & 	3.25 & 8663 & $0.113^{***}$ & $11774^{**}$ & Yes\\
+\specialcell[l]{Singular Value \\Decomposition\\ entropy} & \texttt{svd\_ent} &     3.25 & 8663 & $0.113^{***}$ & $11774^{**}$ & Yes\\
  \hline
-
-
-
 \end{tabular}
 \end{center}
 \end{table}
