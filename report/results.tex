@@ -3,10 +3,12 @@
 \subsection{A new efficient \texttt{python} package}
 Several algorithms to extract features from univariate time series had already been implemented in the \py{} package \pyeeg{}\citationneeded{}.
 Unfortunately, some of them were critically slow, and could therefore not realistically have been used in the present study.
-Preliminary investigation of \pyeeg{} source code revealed that runtimes may be improved by vectorising expressions and pre-allocating of temporary arrays.
+Preliminary investigation of \pyeeg{} source code revealed that runtimes may be improved mainly by vectorising expressions and pre-allocating of temporary arrays.
 Therefore, systematic reimplementation of all algorithms in \pyeeg{} was undertaken.
 Very significant improvement in performance were achieved for almost all functions(table~\ref{tab:benchmark}).
-Critically, sample \citationneeded{} and absolute \citationneeded{} became usable in reasonable time.
+Critically, sample \citationneeded{} and absolute \citationneeded{} entropy became usable in reasonable time.
+For instance, 40h of CPU time were originally  requiered to compute sample entropy on a all 5 second epochs in a 24h recording.
+The improved implementation cut this down to 55min.
 \input{./tables/benchmark}
 
 Importantly, several mathematical inconsistencies between the original code and the mathematical definitions were also noticed.
@@ -26,15 +28,16 @@ A complete documentation of \pr{} is provided in the appendix of the report here
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Twenty variables can generate accurate predictions}
-Including temporal information (see next section) results in multiplication the number of variable, rendering computation difficult, and prediction potentially less accurate.
+Including temporal information (see next section) results in multiplication of the number of variable, rendering computation difficult, and prediction potentially less accurate.
 Therefore, iterative elimination of variables based on their importance was undertaken.
 Starting with all 164 variables, random forests were trained, and the number of features was reduced by a factor $1.3$  by eliminating the least important variables.
 For each iteration, the stratified cross-validation error (see material and methods) was computed (fig.~\ref{fig:variable_elimination}).
 
 \input{./figures/variable_elimination}
 The predictive accuracy globally increases with the number of variables.
-However, this increase is very moderate for ($p>8$) this indicates that dimensionality can be reduced without largely impacting accuracy.
-For further investigation, $p=20$ was considered to be a good compromise between error and computational load.
+Interestingly, using only the two most important variable already results in less that 20\% average error.
+However, this increase is very moderate for ($p>9$) this indicates that dimensionality can be reduced without largely impacting accuracy.
+For further investigation, $p=21$ was considered to be a good compromise between error and computational load. There relative importances are presented in table~\ref{tab:importances}.
 \input{./tables/importances}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -48,10 +51,9 @@ of each epochs (eq.~\ref{eq:window}),
 or the features of neighbouring time points were included (eq.~\ref{eq:tau}).
 
 A comparison of both approaches is proposed in figure \ref{fig:temporal_integration}.
-Significant improvement was achieved by both methods by including even little temporal information ($\tau = 1$, $n=\{1,3\}$).
-The best accuracy was achieved with $\tau = 2$.
-This value is also a good compromise in so far as it only inflates $p$ by five fold.
-In addition, it is advantageous to require only five contiguous neighbouring epochs instead of having to integrate minutes of contextual information.
+Significant improvement was achieved by both methods by including even little temporal information ($\tau = 1$, $n=\{1,3\}$\TODO{stats}).
+Although both methods improve performance, it appears that the inter-recording variablility is lower using convolution method\TODO{stats}.
+The most significant difference with the original set of variables was achieved using $n = \{1,3,7,15,31\}$.
 Combining both approaches did not improve prediction any further (data not shown).
 
 \input{./figures/temporal_integration}
@@ -70,7 +72,7 @@ the training set did not contain any point from this time series.
 
 \input{./tables/confus}
 
-The global confusion matrix is presented in table \ref{tab:confus}. The overall accuracy is 0.92.
+The global confusion matrix is presented in table \ref{tab:confus}. The overall accuracy was 0.92.
 For \gls{nrem} and wake, both specificity and positive predictive value were above 0.90. However
 for \gls{rem} epochs, the specificity is only 0.74, and the false detection rate is 15\%.
 
@@ -82,14 +84,14 @@ No significant difference was found between the ground truth and predicted preva
 
 Sleep fragmentation is often assessed by a combination of two variables: number of episodes of a given state (fig.~\ref{fig:struct_assess}B) and average duration of all episodes per state (fig.~\ref{fig:struct_assess}C) \citationneeded{}.
 
-Large differences were observed between the number of events computed from the ground truth or the predicted data.
-($p-value < 10^{-15}$ for all, t test on the interaction terms of Poison GLMM).
+Large differences were observed between the number of \gls{rem} sleep and awake episodes between the ground truth and the predicted data
+($p-value < 10^{-15}$ for both, t test on the interaction terms of Poisson GLMM).
 
-Finally, significant differences were found between methods for the average durations of \gls{rem} ($p-value < 10^{-4}$) an wake ($p-value < 10^{-3}$) episodes
-(t test on the interaction terms of linear mixed model).
+In addition, significant structural differences were found between methods for the average duration of awake ($p-value < 10^{-3}$) episodes 
+(t test on the interaction terms of linear mixed model). 
 
 \subsection{Attribution of confidence score to predictions}
-Since classification can be inaccurate, it would be interesting to associate `confidence' score to each prediction.
+Since classification may be inaccurate, it would be interesting to associate `confidence' score to each prediction.
 A entropy based confidence metric $c$ (eq. \ref{eq:entropy}) was defined for this purpose.
 In order to validate it, the average cross-validation error was computed for different degrees of confidence (fig\ref{fig:error}A).
 
@@ -99,4 +101,6 @@ As expected, the probability of misclassification decreases monotonically with $
 In addition, error rate seem to tend to zero when the confidence value is one, and, for confidences close to zero, the predictor is very inaccurate.
 These characteristics indicate that $c$ can be used to as a supporting value for predictions.
 One application of such a confidence level could be to provide user with an overall quality assessment.
-In addition, it  makes it possible possible for the used to display while visually inspecting a recording (fig\ref{fig:error}C).
+In addition, it  makes it possible to display confidence while visually inspecting a recording (fig\ref{fig:error}C) in order to facilitate resolution of ambiguities.
+
+

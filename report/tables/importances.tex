@@ -1,24 +1,39 @@
 \begin {table}[!h]
 \begin{center}
-\caption{\ctit{Relative variable importance of the 20 selected features.}
-After recursive variable elimination, the 20 most important remaining features were used.
-
+\caption{\ctit{Relative variable importance of the 21 selected features.}
+After recursive variable elimination, the 21 most important remaining features were used.
+Features from both \gls{eeg} and \gls{emg} are important for accurate prediction.
 \label{tab:importances}}
 
 \small
-\begin{tabular}{|c|c|}
+\begin{tabular}{|c|c|c|l|r|}
   \hline
-  Feature family & features\\
- \hline
- \hline
-  Power & \specialcell{\texttt{mean}, \texttt{sd}, \texttt{skewness}, \texttt{kurtosis}\\\texttt{median}, \texttt{min}, \texttt{max}}\\
-  \hline
-  Hjorth & \texttt{morbidity}, \texttt{complexity}\\
-  \hline
-  Fractal & \texttt{Petrosian} and \texttt{Higuchi} fractal dimensions\\
-  \hline
-  Entropy & \specialcell{\texttt{Fisher information}, \texttt{SVD entropy}\\and \texttt{Sample entropy} with $m=2$, and $ r \in \{ 0.2, 1.0, 1.5\}$}\\
- \hline
+ Signal & \specialcell{Wavelet\\coefficient} & \specialcell{Feature\\family}  & feature & importance\\
+\hline
+\hline
+EMG & cD\_1 & power & median & 222.2\\
+EEG & cD\_6 & power & mean & 161.5\\
+EMG & cD\_1 & power & sd &  144.7\\
+EMG & cD\_1 & power & mean & 136.9\\
+EMG & cD\_2 & power & median & 131.9\\
+EEG & cD\_5 & hjorth & morbidity & 128.3\\
+EEG & raw & entropy & sample entropy ($r=1.5$) & 109.5\\
+EEG & cD\_1 & power & median & 101.5\\
+EMG & cD\_1 & power & min & 81.3\\
+EEG & raw & entropy & sample entropy ($r=1.0$) & 79.3\\
+EEG & raw & entropy & sample entropy ($r=0.2$) & 76.6\\
+EEG & cD\_5 & hjorth & complexity & 72.3\\
+EEG & cD\_6 & power & sd & 71.2\\
+EMG & cD\_3 & power & mean & 62.5\\
+EMG & cD\_2 & power & mean & 61.9\\
+EEG & cD\_6 & power & median & 61.8\\
+EEG & cD\_6 & power & min & 57.3\\
+EMG & cD\_4 & power & mean & 57.0\\
+EEG & raw & hjorth & morbidity & 54.9\\
+EMG & cD\_3 & power & sd & 54.4\\
+EEG & raw & fractal & hfd & 43.1\\
+\hline
+ 
 
 
 \end{tabular}
