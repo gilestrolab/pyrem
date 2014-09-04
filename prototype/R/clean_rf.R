@@ -85,7 +85,9 @@ show_2d_hist <- function(x, z, y, levels= c(.25,0.75,0.5),all=F,...){
 
 
 
-
+iqr <- function(x){
+	diff(quantile(x, c(0.25, 0.75)))
+}
 make_length_per_class <- function(series){
 	
 	diff <-  c(FALSE, series[1:length(series)-1] != series[-1])
@@ -308,7 +310,7 @@ stratified_cv <- function(df, rf_fun, return_preds=FALSE, resample_test=TRUE, np
 	
 	return(out)
 	}
-select_variables <- function(df, scale=1.2){
+select_variables <- function(df, scale=1.3){
 	
 	# importantly!!, the importance has to be computed on a balanced sample
     rf_fun <- function(dd){
@@ -324,28 +326,33 @@ select_variables <- function(df, scale=1.2){
 	row_names <- gsub("sample_2_0\\.", "sample_2_0d",rownames(rf$importance))
 	t <- quantile(rf$importance, 1-1/scale)
 	
-    var_to_remove <- names(rf$importance[rf$importance < t,])
+    var_to_remove <- rownames(rf$importance)[rf$importance[,1] < t]
 	bad_idxs = match(var_to_remove, colnames(df))
-	if(length(bad_idxs) == 0)
-		return(NULL)
-    out <- df[,-bad_idxs]
+
+	if(length(bad_idxs) == 0){
+		out <- NULL
+	}
+	else{
+		out <- df[,-bad_idxs]
+	}
     
     # hacky way to get the real number of variable used
     d <- strip_df_for_ml(df)
-    
+    print(t(t(
+			sort(rf$importance[,1])
+			)))
     return(list(data=out, cv_error_vec=cv_error_vec, n_vars= ncol(d) - 1))
 }
 
-recursive_variable_elimination <- function (df, scale=1.2,target=2){
+recursive_variable_elimination <- function (df, scale=1.5,target=1){
 	
 	variables = list()
 	i=1
+#~ 	break_next = FALSE
 	while(TRUE){
 		
-		selection <- select_variables(df, scale=1.3)
-		if (is.null(selection)){
-			break
-		}
+		selection <- select_variables(df, scale=scale)
+
 		selection$select_variables
 		n_vars <- selection$n_vars
 		out_tmp <- data.frame(error = selection$cv_error_vec, 
@@ -356,16 +363,25 @@ recursive_variable_elimination <- function (df, scale=1.2,target=2){
 			out_df <- rbind(out_df, out_tmp)
 		else
 			out_df <- out_tmp
-		
+		print(out_df)
 		cn <- colnames(df)
-		df <- selection$data
+		
+		
+		
+		
 		variables[[i]] <- cn
 		
-		i <- i + 1
 		
+		
+		if (is.null(out_df)){
+			break
+		}
 		if(min(n_vars) <= target){
 			break
 		}
+		
+		df <- selection$data
+		i <- i + 1
 	}
 	return(list(data = out_df, variables))
 }
@@ -567,31 +583,28 @@ analize_predicted_ts_features <- function(df){
 	dd <- strip_df_for_ml(df) 
 	preds$true_y <- dd$y
 	
-	par(mfrow=c(1,2))
-	for(a in levels(preds$animal)){
-		subdd <- dd[preds$animal == a,]
-		subpreds <- subset(preds, animal == a)
-		xl <- c(-3,3)
-		yl <- c(-5,2)
-		levs <- c(0.1,0.25, 0.5, 0.75, 0.9)
-#~ 	show_2d_hist(log10(subdd$win_3.EEG_parietal_frontal_cA_6.power.mean * subdd$win_3.EEG_parietal_frontal_cD_6.power.mean / subdd$win_3.EEG_parietal_frontal_cD_1.power.mean), 
-#~ 					log10(subdd$win_7.EMG_REF_cD_3.power.mean * subdd$win_3.EMG_REF_cD_2.power.mean * subdd$win_3.EMG_REF_cD_1.power.mean), subpreds$true_y, levs,all=T,
-#~ 					 main=paste("No labels, balanced",a),
+	
+
+#~ 	par(mfrow=c(1,2))
+#~ 	for(a in levels(preds$animal)){
+#~ 		subdd <- dd[preds$animal == a,]
+#~ 		subpreds <- subset(preds, animal == a)
+#~ 		xl <- c(-2,3)
+#~ 		yl <- c(-3,2)
+#~ 		levs <- c(0.25, 0.5, 0.75)
+#~ 		
+#~ 		show_2d_hist(log10(subdd$lag_0.EEG_parietal_frontal_cD_6.power.median /subdd$lag_0.EEG_parietal_frontal_cD_1.power.median), log10(subdd$lag_0.EMG_REF_cD_1.power.median), 
+#~ 					subpreds$true_y, levs, main=paste("Reference", a),
 #~ 					ylim=yl, xlim=xl
 #~ 					)
-					
-		show_2d_hist(log10(subdd$win_3.EEG_parietal_frontal_cA_6.power.mean * subdd$win_3.EEG_parietal_frontal_cD_6.power.mean / subdd$win_3.EEG_parietal_frontal_cD_1.power.mean), 
-					log10(subdd$win_7.EMG_REF_cD_3.power.mean * subdd$win_3.EMG_REF_cD_2.power.mean * subdd$win_3.EMG_REF_cD_1.power.mean), subpreds$true_y, levs, main=paste("Reference", a),
-					ylim=yl, xlim=xl
-					)
-						
-		show_2d_hist(log10(subdd$win_3.EEG_parietal_frontal_cA_6.power.mean * subdd$win_3.EEG_parietal_frontal_cD_6.power.mean / subdd$win_3.EEG_parietal_frontal_cD_1.power.mean),
-					log10(subdd$win_7.EMG_REF_cD_3.power.mean * subdd$win_3.EMG_REF_cD_2.power.mean * subdd$win_3.EMG_REF_cD_1.power.mean), subpreds$y, levs, main=paste("Predicted", a),
-					ylim=yl, xlim=xl
-					)
-						
-	}
-	par(mfrow=c(1,1))
+#~ 						
+#~ 		show_2d_hist(log10(subdd$lag_0.EEG_parietal_frontal_cD_6.power.median /subdd$lag_0.EEG_parietal_frontal_cD_1.power.median), log10(subdd$lag_0.EMG_REF_cD_1.power.median), 
+#~ 					subpreds$y, levs, main=paste("Predicted", a),
+#~ 					ylim=yl, xlim=xl
+#~ 					)
+#~ 									
+#~ 	}
+#~ 	par(mfrow=c(1,1))
 
 	anim_dfs = split(preds,preds$animal)
 	pred_time_series <- sapply(anim_dfs, function(x)x$y)
@@ -602,10 +615,11 @@ analize_predicted_ts_features <- function(df){
 	
 	stat_df <- expand.grid(class=rownames(true_prevalences), animal=colnames(true_prevalences), prediction=c(T,F))
 	stat_df <- cbind(stat_df,prevalence=c(as.numeric(pred_prevalences), as.numeric(true_prevalences)))
-	boxplot( prevalence ~ prediction * class, stat_df, col=c("grey", "red"),  ylab="Prevalence of sleep stages")
+	boxplot( prevalence ~ prediction * class, stat_df, col=c("grey", "red"),  ylab="Prevalence of sleep stages", log="y")
 	# no effect of prediction & no interaction => no evidence of difference in prevalence
-	mod <- betareg( prevalence ~ prediction * class, stat_df)
+ 	mod <- betareg( prevalence ~ prediction * class, stat_df)
 	print(summary(mod))
+	print(AIC(mod))
 
 	
 	stat_df$number <- c(
@@ -614,9 +628,9 @@ analize_predicted_ts_features <- function(df){
 		
 	# effect of interaction  => not as many event -> some events are more frequents
 	boxplot( number ~  prediction * class, stat_df, col=c("grey", "red"), ylab="Number of events")
-	mod <- glm( number ~  prediction *class, stat_df, family="poisson")
+	mod <- glmer( number ~  prediction *class + (1| animal), stat_df, family="poisson")
 	print(summary(mod))
-	
+	print(AIC(mod))
 	
 	stat_df$length <- c(
 		sapply( pred_time_series, function(x)epoch_lengths_and_number(x)$length$length),
@@ -627,27 +641,31 @@ analize_predicted_ts_features <- function(df){
 		sapply( true_time_series, function(x)epoch_lengths_and_number(x)$number))
 		
 	# no effect of interaction nor prediction approximatively the same length
-	boxplot( length ~  prediction * class, stat_df, col=c("grey", "red"), ylab="Average length of events")
-	mod <- lm( length ~  prediction *class, stat_df)
+	boxplot( length ~  prediction * class, stat_df, col=c("grey", "red"), ylab="Average length of events", log="y")
+	mod <- lmer( log10(length) ~  prediction *class + (1|animal), stat_df)
 	print(summary(mod))
+	print(AIC(mod))
 	
-	#todo use caret to compute average sensitivity...
 	
 #~ 	
 	pred_transit_mats <-lapply(pred_time_series, function(x)markovchainFit(data=x)$estimate[,])
 	pred_trans_array <- abind(pred_transit_mats, along=3)
 	print("Predicted average transition matrix:")
-	print(round(apply(pred_trans_array, c(1,2), mean),3))
-	print(round(apply(pred_trans_array, c(1,2), sd),3))
+	print(round(apply(pred_trans_array, c(1,2), median),3))
+	print(round(apply(pred_trans_array, c(1,2), iqr),3))
 	
 		
 	true_transit_mats <-lapply(true_time_series, function(x)markovchainFit(data=x)$estimate[,])
 	true_trans_array <- abind(true_transit_mats, along=3)
 	print("Empirical average transition matrix:")
-	print(round(apply(true_trans_array, c(1,2), mean),3))
-	print(round(apply(true_trans_array, c(1,2), sd),3))
+	print(round(apply(true_trans_array, c(1,2), median),3))
+	print(round(apply(true_trans_array, c(1,2), iqr),3))
 	
- 	print(confusionMatrix(preds$y, reference=preds$true_y))
+
+ 	cm <- confusionMatrix(preds$y, reference=preds$true_y)
+ 	print(cm)
+ 	print(round(100 * cm$table / sum(cm$table),3))
+ 	print(sum(cm$table))
 
 	###
 #~ 	dd$preds <-preds$y
@@ -688,26 +706,24 @@ main <- function(input_file_prefix){
 #~ 	df$EEG.super_X <- log10(df$EEG_parietal_frontal_cA_6.power.mean * df$EEG_parietal_frontal_cD_6.power.mean / df$EEG_parietal_frontal_cD_1.power.mean)
 #~ 	df$EMG.super_X <- log10(df$EMG_REF_cD_3.power.mean * df$EMG_REF_cD_2.power.mean * df$EMG_REF_cD_1.power.mean)
 	
-	
     error_lag_df_window <- analize_error_vs_lag(df, list(
 									c(1),
 									c(1,3),
 									c(1,3,7),
-									c(7),
-									c(3,7,15),
-									c(1,3,7, 15),
+									c(1,3,7,15),
 									c(1,3,7, 15, 31),
 									c(1,3,7, 15, 31, 61),
-									c(1,3,5, 9, 17, 33, 65,129)),
+									c(1,3,7, 15, 31, 61, 121)),
 									 replicates=REPLICATES, use_window=TRUE)
 	
+    
     error_lag_df_l <- analize_error_vs_lag(df, 4, replicates=REPLICATES)
+	error_lag_df_l$lag <- sprintf("l_%i",error_lag_df_l$lag)
+	boxplot(error ~ lag, rbind(subset(error_lag_df_l, lag != "l_1"), error_lag_df_window))
+	abline(h=0.10, lty=3, lwd=3)
 	
-	
-#~ 	df <- add_lagged_time_features_to_whole(df, min_max_lag=c(-TAU_TO_USE, +TAU_TO_USE))
-#~ 	df <- add_lagged_time_features_to_whole(df, min_max_lag=c(-TAU_TO_USE, +TAU_TO_USE))
-
-	df <- add_lagged_time_features_to_whole(df, min_max_lag=WINDOW_SIZE_TO_USE, use_window=TRUE)
+	#df <- add_lagged_time_features_to_whole(df, min_max_lag=c(-TAU_TO_USE,TAU_TO_USE), use_window=F)
+	df <- add_lagged_time_features_to_whole(df, min_max_lag=WINDOW_SIZE_TO_USE, use_window=T)
 
 	err_conf_data <- analize_error_vs_confidence(df)
 	
@@ -717,98 +733,90 @@ main <- function(input_file_prefix){
 #~ 	CV transition matrices and prevalence...
 
 	dev.off();sink()
-	return(list(error_nvar_df, err_conf_data,error_lag_df_window, stat_df))
+	return(list(error_nvar_df=error_nvar_df,  err_conf_data=err_conf_data,error_lag_df_window=error_lag_df_window, error_lag_df_l=error_lag_df_l, stat_df=stat_df))
 }
-
-
-
-VARIABLE_TO_USE <- {c(
-#~ 	"EEG_parietal_frontal_cD_1.power.mean",        
-#~ 	"EEG_parietal_frontal_cD_1.power.min",        
-#~ 	
-#~ 	"EEG_parietal_frontal_cD_6.power.mean",        
-#~ 	"EEG_parietal_frontal_cD_6.power.min",        
-#~ 	
-#~ 	"EEG_parietal_frontal_cD_5.hjorth.complexity",   
-#~ 	"EEG_parietal_frontal_cD_5.hjorth.morbidity",
-#~ 	
-#~ 	"EEG_parietal_frontal_cD_5.power.mean",
-#~ 	"EEG_parietal_frontal_cD_5.power.min",
-#~ 	
-#~ 	"EMG_REF_cD_1.power.min",                                          
-#~ 	"EMG_REF_cD_1.power.mean",                                          
-#~ 	"EMG_REF_cD_2.power.min",                       
-#~ 	"EMG_REF_cD_2.power.mean",                       
-#~ 	"EMG_REF_cD_3.power.min",
-#~ 	"EMG_REF_cD_3.power.mean"
-#~ 	
-#~ 	
-#~ 	
-)}
-
-
+#~ 
+#~ 
+#~ 
 #~ VARIABLE_TO_USE <- {c(
-#~ "EEG_parietal_frontal_cA_6.power.mean",
-#~ "EEG_parietal_frontal_cA_6.power.sd",
-#~ "EEG_parietal_frontal_cA_6.power.min",
-#~ "EEG_parietal_frontal_cD_1.power.mean",     
-#~ "EEG_parietal_frontal_cD_1.power.sd",     
-#~ "EEG_parietal_frontal_cD_1.power.min",     
-#~ "EEG_parietal_frontal_cD_2.hjorth.complexity",
-#~ "EEG_parietal_frontal_cD_2.hjorth.morbidity", 
-#~ "EEG_parietal_frontal_cD_5.hjorth.complexity",
-#~ "EEG_parietal_frontal_cD_5.hjorth.morbidity", 
-#~ "EEG_parietal_frontal_cD_6.power.mean", 
-#~ "EEG_parietal_frontal_cD_6.power.min",        
-#~ "EEG_parietal_frontal_cD_6.power.sd",         
-#~ "EMG_REF_cD_1.power.mean",                   
-#~ "EMG_REF_cD_1.power.sd",                     
-#~ "EMG_REF_cD_1.power.min",                     
-#~ "EMG_REF_cD_2.power.mean",                    
-#~ "EMG_REF_cD_2.power.sd",                    
-#~ "EMG_REF_cD_2.power.min",                    
-#~ "EMG_REF_cD_3.power.mean",                    
-#~ "EMG_REF_cD_3.power.sd",                    
-#~ "EMG_REF_cD_3.power.min"
+#~ 
+#~ "EEG_parietal_frontal.hjorth.complexity",        
+#~ "EEG_parietal_frontal.hjorth.morbidity",     
+#~ "EEG_parietal_frontal.entropy.sample_2_1.5",
+#~ "EEG_parietal_frontal.fractal.hfd",
+#~ 
+#~ "EEG_parietal_frontal_cD_1.power.mean",          
+#~ "EEG_parietal_frontal_cD_1.power.sd",          
+#~ "EEG_parietal_frontal_cD_5.hjorth.complexity",   
+#~ "EEG_parietal_frontal_cD_5.hjorth.morbidity",    
+#~ "EEG_parietal_frontal_cD_6.power.mean",          
+#~ "EEG_parietal_frontal_cD_6.power.sd",          
+#~ "EEG_parietal_frontal_cA_6.power.mean",          
+#~ "EEG_parietal_frontal_cA_6.power.sd",          
+#~ 
+#~ "EMG_REF_cD_1.power.mean",                       
+#~ "EMG_REF_cD_1.power.sd",                       
+#~ 
+#~ "EMG_REF_cD_2.power.mean",                        
+#~ "EMG_REF_cD_2.power.sd",                        
+#~ "EMG_REF_cD_3.power.mean",                             
+#~ "EMG_REF_cD_3.power.sd",                             
+#~ 
+#~ "EMG_REF_cD_4.power.mean",
+#~ "EMG_REF_cD_4.power.sd"
+#~ 
 #~ )}
+
 VARIABLE_TO_USE <- {c(
-
-"EEG_parietal_frontal.hjorth.complexity",        
-"EEG_parietal_frontal.hjorth.morbidity",     
+"EEG_parietal_frontal.entropy.sample_2_0.2",
+"EEG_parietal_frontal.entropy.sample_2_1.0",
 "EEG_parietal_frontal.entropy.sample_2_1.5",
-"EEG_parietal_frontal.fractal.hfd",
-
-"EEG_parietal_frontal_cD_1.power.mean",          
-"EEG_parietal_frontal_cD_1.power.sd",          
-"EEG_parietal_frontal_cD_5.hjorth.complexity",   
-"EEG_parietal_frontal_cD_5.hjorth.morbidity",    
-"EEG_parietal_frontal_cD_6.power.mean",          
-"EEG_parietal_frontal_cD_6.power.sd",          
-"EEG_parietal_frontal_cA_6.power.mean",          
-"EEG_parietal_frontal_cA_6.power.sd",          
-
-"EMG_REF_cD_1.power.mean",                       
-"EMG_REF_cD_1.power.sd",                       
-
-"EMG_REF_cD_2.power.mean",                        
-"EMG_REF_cD_2.power.sd",                        
-"EMG_REF_cD_3.power.mean",                             
-"EMG_REF_cD_3.power.sd",                             
-
-"EMG_REF_cD_4.power.mean",
-"EMG_REF_cD_4.power.sd"
-
+"EEG_parietal_frontal_cD_1.power.median",
+"EEG_parietal_frontal_cD_4.hjorth.morbidity",
+"EEG_parietal_frontal_cD_5.hjorth.complexity",
+"EEG_parietal_frontal_cD_5.hjorth.morbidity",
+"EEG_parietal_frontal_cD_6.power.mean",
+"EEG_parietal_frontal_cD_6.power.median",
+"EEG_parietal_frontal_cD_6.power.min",
+"EEG_parietal_frontal_cD_6.power.sd",
+"EMG_REF_cD_1.power.mean",
+"EMG_REF_cD_1.power.median",
+"EMG_REF_cD_1.power.min",
+"EMG_REF_cD_1.power.sd",
+"EMG_REF_cD_2.power.mean",
+"EMG_REF_cD_2.power.median",
+"EMG_REF_cD_3.power.mean",
+"EMG_REF_cD_3.power.min",
+"EMG_REF_cD_4.power.mean"
 )}
+test <- c(
+"EEG_parietal_frontal_cD_1.power.median"                      
+,"animal"                                    
+,"treatment"                                 
+,"t"                                         
+,"y"                                         
+,"py" )
 
-TAU_TO_USE <- 1
-WINDOW_SIZE_TO_USE <- c(1,3,7, 15, 31, 61)
+
+	
+	
+TAU_TO_USE <- 2
+#~ WINDOW_SIZE_TO_USE <- c(1,3,7, 15, 31)
+WINDOW_SIZE_TO_USE <- c(1,3,7)
 COMB_NVARS <- c(1,2,3,4,5,10,15,20)
-REPLICATES <- 3
-N_THREADS <- 2
+REPLICATES <- 5
+N_THREADS <- 3
 #~ args <- commandArgs(trailingOnly = TRUE)
 #~ main(args[1])
-out <- main("/data/pyrem/Ellys/all_features_e5s_eeg_more_features_plus_raw")
+#~ out <- main("/data/pyrem/Ellys/all_features_e5s_eeg_more_features_plus_raw")
+input_file_prefix <- "/data/pyrem/Ellys/all_features_e5s_eeg_more_features_plus_raw"
+#~ 
+dfo <- cache_load_file(input_file_prefix)
 
+	dfo <- curate_df(dfo,F)
+	dfo <- subset(dfo, select=test)
+	error_nvar_df <- analize_error_vs_nvar(dfo,replicates=REPLICATES)
+#~ 	
 ############################################################################
 
 ###finalrf:
@@ -845,9 +853,6 @@ out <- main("/data/pyrem/Ellys/all_features_e5s_eeg_more_features_plus_raw")
 #~ df <- add_lagged_time_features_to_whole(df, min_max_lag=c(7,11, 15, 21), use_window=TRUE)
 stop("eos")
 
-#~ for (db in 2:5){
-#~ 	print("========================")
-#~ 	print(db)
 	input <- "/data/pyrem/Ellys/all_features_e5s_eeg_more_features_plus_raw"
 	dfo <- cache_load_file(input)
 
@@ -855,14 +860,13 @@ stop("eos")
 
 	non_predictor_cols <- grep("\\.", colnames(dfo), invert=T, value=TRUE)
 	df2 <- dfo[,c(VARIABLE_TO_USE, non_predictor_cols)]
-#~ 	
-	dfw <- add_lagged_time_features_to_whole(df2, min_max_lag=WINDOW_SIZE_TO_USE, use_window=TRUE)
-	dfl <- add_lagged_time_features_to_whole(df2, min_max_lag=c(-TAU_TO_USE, +TAU_TO_USE))
-	#~ 
-	#~ df2 <- df2[grep("TelC_", df2$animal),]
+
+	df <- add_lagged_time_features_to_whole(df2, min_max_lag=c(-TAU_TO_USE, +TAU_TO_USE))
 	
-	df2 <- strip_df_for_ml(df2, keep_animal=T)
-	anim <- "TelC_C"
+	
+#~ 	df2 <- strip_df_for_ml(merge(dfw,dfl), keep_animal=T)
+	df2 <- strip_df_for_ml(df, keep_animal=T)
+	anim <- "TelC_4"
 	train <- df2[df2$animal != anim,]
 	#~ 
 	test =df2[df2$animal == anim,]
@@ -872,35 +876,33 @@ stop("eos")
 	test$animal <- NULL
 
 	rf <- randomForest(subset(train, select=-y),train$y, 
-
 			sampsize=c(5000,1000,4000),
-			ytest=test$y, xtest=subset(test, select=-y), 
+#~ 			ytest=test$y, xtest=subset(test, select=-y), 
 			 ntree=100, do.trace=T)
 	
 	print(rf)
-#~ }
-
+	
+	
+	dfz <- add_lagged_time_features_to_whole(dfo, min_max_lag=c(0,0))
+	dfz <- subset(dfz, animal==anim, select=c(t,y))
+	preds_p <- predict(rf, test, type="prob")
+	
+	conf <- apply(preds_p, 1, entropy_conf)
+	preds <- apply(preds_p, 1, which.max)
+	
+	preds <- levels(test$y)[preds]
+	
+	m <- match(rownames(preds_p), rownames(dfz))
+	dfz$conf_y <- 1.0
+	dfz$pred <- 68
+	dfz$pred[m] <- as.numeric(as.character(preds))
+	dfz$conf_preds <- 0
+	dfz$conf_preds[m] <- round(conf, 3)
+	rownames(dfz) <- dfz$t
+	dfz$t <- NULL
+	write.csv(dfz, "/tmp/telc4_res.csv")
 #~ 
-#~ rf <- randomForest(subset(train, select=-y),train$y, 
-#~ 		ytest=test$y, xtest=subset(test, select=-y), 
-#~ 		keep.forest=T,
-#~ 		sampsize=c(5000,500,5000),
-#~ 		 ntree=100, do.trace=T )
-#~ 
-#~ ani_df <- subset(df, animal==anim)
-#~ new_y <- predict(rf, ani_df)
-#~ dfout <- cbind(ani_df, new_y)
-#~ towrite <- dfout[, c("t","y", "new_y")]
-#~ towrite$eq <- ifelse(as.character(towrite$y) == as.character(towrite$new_y), "", "!")
-#~ write.table(towrite, "/tmp/out.tsv", quote=F, row.names=F)
-
-#~ show_2d_hist(log10(dfout$win_7.EEG_parietal_frontal_cD_6.power.mean), log10(dfout$win_7.EMG_REF_cD_1.power.mean), dfout$new_y, dfout$new_y, NULL)
-#~ show_2d_hist(log10(dfout$win_7.EEG_parietal_frontal_cD_6.power.mean), log10(dfout$win_7.EMG_REF_cD_1.power.mean), dfout$y, dfout$y, NULL)
-#~ plot3d(log10(dfout$win_1.EEG_parietal_frontal_cD_6.power.mean), log10(dfout$win_1.EEG_parietal_frontal_cD_1.power.mean), log10(dfout$win_1.EMG_REF_cD_1.power.mean), col=dfout$y)
-#~ plot3d(log10(dfout$win_7.EEG_parietal_frontal_cD_6.power.mean), log10(dfout$win_7.EEG_parietal_frontal_cD_2.hjorth.complexity), log10(dfout$win_7.EMG_REF_cD_1.power.mean), col=dfout$new_y)
-
-#~ show_2d_hist((log10(df2$win_7.EEG_parietal_frontal.entropy.sample_2_1.0), log10(df2$win_7.EEG_parietal_frontal_cD_6.power.mean), df2$y)
- show_2d_hist(log10(df2$win_5.EEG_parietal_frontal.entropy.sample_2_1.5), log10(df2$win_5.EEG_parietal_frontal_cD_6.power.mean), df2$y)
- show_2d_hist(log10(df2$win_5.EEG_parietal_frontal.fractal.hfd), log10(df2$win_5.EEG_parietal_frontal_cD_6.power.mean), df2$y)
- show_2d_hist(log10(df2$win_5.EEG_parietal_frontal.entropy.sample_2_1.5), log10(df2$win_5.EEG_parietal_frontal.fractal.hfd), df2$y)
- 
+#~  show_2d_hist(log10(df2$win_5.EEG_parietal_frontal.entropy.sample_2_1.5), log10(df2$win_5.EEG_parietal_frontal_cD_6.power.mean), df2$y)
+#~  show_2d_hist(log10(df2$win_5.EEG_parietal_frontal.fractal.hfd), log10(df2$win_5.EEG_parietal_frontal_cD_6.power.mean), df2$y)
+#~  show_2d_hist(log10(df2$win_5.EEG_parietal_frontal.entropy.sample_2_1.5), log10(df2$win_5.EEG_parietal_frontal.fractal.hfd), df2$y)
+#~  

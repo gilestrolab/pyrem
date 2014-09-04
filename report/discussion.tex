@@ -1,46 +1,112 @@
 \section{Discussion} \label{discussion}
 
-\subsection{python package} 
-Clear improvement over existing software.
+\subsection{python package}
+ 
+In order to train statistical learning methods for vigilance states, 
+it was necessary to compute an exhaustive set of features for all consecutive five second epochs
+over long (24h) time series.
+For this purpose, \pr{}, a new \py{} package was developed based on
+\texttt{PyEEG}\citationneeded{} which implements several algorithms often used to study \gls{eeg}.
+Very significant improvement in performance were achived for almost all functions implemented in \texttt{PyEEG}
+(table~\ref{tab:benchmark}). These improvement will considerably speed-up prototyping of feature extraction
+and may be essential in order to build real time classifiers. 
+In addition, such modifications will make it possible to compute features for a large number
+of recordings in reasonable time.
+Further improvements are possible, for instance, 
+sample entropy was tentatively implemented in julia programming language and performed 25 times faster that
+\pr{} implementation\footnote{implementation available at 
+https://github.com/qgeissmann/Physiology.jl/blob/master/src/univariate.jl}.
+Interestingly, it appears that the new implementation sample and 
+absolute entropy does not scale as well as the original implementation.
+One explanation could be that memory becomes limiting when using vectorised expressions, because large temporary arrays are created.
+Nevertheless, realistically, both algorithms will be not be used for long time series.
 
-Faster, less math mistake
-
-more features.
-
-Independant from sleep, so can be used fort other stuff
-
-why sample entropy and ap entropy do not as well...
-
-julia link
-
-public relase of this package
-
+Several \texttt{PyEEG} functions were also found to be inconsistant with mathematical
+definitions(see \pr{} documentation, appendix).
+For instance, Petrosian fractal dimension \citationneeded{} was implemented as:
+\[
+\frac{log(N)}{log(N) + log(\frac{N}{N}+0.4N_{\delta})}
+\]
+whist the mathematical definitions is:
+\[
+\frac{log(N)}{log(N) + log(\frac{N}{N+0.4N_{\delta}})}
+\]
+This addresses questions about the lack of peer-review and reproducibility in accademic software (see \citationneeded{Blackbox; Can I reproduce your algo} for discussions about this issue).
 
 \subsection{Originality of feature extraction} 
-Feature extraction is more exhaustive.
-it turns out that some wavelet specific features were  important predictor
-include temporal features.
-why is that controvertial => sleep is assumed to be consistant
 
-\subsection{Using random forest} 
+Discrete wavelet decomposition is an extremely fast an accurate algorithm to filter a periodic signal is
+frequency sub-bands. 
+\citationneeded{XXX et al.(cite)} obtained very promissing results by computing a large number of features on the raw \gls{eeg} signal
+and averages of power  and absolute values in several wavelet coefficients.
 
-* Variable importance (investigation ++)
+In contrast, in the present study, all features were computed on all frequency sub-bands.
+Interestingly, some of the most important features would not have been
+ discovered without this exhaustive appraoch (see table~\ref{tab:importances}).
 
-* white box
+Many authors have modeled time series of epochs as if each epoch was statistcally independent
+of any other. This assumption has the advantage of openning the field to classical machine learning techniques such as
+SVMs(\citationneeded{}), ANNs(\citationneeded{}), random forests(\citationneeded{}) and others.
+They have the advantage coping very well with non linear relation between predictors and many optimised implementations.
 
-* General classifier, so we can use the exact same data and something like ANN
+In this study, random forest\citationneeded{} classifiers were exclusively used.
+In addition to their capacity to model non-linearity, they are very efficients at handleling very large number of variables. 
+Recently very promissing classification of sleep stages in humain were generated using this algorithm\citationneeded{}.
+A very interesting feature of random forest is their 
+natural ability to generate relative values of importance of the different predictors.
+These values quantifies how much each variables contributes to the predictive power of the model.
+This feature is extremely useful because it allows using random forests for variable selection.
+This can be used to reduce dimentionnality of the variable space without losing predictive power (fig.\ref{fig:variable_elimination}),
+but also to study conditionnal variable importance, or, for inctance,
+which variables are important to segregate pairs of classes.
+Whilst random forests are not guarenteed to be the best predictor in this case, 
+they allow fast and in-depth preliminary investigation.
 
-* Efficient
 
-* natural inclusion of non linearity, which is expected when we get more data
+Making the assumption that epochs are independant from each other cannot account for the temporal consistancy of vigilence states.
+Indeed, prior knowlegde of, for instance, the state transition probabilities cannot be modeled.
+For this reason, explicit temporal modeling, using hiden markov models has been investigated\citationneeded{}.
+
+In order to benefit from the classical machine learning 
+framework whist including temporal information, new variables, accouting for the temporal variation, were created.
+The addition of temporal context significantly improved predictive accuracy (fig.\ref{fig:temporal_integration}).
+The convolution approach (eq.\ref{eq:window}) appeared to provide better results.
+Instead of averaging feature after calculation, it may be advantageous to compute features over epochs of different length in a first place.
+Thus, the accuracy of local of non additive features, such as median, will improved.
+
+
+Although time-dependent variables improved accuracy, there use can be seen as controversial.
+Indeed, including prior information about sleep structure may cause problems when studing differences in sleep structure.
+As an example, let us consider a training set is only made of healthy adult wild type animals, 
+and let us assume that \gls{nrem} episodes are always at least, 5min long.
+Implicitly, this information may become a prior.
+A problem araises if this classifier is used for an animal which would have a very different sleep pattern.
+It may, for instance, show frequent interuption of  \gls{nrem} sleep by short awake episodes.
+In this case, a `time-aware' model will need much more evidence to
+classify correctly a short waking episode inside sleep (because this never occurs in the training set).
+
 
 \subsection{Originality of crossvalidation} 
 
 Very conservative
 
+Explain that, if not stratified, we observed overfit (this is not due to inter indiv variability)
 
-\TODO{make a "movement" label}
 
+\subsection{Quality of the raw data} 
+semiauotomatic, only one annotation.
 
-\TODO{More animals would be better}
+several independant humans -> inter human variability
+=>discrepancies can be converted as doubt, therefore, we can sample and score errors accordingly
 
+modifications have been made to a scritp that was laready imperfect.
+
+only three labels=> problem for wake epochs because most of them are in large uninterputed chunks.
+=> Some author have a fourth class (movement).
+
+Why non linearity should be considered already.
+(different animals, different labs, different equipment...)
+
+unsupervised learning ?
+
+feature discovery in drug...
