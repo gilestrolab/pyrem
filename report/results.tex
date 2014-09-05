@@ -30,8 +30,8 @@ A complete documentation of \pr{} is provided in the appendix of the report here
 \subsection{Twenty variables can generate accurate predictions}
 Including temporal information (see next section) results in multiplication of the number of variable, rendering computation difficult, and prediction potentially less accurate.
 Therefore, iterative elimination of variables based on their importance was undertaken.
-Starting with all 164 variables, random forests were trained, and the number of features was reduced by a factor $1.3$  by eliminating the least important variables.
-For each iteration, the stratified cross-validation error (see material and methods) was computed (fig.~\ref{fig:variable_elimination}).
+Starting with all 164 variables, random forests were trained, and the number of features was reduced by a factor $1.5$  by eliminating the least important variables.
+For each iteration, the stratified cross-validation error (see material and methods) was computed (fig.~\ref{fig:variable_elimination}). Five replicates were performed.
 
 \input{./figures/variable_elimination}
 The predictive accuracy globally increases with the number of variables.
@@ -73,7 +73,7 @@ the training set did not contain any point from this time series.
 \input{./tables/confus}
 
 The global confusion matrix is presented in table \ref{tab:confus}. The overall accuracy was 0.92.
-For \gls{nrem} and wake, both specificity and positive predictive value were above 0.90. However
+For \gls{nrem} and wake, both specificity and positive predictive value were above 0.92. However
 for \gls{rem} epochs, the specificity is only 0.74, and the false detection rate is 15\%.
 
 In order to investigate the structural differences between ground truth and the predicted states,
@@ -93,7 +93,7 @@ In addition, significant structural differences were found between methods for t
 \subsection{Attribution of confidence score to predictions}
 Since classification may be inaccurate, it would be interesting to associate `confidence' score to each prediction.
 A entropy based confidence metric $c$ (eq. \ref{eq:entropy}) was defined for this purpose.
-In order to validate it, the average cross-validation error was computed for different degrees of confidence (fig\ref{fig:error}A).
+In order to validate it, the average cross-validation error was computed for different ranges of confidence (fig\ref{fig:error}A).
 
 \input{./figures/error}
 

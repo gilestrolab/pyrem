@@ -32,14 +32,14 @@ Discrete wavelet decomposition generated seven and five additional time series f
 Time series generated from wavelet decomposition (\ie{} coefficients) contain information relative to exclusive frequency sub-bands.
 For all 14 time series, a list of 16 features (see table~\ref{tab:features}) was computed in each subsequent non-overlapping five seconds epochs.
 Thus, resulting in a total of $p=192$ variables. For each recording ($\simeq 24h$) there were approximately $17000$ epochs.
-Some combinations of variables and signals were incalculable.
-They were therefore removed; resulting in an actual number of variables $p=164$.
+Some combinations of variables and signals were however incalculable.
+These were therefore removed; resulting in an actual number of variables $p=164$.
 
 \input{./tables/features}
 
 As part of this project, a new \py{} package, \pr{}, was developed in order to efficiently
 calculate features on heterogeneous time series.
-Its complete documentation provided in the appendix of the present document.
+Its complete documentation provided in the appendix of the document herein.
 
 \subsection{Addition of temporal features}
 In order to integrate temporal information, new variables, depending on past, and future values of predictors, were added for each epochs.
@@ -65,11 +65,11 @@ and $n$ is a set of odd integers representing window sizes (\eg $\{1,3,7,15\}$).
 
 
 \subsection{Stratified Cross Validation}
-Generally, success of classification of sleep stages is assessed by cross-validation.
+Generally, success of classification of vigilance stages is assessed by cross-validation.
 In many studies\citationneeded{}, it is implied that cross-validation was performed by making $k$ random training subsets
 of the whole data and assessing the model fitted on the remaining subsets (\ie{} k-fold cross-validation). 
-In this context, features are calculated for every epoch. 
-Therefore, epochs are statistical individuals.
+In this context, since features are calculated for every epoch
+Therefore, epochs are the statistical individuals.
 
 When working with dense time series (or, for instance, spatial data), it can be suspected that within a statistical block (group),
 both features and response variables are very correlated with neighbouring data points.
@@ -79,26 +79,28 @@ In statistical terms, $t_{n+1}$ is not independent of $t_{n}$.
 If the training sets are drawn completely at random, from a dataset containing multiple long recordings,
 the underlying time series would only be made marginally sparser, and the data points missing from
 a time series could simply be inferred from the neighbouring points which remain in the training set.
-This temporal pseudo-replication may hide model overfitting and give the impression that a model has a very strong predictive power.
+This temporal pseudo-replication may result in model overfitting and give the false impression 
+that a model has a very strong predictive power.
 
-However, the goal of cross validation is to assess how well a predictive model would perform on \emph{new data}.
-The goal of this study, and most similar studies, was to provide a tool to automatically annotate \emph{new recordings}.
+The goal of cross-validation is to assess how well a predictive model would perform on \emph{new data}.
+This study, and most similar studies, aims at providing a tool to automatically annotate \emph{new recordings}.
 Therefore, it is fairer to perform \emph{stratified cross-validation}, using the different recordings as the stratum levels.
 In this study, all cross-validation were performed by training the model with epochs originating from all but one recordings,
 and testing it on the recording kept out. This was repeated by successively leaving each recording out.
 
 As shown in figure~\ref{fig:sleep_description}, the prevalence of different states is not balanced. Noticeably, \gls{rem} sleep represents only $10\%$ of all epochs.
 This implies that $90\%$ accuracy could be achieved even if all \gls{rem} epoch were misclassified.
-For the same reason, the importance of the variables contributing to segregate the minority class (\gls{rem}) could be underestimated.
+For the same reason, the importance of the variables contributing to segregate the minority class (\gls{rem}) with other classes could be underestimated.
 Therefore, for variable elimination (fig.~\ref{fig:variable_elimination}) and for defining new variables (fig.~\ref{fig:temporal_integration}),
 balanced sub-sampled testing sets (750 epochs of each class) were used.
 
 \subsection{Random forests}
 Unless specified otherwise, random forests \citationneeded{} were trained with balanced samples of 1000 epochs per class.
 Whilst this negates the prior knowledge of the state prevalences, this sampling strategy 
-inflates importance of variables that are important to segregate minority classes.
-In order to select variables and define new features, forests with 50 classification trees were built. 100 trees were used otherwise.
-Increasing the sample size and number of trees did not significantly improve perfomance.
+inflates importance of variables that are important to segregate minority from majority classes.
+In order to select variables and define new features, forests with 50 classification trees were built. 
+100 trees were used otherwise.
+Increasing the sample size and number of trees did not seem to improve perfomance.
 The number of variable drawn for each split, $mtry$, was set to the default value  for classification problems $\sqrt{p}$.
 All random forest analysis was implemented in \texttt{R}\citationneeded{} statistical software, using the package \texttt{randomForest}.
 
@@ -126,7 +128,7 @@ v_i = 1 \rightarrow c = 1 , \forall i
 
 
 \subsection{Performance assessments}
-Comparisons of performance between \pr{} and \pyeeg{} were realised by measuring the average (between 2 and 100 run, depending on the algorithm) duration of runtime of algorithms on six
+Comparisons of performance between \pr{} and \pyeeg{} were realised by measuring the average (between 2 and 100 run, depending on the algorithm) runtime of algorithms on six
 normally distributed ($\mathcal{N}(\mu=0,\sigma=1)$) random time series (\ie white noise) of size $n$,
 with $n$ between $256 \times{} 5$ and $256 \times{} 30$.
 This was repeated five times for each time series.
@@ -134,4 +136,5 @@ For computing  Higuchi fractal dimension, $k_{max}$ was set to $2^3$.
 For both approximate entropy and sample entropy, the embedding dimension $m$ was set to $2$, and the distance threshold, $r$, to $1.5$.
 For fisher information, the embedding dimension and the delay, $\tau$ were set to $3$ and $2$, respectively.
 Finally, spectral entropy was computed for the frequency bands bounded by $\{0, 2^0, 2^1, ..., 2^6\}$Hz, with $f_s = 256.0$.
-Benchmarks were generated using \texttt{CPython 2.7.8}, \texttt{GNU/Linux} operating stystem, a 3.40GHz intel i7-3770 CPU.
+Benchmarks were generated using \texttt{CPython 2.7.8} on \texttt{GNU/Linux} operating stystem with a 3.40GHz intel i7-3770 CPU.
+
