@@ -148,10 +148,10 @@ For instance, if, for a given epoch, there is strong disagreement between expert
 When training a model, this uncertainty can be included, for instance, as a weight.
 
 \subsection{Final result}
-The predictions of the classifier presented in this research agreed with ground truth for 92\% of epochs (table~/ref{tab:confus}).
+The predictions of the classifier presented in this research agreed with ground truth for 92\% of epochs (table~\ref{tab:confus}).
 Although the limitation of the ground truth annotation make it is hard to put this result into perspective,
-this score is satisfactory.
-In addition, prediction did not result significant difference in prevalences.
+this score is very promissing.
+In addition, prediction did not result in significant difference in prevalences.
 However, there were, on average, much less \gls{rem} episodes in the predicted time series.
 The duration of \gls{rem} episodes was also over-estimated by prediction (though this is only marginally significant).
 Altogether, this indicates that \gls{rem} state is less fragmented in the predicted data.
@@ -166,3 +166,21 @@ difference is found using automatic scoring.
 Data from difernet intrument/ animals/ labs will be needed to generate a ubicuitous predictor.
 It is expected that non linear interaction araise, so RF will help ;)
 RF feature discovery
+
+
+\section{Conclusion}
+The aim of the study herein was to build a classifier that could accuratlty predict vigilance states from \gls{eeg} and \gls{emg} data.
+In a first place, \pr{}, a new python package was designed to efficiently extract a large number of features from electrophysiological recordings.
+Then, a random forest approach was used to eliminate irrelevant variables.
+Importantly, this study shows that prediction accuracy can then be improved by including features derived from restricted local avarages.
+The overall achieved accuracy was as high as 92\%, and although some significant stuctural differences were induced by prediction, 
+the classifier was overall satisfying.
+In addition, the presented classifier can generate confidence values that can be used to moderate each prediction, and ultimately decide whether to trust them.
+Before considering implementation of this promissing classifier is a ubicuitous software tool,
+it would be necessary to generalise its results by the inclusion of different sources of data.
+
+\section{Availability}
+The source code of \pr{} is available at \href{https://github.com/gilestrolab/pyrem}{https://github.com/gilestrolab/pyrem}
+and the package will be released shortly, as an open-source software, in the official python repositories.
+
+
