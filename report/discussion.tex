@@ -2,7 +2,7 @@
 
 \subsection{python package}
  
-In order to train statistical learning methods for vigilance states, 
+In order to train statistical learning methods to classify vigilance states, 
 it was necessary to compute an exhaustive set of features for all consecutive five second epochs
 over long (24h) time series.
 For this purpose, \pr{}, a new \py{} package was developed based on
@@ -37,11 +37,12 @@ have been raised in the past (see \citationneeded{Blackbox; Can I reproduce your
 \subsection{Originality of feature extraction}
 
 The present study contrasts with previous work in two respects.
-First of all, features were exhaustively computed not only on raw signals but also on all wavelet frequency sub-bands.
+First of all, features were exhaustively computed not only on raw signals, 
+but also on all wavelet frequency sub-bands.
 Then, new variables were created to account for temporal consistency of vigilence state episodes.
 
-Discrete wavelet decomposition is an extremely fast an accurate algorithm to filter a periodic signal into complementary and exclusive
-frequency sub-bands.
+Discrete wavelet decomposition is an extremely fast an accurate algorithm to filter a periodic
+signal into complementary and exclusive frequency sub-bands (fig. \ref(fig:dwd)).
 \citationneeded{XXX et al.(cite)} obtained very promissing results by computing a large number of features on the raw \gls{eeg} signal
 and a limited subset of features(\ie{} mean power and absolute values) in some wavelet coefficients.
 In contrast, in the present study, all features were computed on all frequency sub-bands.
@@ -49,11 +50,11 @@ Interestingly, some of the features that are the most important for prediction w
 been discovered otherwise (see table~\ref{tab:importances}).
 
 Many authors have modeled time series of epochs as if each epoch was statistcally independent from each other. 
-This assumption makes it possible to use classical machine learning techniques such as
+This assumption makes it straightforward to use classical machine learning techniques such as
 SVMs(\citationneeded{}), ANNs(\citationneeded{}), random forests(\citationneeded{}) and others.
 They have the advantage coping very well with non-linearity, can handle a large number of predictors and have many optimised implementations.
 
-However, working with this assumption generally prohibits to account for the temporal consistancy of vigilence states.
+However, working with this assumption generally does not allow to account for temporal consistancy of vigilence states.
 Indeed, prior knowlegde of, for instance, the state transition probabilities cannot be modeled.
 Manual scorers use contextual information to make decisions.
 For example, if a given epoch has ambiguous features between \gls{rem} and awake,
@@ -66,17 +67,20 @@ it is possible to create, new variables, accouting for the temporal variation\ci
 This study demonstarted that addition of temporal context significantly improved predictive accuracy (fig.\ref{fig:temporal_integration}).
 The convolution approach (eq.\ref{eq:window}) appeared to provide better results.
 Instead of averaging feature after calculation, it may be advantageous to compute features over epochs of different length in a first place.
-Thus, the accuracy of local of non additive features, such as median, will improved.
+Thus, the accuracy of local of non additive features, such as median, will be improved. In addition to local mean of feature, other variables, such as local
+slope and local variance of each feature may improve classification \citationneeded(Deng 2013).
 
-Although time-dependent variables improved accuracy over a time-unaware model, their use can be seen as controversial.
+Although addition of time-dependent variables improved accuracy over a time-unaware model, their use can be seen as controversial.
 Indeed, including prior information about sleep structure will cause problems if the aim is to find differences in sleep structure.
 As an example, let us consider a training set only made of healthy adult wild type animals,
 and let us assume that \gls{nrem} episodes are always at least, 5min long.
-Implicitly, this information becomes a prior. That is, the implicit definition of \gls{nrem} is that it is not interupted.
+Implicitly, this information becomes a prior. That is, the implicit definition of \gls{nrem} is that it 
+is uninterrupted.
 The same classifier is not expected to perform well if used on an animal which, for instance, show frequent interuption of  \gls{nrem} sleep by short awake episodes.
 Indeed, a `time-aware' model will need much more evidence to classify correctly a very short waking episode inside sleep (because this never occured in the training set).
-Therefore, predictive accuracy alone should not be the ultimate end-goal. Models whic can perform well without including
-too much temporal information should be prefered
+Therefore, predictive accuracy alone should not be the ultimate end-goal. 
+Models which can perform well without including too much temporal information ought to be prefered in so far as 
+they are more likely to be generalisable.
 
 
 
@@ -103,24 +107,26 @@ This ``white box'' proprety is an advantage when trying to provide more rationna
 Previous research, using classical statistical learning framework,
 have often assessed their classifier through cross-validation.
 It often unclear how sampling was performed to generate training and testing sets.
-Time series of epochs are really dense, in general,
+Time series of epochs are dense and, in general,
 the features (and labels) at a given time are very correlated with surrounding features.
 Therefore, if random sampling of even 50\% of all epochs, from all time series, was performed,
 most points in the training set will have a direct neighbour in the testing set.
-This almost corresponds to an artificial duplication of a dataset before cross-validation and is likely to fail to detect over overfitting.
+This almost corresponds to an artificial duplication of a dataset before cross-validation and is likely to fail to detect overfitting.
 In the preliminary steps of this study, it was observed that almost perfect accuracy could be acchieved when performing naive cross-validation.
 Supporting further this idea, such surprisingly high accuracy was not observed when trainning the model
 with all the even hours (from start of the experiement) and testing it with all the odd ones.
 There are several way to reduce overfitting including limiting the maximal number of splits when growing classification trees, or prunning trees.
-It is also possible to train each tree with a small subset of the entiere population.
-Howerver, it should remain important to fairely assess the model.
+However, it never possible to unsure a model will not overfit \emph{a priori}. 
+Thus it remain necessary to fairely assess the model.
 In this study, systematic stratified cross-validation was performed.
-As a result, all predictions made on any time series are generated by models that did not use any point originating from this same time series.
+As a result, all predictions made on any time series are generated by models
+that did not use any point originating from this same time series. This precaution simulate the the behaviour of the predictor with new recordings.
+Cross-validation was not only used to generrate overall value of accuracy, but also, to further assess differences in sleep patterns (fig. \ref{fig:struct_assess}).
 
 \subsection{Quality of the raw data} 
 
 Vigilance states can be viewed as discrete representation of a phenomena which is in fact continuous.
-In this case, the borders between different states are bound to be fuzzy, and somewhat arbitrary.
+In this case, the borders between different states are, by nature, fuzzy and somewhat arbitrary.
 Therefore, ground truth data cannot be assumed to be be entierely correctely labbeled.
 In particular, transitions between states are going to be intrinsecly inacurate.
 The assesment of prediction doubt (fig.~\ref{fig:error}, fourth row) illustrate the high uncertainty inherant to transitions. 
@@ -128,9 +134,9 @@ The assesment of prediction doubt (fig.~\ref{fig:error}, fourth row) illustrate 
 The ground truth labels used in this study has been generated by a two pass semi-automatic method.
 In a first place, an automatic annotation is performed based on a human-defined variable threshold.
 Then, the expert visually inspect the result and correct ambiguities.
-The first pass was originally designed to combine, with logical rules, four epochs of five seconds to produce 20s epochs\citationneeded{}.
+The first pass was originally designed to combine, through logical rules, four epochs of five seconds to produce 20s epochs\citationneeded{}.
 However, it was simplified in-house in order to produce
-only five second epochs and has since not been reassessed against manual scorring.
+only five second epochs, ignoring the last step, and has since not been reassessed against manual scorring.
 It is expected that this simplification increased divergeance with manual scorers.
 
 Several studies have used ground-truth data that was manually scored independently by several experts, 
@@ -139,15 +145,16 @@ This seem extremely important for several reasons.
 First of all, it permits to compare inter-humman error to the automatic classifier error.
 Then, it allow to allocate a value of confidence to each annotation. 
 For instance, if, for a given epoch, there is strong disagreement between experts, the confidence will be low.
-When training a model, this uncertainty can be included, for inctance, as a weight.
+When training a model, this uncertainty can be included, for instance, as a weight.
 
+\subsection{Final result}
 The predictions of the classifier presented in this reseach aggreed with ground truth for 92\% of epochs.
 Although the limitation of the ground truth annotation make it is hard to put this result in perspective,
 this score is satisfactory. In addition, prediction did not result significant difference in prevalences.
-However, there were on average much less \gls{rem} episodes in the predicted time series. 
+However, there were, on average, much less \gls{rem} episodes in the predicted time series. 
 The duration of \gls{rem} episodes was also over-estimated by prediction (though this is only marginaly significant).
 Altogether, this indicates that \gls{rem} state is less fragemented in the predicted data.
-In contrast, the awake state is more fragmented in the predicted time series.
+In contrast, the awake state was more fragmented in the predicted time series.
 Although statistically significant, these differences in variables characterising sleep structure are never greater than twofold.
 
 It would be very interesting to investigate further the extent to which such classifier could be used to detect alteration 
@@ -157,3 +164,4 @@ difference is found using automatic scroring.
 
 Data from difernet intrument/ animals/ labs will be needed to generate a ubicuitous predictor.
 It is expected that non linear interaction araise, so RF will help ;)
+RF feature discovery
