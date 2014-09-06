@@ -7,12 +7,10 @@ The table compares how long, on average, each algorithm would take, for a random
 It also represents how many added points would lead to a tenfold runtime increase.
 For the tested range ($n \in [1280;7680] $), all algorithms add approximately an
 exponential time complexity ($10^{O(n)}$), $R^2 > 0.95$, for all.
-Significance levels were assessed by fitting linear models, on the log-transformed runtime.
-t-tests on the effect of the implementation (\ie{} whether \pr{} or \texttt{PyEEG} was used) on the intercept (at 1280, as opposed to 0) were used to compute $p-values$ at $n=1280$.
-$p-values$ for the differences in scaling were obtained through t-tests on the interaction between $n$ and the implementation.
 \textbf{1}: whether the original implementation was corrected in order to match mathematical definition.
+\textbf{(-)}: indicates a worse performance of \pr{} over \pyeeg{}.
 Each alteration is mathematically justified in the section \texttt{pyrem.univariate} of the \pr{} documentation (see appendix).
-Significance levels: $^{***}$, $p-value < 10^{-3}$; $^{**}$, $p-value < 10^{-2}$.
+Significance levels: $^{***}$, $p-value < 10^{-3}$; $^{**}$, $p-value < 10^{-2}$, see Material and Methods for detail about statistical analysis.
 \label{tab:benchmark}
 }
 \footnotesize

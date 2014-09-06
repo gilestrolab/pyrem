@@ -6,7 +6,9 @@
   Convolution inflates $p$ by adding the mean features of neighbouring points over different window sizes (eq.~\ref{eq:window}).
   The numbers in braces represent the window sizes.
   Alternatively, the features of the $\tau$ previous and future neighbours was added to the variables (eq.~\ref{eq:tau}).
-  The dotted line represents a cross-validation error of $10\%$
+  The dotted line represents a cross-validation error of $10\%$.
+  All additions of temporal features reduce significantly the cross-validation error compared to the original set of features ($p-value < 5.10^{-3}$, for all, repeated t-tests).
+  Significance threshold, $\alpha = 0.05$, after Bonferroni correction is $\alpha' = 0.05/10 = 5.10^{-3}$.
   \label{fig:temporal_integration}
   }
 \end{figure}

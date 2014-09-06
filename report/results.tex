@@ -1,3 +1,4 @@
+
 \section{Results} \label{results}
 
 \subsection{A new efficient \texttt{python} package}
@@ -37,7 +38,7 @@ For each iteration, the stratified cross-validation error (see material and meth
 The predictive accuracy globally increases with the number of variables.
 Interestingly, using only the two most important variable already results in less that 20\% average error.
 However, this increase is very moderate for ($p>9$) this indicates that dimensionality can be reduced without largely impacting accuracy.
-For further investigation, $p=21$ was considered to be a good compromise between error and computational load. There relative importances are presented in table~\ref{tab:importances}.
+For further investigation, $p=21$ was considered to be a good compromise between error and computational load. Their relative importances are listed in table~\ref{tab:importances}.
 \input{./tables/importances}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -51,9 +52,11 @@ of each epochs (eq.~\ref{eq:window}),
 or the features of neighbouring time points were included (eq.~\ref{eq:tau}).
 
 A comparison of both approaches is proposed in figure \ref{fig:temporal_integration}.
-Significant improvement was achieved by both methods by including even little temporal information ($\tau = 1$, $n=\{1,3\}$\TODO{stats}).
-Although both methods improve performance, it appears that the inter-recording variablility is lower using convolution method\TODO{stats}.
-The most significant difference with the original set of variables was achieved using $n = \{1,3,7,15,31\}$.
+Significant improvement was achieved by both methods by including even little temporal information ($\tau = 1$, $n=\{1,3\}$, $p-value < 5.10^{-3}$).
+Although both methods improve performance, it appears that the inter-recording variablility is systematically lower using convolution method.
+For instance, the standard variation in error between all recordings is always lower than 0.03 for convolutions of window size greater than two,
+while it is systematicaly above 0.031 for all the values of $\tau$.
+The most significant difference with the original set of variables was achieved using $n = \{1,3,7,15,31\}$ ($p-value < 10^{-6}$).
 Combining both approaches did not improve prediction any further (data not shown).
 
 \input{./figures/temporal_integration}

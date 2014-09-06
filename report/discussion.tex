@@ -7,8 +7,8 @@ it was necessary to compute an exhaustive set of features for all consecutive fi
 over long (24h) time series.
 For this purpose, \pr{}, a new \py{} package was developed based on
 \texttt{PyEEG}\citationneeded{},  which already implements several algorithms often used to study \gls{eeg}.
-Very significant improvement in performance were achieved for almost all functions implemented in \texttt{PyEEG}
-(table~\ref{tab:benchmark}). These improvement will considerably speed-up prototyping of feature extraction
+Very significant improvements in performance were achieved for almost all functions implemented in \texttt{PyEEG}
+(table~\ref{tab:benchmark}). These improvements will considerably speed-up prototyping of feature extraction
 and may be essential in order to build real time classifiers.
 In addition, such modifications will make it possible to compute features for a large number
 of recordings in reasonable time.
@@ -22,28 +22,19 @@ One explanation could be that memory becomes limiting when using vectorised expr
 Nevertheless, realistically, neither algorithms would be used for long time series.
 
 Several \texttt{PyEEG} functions were also found to be inconsistent with mathematical
-definitions(see \pr{} documentation, appendix).
-For instance, Petrosian fractal dimension \citationneeded{} was implemented as:
-\[
-\frac{log(N)}{log(N) + log(\frac{N}{N}+0.4N_{\delta})}
-\]
-whist the mathematical definitions is:
-\[
-\frac{log(N)}{log(N) + log(\frac{N}{N+0.4N_{\delta}})}
-\]
-Criticisms about the general peer-review process and reproducibility of academic software
-have been raised in the past (see \citationneeded{Black-box; Can I reproduce your algo} for discussions about this issue).
+definitions (see \pr{} documentation, appendix).
+The general status of the peer-review process and the reproducibility of academic software have recently drawn attention (see \citationneeded{Black-box; Can I reproduce your algo} for discussions about this issue).
 
 \subsection{Originality of feature extraction}
 
-The present study contrasts with previous work in two respects.
+Feature exctraction in the present study contrasts with previous work in two respects.
 First of all, features were exhaustively computed not only on raw signals,
 but also on all wavelet frequency sub-bands.
 Then, new variables were created to account for temporal consistency of vigilance state episodes.
 
 Discrete wavelet decomposition is an extremely fast an accurate algorithm to filter a periodic
 signal into complementary and exclusive frequency sub-bands (fig.~\ref{fig:dwd}).
-\citationneeded{XXX et al.(cite)} obtained very promising results by computing a large number of features on the raw \gls{eeg} signal
+XXX et al.(cite) \citationneeded{} obtained very promising results by computing a large number of features on the raw \gls{eeg} signal
 and a limited subset of features(\ie{} mean power and absolute values) in some wavelet coefficients.
 In contrast, in the present study, all features were computed on all frequency sub-bands.
 Interestingly, some of the features that are the most important for prediction would not have
@@ -169,14 +160,15 @@ RF feature discovery
 
 
 \section{Conclusion}
-The aim of the study herein was to build a classifier that could accuratlty predict vigilance states from \gls{eeg} and \gls{emg} data.
+
+The aim of the study herein was to build a classifier that could accurately predict vigilance states from \gls{eeg} and \gls{emg} data.
 In a first place, \pr{}, a new python package was designed to efficiently extract a large number of features from electrophysiological recordings.
 Then, a random forest approach was used to eliminate irrelevant variables.
-Importantly, this study shows that prediction accuracy can then be improved by including features derived from restricted local avarages.
-The overall achieved accuracy was as high as 92\%, and although some significant stuctural differences were induced by prediction, 
+Importantly, this study shows that prediction accuracy can then be improved by including features derived from restricted local averages.
+The overall achieved accuracy was as high as 92\%, and although some significant structural differences were induced by prediction,
 the classifier was overall satisfying.
 In addition, the presented classifier can generate confidence values that can be used to moderate each prediction, and ultimately decide whether to trust them.
-Before considering implementation of this promissing classifier is a ubicuitous software tool,
+Before considering implementation of this promising classifier is a ubiquitous software tool,
 it would be necessary to generalise its results by the inclusion of different sources of data.
 
 \section{Availability}
