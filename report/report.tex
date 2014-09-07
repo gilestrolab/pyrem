@@ -27,8 +27,8 @@
 \usepackage{subcaption}
 
 
-%~ \usepackage[colorinlistoftodos,disable]{todonotes}
-\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorinlistoftodos,disable]{todonotes}
+%~ \usepackage[colorinlistoftodos]{todonotes}
 \usepackage{csquotes}
 \usepackage{parskip} % Spaces between paragraphs
 
@@ -56,8 +56,7 @@
 
 \newcommand{\specialcell}[2][c]{\begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
 
-%~ \newcommand{\sauliustodo}[2][]{\todo[color=cyan, #1]{\textbf{SL:} #2}}
-%~ \newcommand{\sisitodo}[2][]{\todo[color=yellow, #1]{\textbf{SF:} #2}}
+
 \newcommand{\FIXME}[2][]{\todo[color=cyan, #1]{\textbf{QG:} #2}}
 \newcommand{\TODO}[2][]{\todo[color=red, #1]{\textbf{QG:} #2}}
 
@@ -163,9 +162,10 @@ to outperform alternative runtime implementation by several orders of magnitudes
 \bibliographystyle{ieeetr}
 
 
-%~ \newpage{}
-%~ \begin{appendices}
-%~ \section{Documentation}
-%~ \end{appendices}
+\newpage{}
+\begin{appendices}
+\section{\pr{} documentation}
+An interactive online version of the following documentation is available at \href{http://gilestrolab.github.io/pyrem/}{http://gilestrolab.github.io/pyrem/}.
+\end{appendices}
    
 \end{document}
