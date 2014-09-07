@@ -9,8 +9,10 @@
 
 Sleep is considered to be a ubiquitous and necessary behaviour amongst animals.
 However, its real physiological functions remain debated.
-In vertebrate, electrophysiological recordings, in particular, \gls{eeg},
-but also \gls{emg} and \gls{eog} have extensively used to study the structure of sleep during the last century.
+In vertebrate, electrophysiological recordings, in particular, \gls{eeg};
+the recording of the global electrical activity in the brain,
+but also \gls{emg}, which records muscular activity,
+have extensively used to study the structure of sleep during the last century.
 They have the advantage of being non-invasive an relatively high throughput.
 Today, \gls{eeg} remains one of the main asset in the study sleep physiology.
 
@@ -61,15 +63,15 @@ However, a vast corpus of experimental work has provided hypothesis about functi
 Building a classifier that would produce a consensual prediction of vigilance states could be seen as an attempt to formalised and rationalise the definition of such states.
 This would improve future research without denying decades of sleep neurobiology.
 
-Many supervised learning techniques such as from SVM, ANNs, to HMMs have been investigated.
+Many supervised learning techniques such as from \glspl{svm}, \glspl{ann}, to \glspl{hmm} have been investigated.
 In general, the first step is to compute features on consecutive segments of annotated electrophysiological signals know as epochs.
 Then, the relation between the response variable(annotation) and the independent variables (features) can be modelled.
-Either epochs are considered to be independent from one another or time-dependent structures are explicitly modelled (\eg{} using HMMs).
+Either epochs are considered to be independent from one another or time-dependent structures are explicitly modelled (\eg{} using \glspl{hmm}).
 Time aware modelling has the advantage of accounting for the interdependence of consecutive epochs (see fig.~\ref{fig:sleep_description}B).
 However, it generally does not model non-linear relationships between large numbers of predictors as well as classical classifiers.
 
-Recently, promising results were obtained for automatic scoring\TODO{rephrase this} of human sleep stages by performing an exhaustive
-feature extraction including variables resulting from discrete wavelet decomposition.
+Recently, promising results were obtained for automatic scoring of human sleep stages by performing an exhaustive
+feature extraction, including variables resulting from discrete wavelet decomposition.
 Then, the authors compared several classifiers and found that random forest were, overall, the most accurate predictors.
 
 The study herein bases itself on these promising results by computing an even larger number of features.

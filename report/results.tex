@@ -13,31 +13,31 @@ The improved implementation cut this down to 55min.
 \input{./tables/benchmark}
 
 Importantly, several mathematical inconsistencies between the original code and the mathematical definitions were also noticed.
-This affected five of the eight reimplemented functions(table~\ref{tab:benchmark}).
-Detail of the corrections performed are provided, as notes, in the documentation of the new package (see appendix).
-Numerical results for the three other functions were consistent throughout optimisation.
+This affected five of the eight reimplemented functions(table~\ref{tab:benchmark}, rightmost column).
+Detail of the corrections performed are provided, as notes, in the documentation of the new package (see appendix, section 2.3).
+Numerical results for the three  functions were consistent throughout optimisation.
 
 In order to facilitate feature extraction, several data structures and routines were also implemented
-in a new python package named \pr{}.
+in a new \py{} package named \pr{}.
 Briefly, extensions of \texttt{numpy} arrays providing meta-data, sampling frequency, and other attributes were used to represent time series.
 User friendly indexing with string representing time was also developed.
 In addition, a container for time series of discrete annotation levels, each linked to a confidence level, was built.
 Importantly, a container for multiple time series, which supports heterogeneous (between time series) sampling frequencies was implemented.
-The new package also provides visualisation, input/output, and wrappers for resampling and discrete wavelet decomposition.
+The new package also provides visualization, input/output, and wrappers for resampling and discrete wavelet decomposition.
 Finally, unittests were implemented to ensure persistence of mathematical and programmatic validity throughout developmental stage.
-A complete documentation of \pr{} is provided in the appendix of the report herein.
+A complete documentation of \pr{} is provided as an appendix to the report herein.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Twenty variables can generate accurate predictions}
-Including temporal information (see next section) results in multiplication of the number of variable, rendering computation difficult, and prediction potentially less accurate.
-Therefore, iterative elimination of variables based on their importance was undertaken.
+Including temporal information (see next section) wil result in multiplication of the number of variable, rendering computation difficult, and prediction potentially less accurate.
+Therefore, recursive elimination of variables based on their importance was undertaken.
 Starting with all 164 variables, random forests were trained, and the number of features was reduced by a factor $1.5$  by eliminating the least important variables.
 For each iteration, the stratified cross-validation error (see material and methods) was computed (fig.~\ref{fig:variable_elimination}). Five replicates were performed.
 
 \input{./figures/variable_elimination}
 The predictive accuracy globally increases with the number of variables.
 Interestingly, using only the two most important variable already results in less that 20\% average error.
-However, this increase is very moderate for ($p>9$) this indicates that dimensionality can be reduced without largely impacting accuracy.
+However, this increase is very moderate for ($p>9$) this indicates that dimensionality can be considerably reduced without largely impacting accuracy.
 For further investigation, $p=21$ was considered to be a good compromise between error and computational load. Their relative importances are listed in table~\ref{tab:importances}.
 \input{./tables/importances}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -55,9 +55,10 @@ A comparison of both approaches is proposed in figure \ref{fig:temporal_integrat
 Significant improvement was achieved by both methods by including even little temporal information ($\tau = 1$, $n=\{1,3\}$, $p-value < 5.10^{-3}$).
 Although both methods improve performance, it appears that the inter-recording variablility is systematically lower using convolution method.
 For instance, the standard variation in error between all recordings is always lower than 0.03 for convolutions of window size greater than two,
-while it is systematicaly above 0.031 for all the values of $\tau$.
+whilst it is systematicaly above 0.031 for all the values of $\tau$.
 The most significant difference with the original set of variables was achieved using $n = \{1,3,7,15,31\}$ ($p-value < 10^{-6}$).
-Combining both approaches did not improve prediction any further (data not shown).
+Therefore, this new set of 105 variables was used to train the final predictor.
+Combining both convolution and lag approaches did not improve prediction any further (data not shown).
 
 \input{./figures/temporal_integration}
 
