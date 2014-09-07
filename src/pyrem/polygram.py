@@ -131,7 +131,7 @@ Indexing rules are similar to :mod:`~pyrem.time_series`
     **Indexing does NOT deep copy**
 
     When getting an epoch (temporal slice), of a polygram, the channel in the new polygram are *views* to the underlying data of the original channel.
-    Like for numpy arrays, *modifying the data in a sub-polygram will modify the parent polygram*. To avoid this behavious, one can call `~pyrem.polygram.Polygram.copy`
+    Like for numpy arrays, *modifying the data in a sub-polygram will modify the parent polygram*. To avoid this behaviour, one can call :func:`~pyrem.polygram.Polygram.copy`
 
 ----------------------------
 Epoch iteration

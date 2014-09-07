@@ -60,7 +60,7 @@ def polygram_from_spike_matlab_file(signal_filename, annotation_filename, fs, an
     This function loads a matlab file exported by spike to
     as a polygraph.
 
-    :param signal_filename:the matlab file name
+    :param signal_filename: the matlab file name
     :return: a polygram
     """
 

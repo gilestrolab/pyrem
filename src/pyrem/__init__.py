@@ -14,7 +14,7 @@ It provides:
 
     a. Support for heterogeneous sampling rates between time series.
     b. An iterator through arbitrary epochs (temporal slices)
-    c. Slicing using time strings, seamless merging between polygrams
+    c. Slicing using time strings and seamless merging between polygrams
 
 4. Implementations of algorithms often used in analysis of EEGs (see :mod:`pyrem.univariate`). They are essentially  faster and curated reimplementation of the function available in PyEEG_.
 

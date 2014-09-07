@@ -5,10 +5,21 @@ Feature computation for univariate time series
 
 
 This sub-module provides routines for computing features on univariate time series.
-Many functions are improved version of PyEEG [PYEEG]_ functions.
-Here is a comprehensive list of functions:
+Many functions are improved version of PyEEG [PYEEG]_ functions. Be careful,
+some functions will give different results compared to PyEEG as the maths have been changed to match original definitions.
+Have a look at the documentation notes/ source code to know more.
 
-todo
+Here a list of the functions that were reimplemented:
+
+* Approximate entropy :func:`~pyrem.univariate.ap_entropy` [RIC00]_
+* Fisher information :func:`~pyrem.univariate.fisher_info` [PYEEG]_
+* Higuchi fractal dimension  :func:`~pyrem.univariate.hfd` [HIG88]_
+* Hjorth parameters :func:`~pyrem.univariate.hjorth` [HJO70]_
+* Petrosian fractal dimension :func:`~pyrem.univariate.pfd` [PET95]_
+* Sample entropy :func:`~pyrem.univariate.samp_entropy` [RIC00]_
+* Singular value decomposition entropy :func:`~pyrem.univariate.svd_entropy` [PYEEG]_
+* Spectral entropy :func:`~pyrem.univariate.spectral_entropy` [PYEEG]_
+
 
 
 .. [PET95]  A. Petrosian, Kolmogorov complexity of finite sequences and recognition of different preictal EEG patterns, in ,
@@ -455,66 +466,6 @@ def spectral_entropy(a, sampling_freq, bands=None):
 
     return - np.sum(power_per_band * np.log2(power_per_band))
 
-def dfa(X, Ave = None, L = None, sampling= 1):
-    """
-    WIP on this function. It is basicaly copied and pasted from [PYEEG]_, without verification of the maths or unittests.
-    """
-    X = np.array(X)
-    if Ave is None:
-        Ave = np.mean(X)
-    Y = np.cumsum(X)
-    Y -= Ave
-    if not L:
-        max_power = np.int(np.log2(len(X)))-4
-        L = X.size / 2 ** np.arange(4,max_power)
-    if len(L)<2:
-        raise Exception("Too few values for L. Time series too short?")
-    F = np.zeros(len(L)) # F(n) of different given box length n
-
-    for i,n in enumerate(L):
-        sampled = 0
-        for j in xrange(0,len(X) -n ,n):
-
-            if np.random.rand() < sampling:
-                F[i] += np.polyfit(np.arange(j,j+n), Y[j:j+n],1, full=True)[1]
-                sampled += 1
-        if sampled > 0:
-            F[i] /= float(sampled)
-
-    LF = np.array([(l,f) for l,f in zip(L,F) if l>0]).T
-
-    F = np.sqrt(LF[1])
-    Alpha = np.polyfit(np.log(LF[0]), np.log(F),1)[0]
-    return Alpha
-
-def hurst(signal):
-    """
-    **Experimental**/untested implementation taken from:
-    http://drtomstarke.com/index.php/calculation-of-the-hurst-exponent-to-test-for-trend-and-mean-reversion/
-
-    Use at your own risks.
-    """
-    tau = []; lagvec = []
-
-    #  Step through the different lags
-    for lag in range(2,20):
-
-    #  produce price difference with lag
-        pp = np.subtract(signal[lag:],signal[:-lag])
-
-    #  Write the different lags into a vector
-        lagvec.append(lag)
-
-    #  Calculate the variance of the difference vector
-        tau.append(np.std(pp))
-
-    #  linear fit to double-log graph (gives power)
-    m = np.polyfit(np.log10(lagvec),np.log10(tau),1)
-
-    # calculate hurst
-    hurst = m[0]
-
-    return hurst
 
 
 def hfd(a, k_max):
@@ -593,6 +544,69 @@ def hfd(a, k_max):
     (p, r1, r2, s)=np.linalg.lstsq(x, L)
     return p[0]
 
+
+
+
+def dfa(X, Ave = None, L = None, sampling= 1):
+    """
+    WIP on this function. It is basically copied and pasted from [PYEEG]_, without verification of the maths or unittests.
+    """
+    X = np.array(X)
+    if Ave is None:
+        Ave = np.mean(X)
+    Y = np.cumsum(X)
+    Y -= Ave
+    if not L:
+        max_power = np.int(np.log2(len(X)))-4
+        L = X.size / 2 ** np.arange(4,max_power)
+    if len(L)<2:
+        raise Exception("Too few values for L. Time series too short?")
+    F = np.zeros(len(L)) # F(n) of different given box length n
+
+    for i,n in enumerate(L):
+        sampled = 0
+        for j in xrange(0,len(X) -n ,n):
+
+            if np.random.rand() < sampling:
+                F[i] += np.polyfit(np.arange(j,j+n), Y[j:j+n],1, full=True)[1]
+                sampled += 1
+        if sampled > 0:
+            F[i] /= float(sampled)
+
+    LF = np.array([(l,f) for l,f in zip(L,F) if l>0]).T
+
+    F = np.sqrt(LF[1])
+    Alpha = np.polyfit(np.log(LF[0]), np.log(F),1)[0]
+    return Alpha
+
+def hurst(signal):
+    """
+    **Experimental**/untested implementation taken from:
+    http://drtomstarke.com/index.php/calculation-of-the-hurst-exponent-to-test-for-trend-and-mean-reversion/
+
+    Use at your own risks.
+    """
+    tau = []; lagvec = []
+
+    #  Step through the different lags
+    for lag in range(2,20):
+
+    #  produce price difference with lag
+        pp = np.subtract(signal[lag:],signal[:-lag])
+
+    #  Write the different lags into a vector
+        lagvec.append(lag)
+
+    #  Calculate the variance of the difference vector
+        tau.append(np.std(pp))
+
+    #  linear fit to double-log graph (gives power)
+    m = np.polyfit(np.log10(lagvec),np.log10(tau),1)
+
+    # calculate hurst
+    hurst = m[0]
+
+    return hurst
 
 
 
