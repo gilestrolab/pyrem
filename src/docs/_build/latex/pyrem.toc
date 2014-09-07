@@ -1,0 +1,26 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}Module contents}{1}{chapter.1}
+\contentsline {chapter}{\numberline {2}Submodules}{3}{chapter.2}
+\contentsline {section}{\numberline {2.1}pyrem.time\_series module}{3}{section.2.1}
+\contentsline {subsection}{\numberline {2.1.1}Biological time series}{3}{subsection.2.1.1}
+\contentsline {subsection}{\numberline {2.1.2}Indexing time series}{3}{subsection.2.1.2}
+\contentsline {subsubsection}{As numpy arrays}{3}{subsubsection*.3}
+\contentsline {subsubsection}{With strings and time-deltas}{4}{subsubsection*.4}
+\contentsline {subsubsection}{Epoch iteration}{4}{subsubsection*.5}
+\contentsline {section}{\numberline {2.2}pyrem.polygram module}{7}{section.2.2}
+\contentsline {subsection}{\numberline {2.2.1}Polygram}{7}{subsection.2.2.1}
+\contentsline {subsubsection}{Constructing a Polygram}{7}{subsubsection*.23}
+\contentsline {subsubsection}{Accessing channels}{8}{subsubsection*.24}
+\contentsline {subsubsection}{With strings and time-deltas}{9}{subsubsection*.25}
+\contentsline {subsubsection}{Epoch iteration}{9}{subsubsection*.26}
+\contentsline {section}{\numberline {2.3}pyrem.univariate module}{11}{section.2.3}
+\contentsline {subsection}{\numberline {2.3.1}Feature computation for univariate time series}{11}{subsection.2.3.1}
+\contentsline {section}{\numberline {2.4}pyrem.visualization module}{15}{section.2.4}
+\contentsline {section}{\numberline {2.5}pyrem.wavelet\_decomposition module}{15}{section.2.5}
+\contentsline {section}{\numberline {2.6}pyrem.feature\_families module}{16}{section.2.6}
+\contentsline {section}{\numberline {2.7}pyrem.io module}{18}{section.2.7}
+\contentsline {section}{\numberline {2.8}pyrem.utils module}{18}{section.2.8}
+\contentsline {chapter}{\numberline {3}Indices and tables}{19}{chapter.3}
+\contentsline {chapter}{Bibliography}{21}{chapter*.83}
+\contentsline {chapter}{Python Module Index}{23}{section*.91}
+\contentsline {chapter}{Index}{25}{section*.92}

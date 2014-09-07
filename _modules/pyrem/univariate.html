@@ -1,0 +1,702 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyrem.univariate &mdash; pyrem 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyrem 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyrem 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyrem.univariate</h1><div class="highlight"><pre>
+<span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">==================================================</span>
+<span class="sd">Feature computation for univariate time series</span>
+<span class="sd">==================================================</span>
+
+
+<span class="sd">This sub-module provides routines for computing features on univariate time series.</span>
+<span class="sd">Many functions are improved version of PyEEG [PYEEG]_ functions. Be careful,</span>
+<span class="sd">some functions will give different results compared to PyEEG as the maths have been changed to match original definitions.</span>
+<span class="sd">Have a look at the documentation notes/ source code to know more.</span>
+
+<span class="sd">Here a list of the functions that were reimplemented:</span>
+
+<span class="sd">* Approximate entropy :func:`~pyrem.univariate.ap_entropy` [RIC00]_</span>
+<span class="sd">* Fisher information :func:`~pyrem.univariate.fisher_info` [PYEEG]_</span>
+<span class="sd">* Higuchi fractal dimension  :func:`~pyrem.univariate.hfd` [HIG88]_</span>
+<span class="sd">* Hjorth parameters :func:`~pyrem.univariate.hjorth` [HJO70]_</span>
+<span class="sd">* Petrosian fractal dimension :func:`~pyrem.univariate.pfd` [PET95]_</span>
+<span class="sd">* Sample entropy :func:`~pyrem.univariate.samp_entropy` [RIC00]_</span>
+<span class="sd">* Singular value decomposition entropy :func:`~pyrem.univariate.svd_entropy` [PYEEG]_</span>
+<span class="sd">* Spectral entropy :func:`~pyrem.univariate.spectral_entropy` [PYEEG]_</span>
+
+
+
+<span class="sd">.. [PET95]  A. Petrosian, Kolmogorov complexity of finite sequences and recognition of different preictal EEG patterns, in ,</span>
+<span class="sd">    Proceedings of the Eighth IEEE Symposium on Computer-Based Medical Systems, 1995, 1995, pp. 212-217.</span>
+
+<span class="sd">.. [PYEEG] F. S. Bao, X. Liu, and C. Zhang, PyEEG: An Open Source Python Module for EEG/MEG Feature Extraction,</span>
+<span class="sd">    Computational Intelligence and Neuroscience, vol. 2011, p. e406391, Mar. 2011.</span>
+
+<span class="sd">.. [HJO70] B. Hjorth, EEG analysis based on time domain properties,</span>
+<span class="sd">    Electroencephalography and Clinical Neurophysiology, vol. 29, no. 3, pp. 306-310, Sep. 1970.</span>
+
+<span class="sd">.. [COS05] M. Costa, A. L. Goldberger, and C.-K. Peng, &quot;Multiscale entropy analysis of biological signals,&quot; Phys. Rev. E, vol. 71, no. 2, p. 021906, Feb. 2005.</span>
+
+<span class="sd">.. [RIC00] J. S. Richman and J. R. Moorman, &quot;Physiological time-series analysis using approximate entropy and sample entropy,&quot;</span>
+<span class="sd">    American Journal of Physiology - Heart and Circulatory Physiology, vol. 278, no. 6, pp. H2039-H2049, Jun. 2000.</span>
+
+<span class="sd">.. [HIG88] T. Higuchi, &quot;Approach to an irregular time series on the basis of the fractal theory,&quot; Physica D: Nonlinear Phenomena, vol. 31, no. 2, pp. 277-283, Jun. 1988.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;quentin&#39;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+
+<span class="k">def</span> <span class="nf">_embed_seq</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">tau</span><span class="p">,</span><span class="n">de</span><span class="p">):</span>
+
+    <span class="n">N</span> <span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">de</span> <span class="o">*</span> <span class="n">tau</span> <span class="o">&gt;</span> <span class="n">N</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Cannot build such a matrix, because D * Tau &gt; N&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">tau</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Tau has to be at least 1&quot;</span><span class="p">)</span>
+
+
+    <span class="n">Y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">de</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="p">(</span><span class="n">de</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">tau</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">de</span><span class="p">):</span>
+        <span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span><span class="n">tau</span> <span class="p">:</span> <span class="n">i</span><span class="o">*</span><span class="n">tau</span> <span class="o">+</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">Y</span><span class="o">.</span><span class="n">T</span>
+
+<span class="k">def</span> <span class="nf">_make_cmp</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">in_range_i</span><span class="p">,</span> <span class="n">in_range_j</span><span class="p">):</span>
+     <span class="c">#Then we make Cmp</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="n">Emp</span> <span class="o">=</span> <span class="n">_embed_seq</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">M</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">inrange_cmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Emp</span><span class="p">[</span><span class="n">in_range_i</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">Emp</span><span class="p">[</span><span class="n">in_range_j</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">R</span>
+
+    <span class="n">in_range_cmp_i</span> <span class="o">=</span> <span class="n">in_range_i</span><span class="p">[</span><span class="n">inrange_cmp</span><span class="p">]</span>
+
+
+    <span class="n">Cmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">in_range_cmp_i</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">N</span><span class="o">-</span><span class="n">M</span><span class="p">)</span>
+    <span class="n">in_range_cmp_j</span> <span class="o">=</span> <span class="n">in_range_j</span><span class="p">[</span><span class="n">inrange_cmp</span><span class="p">]</span>
+    <span class="n">Cmp</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">in_range_cmp_j</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">N</span><span class="o">-</span><span class="n">M</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Cmp</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_coarse_grainning</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">tau</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Coarse grainning for multiscale (sample) entropy.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">tau</span> <span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">a</span>
+    <span class="n">length_out</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">tau</span>
+
+    <span class="n">n_dropped</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">size</span> <span class="o">%</span> <span class="n">tau</span>
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">a</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">n_dropped</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">tau</span><span class="p">,</span> <span class="n">length_out</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_make_cm</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">R</span><span class="p">):</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="c"># we pregenerate all indices</span>
+    
+    <span class="n">i_idx</span><span class="p">,</span><span class="n">j_idx</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">triu_indices</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">M</span><span class="p">)</span>
+    
+    <span class="c"># We start by making Cm</span>
+    <span class="n">Em</span> <span class="o">=</span> <span class="n">_embed_seq</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
+    <span class="n">dif</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Em</span><span class="p">[</span><span class="n">i_idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">Em</span><span class="p">[</span><span class="n">j_idx</span><span class="p">])</span>
+    <span class="n">max_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dif</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">inrange_cm</span> <span class="o">=</span> <span class="n">max_dist</span> <span class="o">&lt;=</span> <span class="n">R</span>
+
+
+    <span class="n">in_range_i</span> <span class="o">=</span> <span class="n">i_idx</span><span class="p">[</span><span class="n">inrange_cm</span><span class="p">]</span>
+    <span class="n">in_range_j</span> <span class="o">=</span> <span class="n">j_idx</span><span class="p">[</span><span class="n">inrange_cm</span><span class="p">]</span>
+
+
+    <span class="n">Cm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">in_range_i</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">N</span><span class="o">-</span><span class="n">M</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">Cm</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">in_range_j</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">N</span><span class="o">-</span><span class="n">M</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">inrange_last</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Em</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">Em</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">R</span>
+    <span class="n">Cm</span><span class="p">[</span><span class="n">inrange_last</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="c"># all matches + self match</span>
+    <span class="n">Cm</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">inrange_last</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">Cm</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">),</span> <span class="n">in_range_i</span><span class="p">,</span> <span class="n">in_range_j</span>
+
+<div class="viewcode-block" id="pfd"><a class="viewcode-back" href="../../pyrem.univariate.html#pyrem.univariate.pfd">[docs]</a><span class="k">def</span> <span class="nf">pfd</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    Compute Petrosian Fractal Dimension of a time series [PET95]_.</span>
+
+
+<span class="sd">    It is defined by:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \frac{log(N)}{log(N) + log(\frac{N}{N+0.4N_{\delta}})}</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        **Difference with PyEEG:**</span>
+
+<span class="sd">        Results is different from [PYEEG]_ which implemented an apparently erroneous formulae:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \frac{log(N)}{log(N) + log(\frac{N}{N}+0.4N_{\delta})}</span>
+
+
+
+<span class="sd">    Where:</span>
+
+<span class="sd">    :math:`N` is the length of the time series, and</span>
+
+<span class="sd">    :math:`N_{\delta}` is the number of sign changes.</span>
+
+
+<span class="sd">    :param a: a one dimensional floating-point array representing a time series.</span>
+<span class="sd">    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`</span>
+<span class="sd">    :return: the Petrosian Fractal Dimension; a scalar.</span>
+<span class="sd">    :rtype: float</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; import pyrem as pr</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; # generate white noise:</span>
+<span class="sd">    &gt;&gt;&gt; noise = np.random.normal(size=int(1e4))</span>
+<span class="sd">    &gt;&gt;&gt; pr.univariate.pdf(noise)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="c"># x[i] * x[i-1] for i in t0 -&gt; tmax</span>
+    <span class="n">prod</span> <span class="o">=</span> <span class="n">diff</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">diff</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="c"># Number of sign changes in derivative of the signal</span>
+    <span class="n">N_delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">prod</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n</span><span class="o">/</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mf">0.4</span><span class="o">*</span><span class="n">N_delta</span><span class="p">)))</span>
+</div>
+<div class="viewcode-block" id="hjorth"><a class="viewcode-back" href="../../pyrem.univariate.html#pyrem.univariate.hjorth">[docs]</a><span class="k">def</span> <span class="nf">hjorth</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    Compute Hjorth parameters [HJO70]_.</span>
+
+
+
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        Activity = m_0 = \sigma_{a}^2</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        Complexity = m_2 = \sigma_{d}/ \sigma_{a}</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        Morbidity = m_4 =  \frac{\sigma_{dd}/ \sigma_{d}}{m_2}</span>
+
+
+<span class="sd">    Where:</span>
+
+<span class="sd">    :math:`\sigma_{x}^2` is the mean power of a signal :math:`x`. That is, its variance, if it&#39;s mean is zero.</span>
+
+<span class="sd">    :math:`a`, :math:`d` and :math:`dd` represent the original signal, its first and second derivatives, respectively.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        **Difference with PyEEG:**</span>
+
+<span class="sd">        Results is different from [PYEEG]_ which appear to uses a non normalised (by the length of the signal) definition of the activity:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \sigma_{a}^2 = \sum{\mathbf{x}[i]^2}</span>
+
+<span class="sd">        As opposed to</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \sigma_{a}^2 = \frac{1}{n}\sum{\mathbf{x}[i]^2}</span>
+
+
+
+
+<span class="sd">    :param a: a one dimensional floating-point array representing a time series.</span>
+<span class="sd">    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`</span>
+<span class="sd">    :return: activity, complexity and morbidity</span>
+<span class="sd">    :rtype: tuple(float, float, float)</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; import pyrem as pr</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; # generate white noise:</span>
+<span class="sd">    &gt;&gt;&gt; noise = np.random.normal(size=int(1e4))</span>
+<span class="sd">    &gt;&gt;&gt; activity, complexity, morbidity = pr.univariate.hjorth(noise)</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">first_deriv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">second_deriv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">var_zero</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">a</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">var_d1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">first_deriv</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">var_d2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">second_deriv</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">activity</span> <span class="o">=</span> <span class="n">var_zero</span>
+    <span class="n">morbidity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var_d1</span> <span class="o">/</span> <span class="n">var_zero</span><span class="p">)</span>
+    <span class="n">complexity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var_d2</span> <span class="o">/</span> <span class="n">var_d1</span><span class="p">)</span> <span class="o">/</span> <span class="n">morbidity</span>
+
+    <span class="k">return</span> <span class="n">activity</span><span class="p">,</span> <span class="n">morbidity</span><span class="p">,</span> <span class="n">complexity</span>
+</div>
+<div class="viewcode-block" id="svd_entropy"><a class="viewcode-back" href="../../pyrem.univariate.html#pyrem.univariate.svd_entropy">[docs]</a><span class="k">def</span> <span class="nf">svd_entropy</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">de</span><span class="p">):</span>
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    Compute the Singular Value Decomposition entropy of a signal with embedding dimension &quot;de&quot; and delay &quot;tau&quot; [PYEEG]_.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        **Difference with PyEEG:**</span>
+
+<span class="sd">        The result differs from PyEEG implementation because :math:`log_2` is used (as opposed to natural logarithm in PyEEG code),</span>
+<span class="sd">        according to the definition in their paper [PYEEG]_ (eq. 9):</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            H_{SVD} = -\sum{\bar\sigma{}_i log_2 \bar\sigma{}_i}</span>
+
+
+
+
+
+
+<span class="sd">    :param a: a one dimensional floating-point array representing a time series.</span>
+<span class="sd">    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`</span>
+<span class="sd">    :param tau: the delay</span>
+<span class="sd">    :type tau: int</span>
+<span class="sd">    :param de: the embedding dimension</span>
+<span class="sd">    :type de: int</span>
+<span class="sd">    :return: the SVD entropy, a scalar</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mat</span> <span class="o">=</span>  <span class="n">_embed_seq</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">de</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">compute_uv</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">/=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">W</span><span class="p">)</span> <span class="c"># normalize singular values</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="nb">sum</span><span class="p">(</span><span class="n">W</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">W</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="fisher_info"><a class="viewcode-back" href="../../pyrem.univariate.html#pyrem.univariate.fisher_info">[docs]</a><span class="k">def</span> <span class="nf">fisher_info</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">de</span><span class="p">):</span>
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    Compute the Fisher information of a signal with embedding dimension &quot;de&quot; and delay &quot;tau&quot; [PYEEG]_.</span>
+<span class="sd">    Vectorised (i.e. faster) version of the eponymous PyEEG function.</span>
+
+<span class="sd">    :param a: a one dimensional floating-point array representing a time series.</span>
+<span class="sd">    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`</span>
+<span class="sd">    :param tau: the delay</span>
+<span class="sd">    :type tau: int</span>
+<span class="sd">    :param de: the embedding dimension</span>
+<span class="sd">    :type de: int</span>
+<span class="sd">    :return: the Fisher information, a scalar</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mat</span> <span class="o">=</span>  <span class="n">_embed_seq</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">de</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">compute_uv</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">/=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">W</span><span class="p">)</span> <span class="c"># normalize singular values</span>
+    <span class="n">FI_v</span> <span class="o">=</span> <span class="p">(</span><span class="n">W</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">W</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">W</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">FI_v</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ap_entropy"><a class="viewcode-back" href="../../pyrem.univariate.html#pyrem.univariate.ap_entropy">[docs]</a><span class="k">def</span> <span class="nf">ap_entropy</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">R</span><span class="p">):</span>
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    Compute the approximate entropy of a signal with embedding dimension &quot;de&quot; and delay &quot;tau&quot; [PYEEG]_.</span>
+<span class="sd">    Vectorised version of the PyEEG function. Faster than PyEEG, but still critically slow.</span>
+
+<span class="sd">    :param a: a one dimensional floating-point array representing a time series.</span>
+<span class="sd">    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`</span>
+<span class="sd">    :param m: the scale</span>
+<span class="sd">    :type m: int</span>
+<span class="sd">    :param R: The tolerance</span>
+<span class="sd">    :type R: float`</span>
+<span class="sd">    :return: the approximate entropy, a scalar</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">Cm</span><span class="p">,</span> <span class="n">in_range_i</span><span class="p">,</span> <span class="n">in_range_j</span> <span class="o">=</span> <span class="n">_make_cm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">R</span><span class="p">)</span>
+
+    <span class="n">Cmp</span> <span class="o">=</span> <span class="n">_make_cmp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">in_range_i</span><span class="p">,</span> <span class="n">in_range_j</span><span class="p">)</span>
+
+    <span class="n">Cm</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">((</span><span class="n">N</span> <span class="o">-</span> <span class="n">m</span> <span class="o">+</span><span class="mi">1</span> <span class="p">))</span>
+    <span class="n">Cmp</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">m</span><span class="p">)</span>
+
+    <span class="n">Phi_m</span><span class="p">,</span> <span class="n">Phi_mp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Cm</span><span class="p">)),</span>  <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Cmp</span><span class="p">))</span>
+    <span class="n">Ap_En</span> <span class="o">=</span> <span class="p">(</span><span class="n">Phi_m</span> <span class="o">-</span> <span class="n">Phi_mp</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">m</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Ap_En</span>
+</div>
+<div class="viewcode-block" id="samp_entropy"><a class="viewcode-back" href="../../pyrem.univariate.html#pyrem.univariate.samp_entropy">[docs]</a><span class="k">def</span> <span class="nf">samp_entropy</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">tau</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">relative_r</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    Compute the sample entropy [RIC00]_ of a signal with embedding dimension `de` and delay `tau` [PYEEG]_.</span>
+<span class="sd">    Vectorised version of the eponymous PyEEG function.</span>
+<span class="sd">    In addition, this function can also be used to vary tau and therefore compute Multi-Scale Entropy(MSE) [COS05]_ by</span>
+<span class="sd">    coarse grainning the time series (see example bellow).</span>
+<span class="sd">    By default, r is expressed as relatively to the standard deviation of the signal.</span>
+
+<span class="sd">    :param a: a one dimensional floating-point array representing a time series.</span>
+<span class="sd">    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`</span>
+<span class="sd">    :param m: the scale</span>
+<span class="sd">    :type m: int</span>
+<span class="sd">    :param r: The tolerance</span>
+<span class="sd">    :type r: float</span>
+<span class="sd">    :param tau: The scale for coarse grainning.</span>
+<span class="sd">    :type tau: int</span>
+<span class="sd">    :param relative_r: whether the argument r is relative to the standard deviation. If false, an absolute value should be given for r.</span>
+<span class="sd">    :type relative_r: true</span>
+<span class="sd">    :return: the approximate entropy, a scalar</span>
+<span class="sd">    :rtype: float</span>
+
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; import pyrem as pr</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; # generate white noise:</span>
+<span class="sd">    &gt;&gt;&gt; noise = np.random.normal(size=int(1e4))</span>
+<span class="sd">    &gt;&gt;&gt; pr.univariate.samp_entropy(noise, m=2, r=1.5)</span>
+<span class="sd">    &gt;&gt;&gt; # now we can do that for multiple scales (MSE):</span>
+<span class="sd">    &gt;&gt;&gt; [pr.univariate.samp_entropy(noise, m=2, r=1.5, tau=tau) for tau in range(1, 5)]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="n">coarse_a</span> <span class="o">=</span> <span class="n">_coarse_grainning</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">tau</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">relative_r</span><span class="p">:</span>
+        <span class="n">coarse_a</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">coarse_a</span><span class="p">)</span>
+    <span class="n">embsp</span> <span class="o">=</span> <span class="n">_embed_seq</span><span class="p">(</span><span class="n">coarse_a</span><span class="p">,</span> <span class="mi">1</span> <span class="p">,</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">embsp_last</span> <span class="o">=</span> <span class="n">embsp</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">embs_mini</span> <span class="o">=</span> <span class="n">embsp</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+
+    <span class="c"># Buffers are preallocated chunks of memory storing temporary results.</span>
+    <span class="c"># see the `out` argument in numpy *ufun* documentation</span>
+
+    <span class="n">dist_buffer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">embsp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">subtract_buffer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dist_buffer</span><span class="o">.</span><span class="n">size</span> <span class="p">,</span><span class="n">m</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">in_range_buffer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">dist_buffer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+    <span class="n">sum_cm</span><span class="p">,</span> <span class="n">sum_cmp</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+
+    <span class="c"># we iterate through all templates (rows), except last one.</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">template</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">embs_mini</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+
+        <span class="c"># these are just views to the buffer arrays. to store intermediary matrices</span>
+        <span class="n">dist_b_view</span> <span class="o">=</span> <span class="n">dist_buffer</span><span class="p">[</span><span class="n">i</span><span class="p">:]</span>
+        <span class="n">sub_b_view</span> <span class="o">=</span> <span class="n">subtract_buffer</span><span class="p">[</span><span class="n">i</span><span class="p">:]</span>
+        <span class="n">range_b_view</span> <span class="o">=</span> <span class="n">in_range_buffer</span><span class="p">[</span><span class="n">i</span><span class="p">:]</span>
+        <span class="n">embsp_view</span> <span class="o">=</span> <span class="n">embsp_last</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="c"># substract the template from each subsequent row of the embedded matrix</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">embs_mini</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:],</span>  <span class="n">template</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sub_b_view</span><span class="p">)</span>
+        <span class="c"># Absolute distance</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sub_b_view</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sub_b_view</span><span class="p">)</span>
+        <span class="c"># Maximal absolute difference between a scroll and a template is the distance</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">sub_b_view</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">dist_b_view</span><span class="p">)</span>
+        <span class="c"># we compare this distance to a tolerance r</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">less_equal</span><span class="p">(</span><span class="n">dist_b_view</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span> <span class="n">range_b_view</span><span class="p">)</span>
+        <span class="c"># score one for this template for each match</span>
+        <span class="n">in_range_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">range_b_view</span><span class="p">)</span>
+        <span class="n">sum_cm</span>  <span class="o">+=</span> <span class="n">in_range_sum</span>
+
+        <span class="c">### reuse the buffers for last column</span>
+        <span class="n">dist_b_view</span> <span class="o">=</span> <span class="n">dist_buffer</span><span class="p">[:</span><span class="n">in_range_sum</span><span class="p">]</span>
+
+        <span class="n">where</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">range_b_view</span><span class="p">)</span>
+        <span class="n">dist_b_view</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">embsp_view</span><span class="p">,</span><span class="n">where</span><span class="p">,</span><span class="n">out</span><span class="o">=</span><span class="n">dist_b_view</span><span class="p">)</span>
+        <span class="n">range_b_view</span> <span class="o">=</span> <span class="n">in_range_buffer</span><span class="p">[</span><span class="n">range_b_view</span><span class="p">]</span>
+        <span class="c"># score one to TODO for each match of the last element</span>
+        <span class="n">dist_b_view</span> <span class="o">-=</span> <span class="n">embsp_last</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dist_b_view</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">dist_b_view</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">less_equal</span><span class="p">(</span><span class="n">dist_b_view</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">range_b_view</span><span class="p">)</span>
+        <span class="n">sum_cmp</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">range_b_view</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sum_cm</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">sum_cmp</span> <span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">sum_cm</span><span class="o">/</span><span class="n">sum_cmp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="spectral_entropy"><a class="viewcode-back" href="../../pyrem.univariate.html#pyrem.univariate.spectral_entropy">[docs]</a><span class="k">def</span> <span class="nf">spectral_entropy</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">sampling_freq</span><span class="p">,</span> <span class="n">bands</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    Compute spectral entropy of a  signal with respect to frequency bands.</span>
+<span class="sd">    The power spectrum is computed through fft. Then, it is normalised and assimilated to a probability density function.</span>
+<span class="sd">    The entropy of the signal :math:`x` can be expressed by:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        H(x) =  -\sum_{f=0}^{f = f_s/2} PSD(f) log_2[PSD(f)]</span>
+
+<span class="sd">    Where:</span>
+
+<span class="sd">    :math:`PSD` is the normalised power spectrum (Power Spectrum Density), and</span>
+
+<span class="sd">    :math:`f_s` is the sampling frequency</span>
+
+<span class="sd">    :param a: a one dimensional floating-point array representing a time series.</span>
+<span class="sd">    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`</span>
+<span class="sd">    :param sampling_freq: the sampling frequency</span>
+<span class="sd">    :type sampling_freq:  float</span>
+<span class="sd">    :param bands: a list of numbers delimiting the bins of the frequency bands. If None the entropy is computed over the whole range of the DFT (from 0 to :math:`f_s/2`)</span>
+<span class="sd">    :return: the spectral entropy; a scalar</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+
+    <span class="n">psd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfft</span><span class="p">(</span><span class="n">a</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">psd</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">psd</span><span class="p">)</span> <span class="c"># psd as a pdf (normalised to one)</span>
+
+    <span class="k">if</span> <span class="n">bands</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">power_per_band</span><span class="o">=</span> <span class="n">psd</span><span class="p">[</span><span class="n">psd</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftfreq</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sampling_freq</span><span class="p">))</span>
+        <span class="n">bands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">bands</span><span class="p">)</span>
+
+        <span class="n">freq_limits_low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">],</span><span class="n">bands</span><span class="p">])</span>
+        <span class="n">freq_limits_up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">bands</span><span class="p">,</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">Inf</span><span class="p">]])</span>
+
+        <span class="n">power_per_band</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">psd</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">freqs</span> <span class="o">&gt;=</span> <span class="n">low</span><span class="p">,</span> <span class="n">freqs</span><span class="o">&lt;</span><span class="n">up</span><span class="p">)])</span>
+                <span class="k">for</span> <span class="n">low</span><span class="p">,</span><span class="n">up</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">freq_limits_low</span><span class="p">,</span> <span class="n">freq_limits_up</span><span class="p">)]</span>
+
+        <span class="n">power_per_band</span><span class="o">=</span> <span class="n">power_per_band</span><span class="p">[</span> <span class="n">power_per_band</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">power_per_band</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">power_per_band</span><span class="p">))</span>
+
+
+</div>
+<div class="viewcode-block" id="hfd"><a class="viewcode-back" href="../../pyrem.univariate.html#pyrem.univariate.hfd">[docs]</a><span class="k">def</span> <span class="nf">hfd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">k_max</span><span class="p">):</span>
+
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    Compute Higuchi Fractal Dimension of a time series.</span>
+<span class="sd">    Vectorised version of the eponymous [PYEEG]_ function.</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        **Difference with PyEEG:**</span>
+
+<span class="sd">        Results is different from [PYEEG]_ which appears to have implemented an erroneous formulae.</span>
+<span class="sd">        [HIG88]_ defines the normalisation factor as:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \frac{N-1}{[\frac{N-m}{k} ]\dot{} k}</span>
+
+<span class="sd">        [PYEEG]_ implementation uses:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \frac{N-1}{[\frac{N-m}{k}]}</span>
+
+<span class="sd">        The latter does *not* give the expected fractal dimension of approximately `1.50` for brownian motion (see example bellow).</span>
+
+
+
+<span class="sd">    :param a: a one dimensional floating-point array representing a time series.</span>
+<span class="sd">    :type a: :class:`~numpy.ndarray` or :class:`~pyrem.time_series.Signal`</span>
+<span class="sd">    :param k_max: the maximal value of k</span>
+<span class="sd">    :type k_max: int</span>
+
+<span class="sd">    :return: Higuchi&#39;s fractal dimension; a scalar</span>
+<span class="sd">    :rtype: float</span>
+
+<span class="sd">    Example from [HIG88]_. This should produce a result close to `1.50`:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import pyrem as pr</span>
+<span class="sd">    &gt;&gt;&gt; i = np.arange(2 ** 15) +1001</span>
+<span class="sd">    &gt;&gt;&gt; z = np.random.normal(size=int(2 ** 15) + 1001)</span>
+<span class="sd">    &gt;&gt;&gt; y = np.array([np.sum(z[1:j]) for j in i])</span>
+<span class="sd">    &gt;&gt;&gt; pr.univariate.hfd(y,2**8)</span>
+
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">L</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">size</span>
+
+
+    <span class="c"># TODO this could be used to pregenerate k and m idxs ... but memory pblem?</span>
+    <span class="c"># km_idxs = np.triu_indices(k_max - 1)</span>
+    <span class="c"># km_idxs = k_max - np.flipud(np.column_stack(km_idxs)) -1</span>
+    <span class="c"># km_idxs[:,1] -= 1</span>
+    <span class="c">#</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">k_max</span><span class="p">):</span>
+        <span class="n">Lk</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+            <span class="c">#we pregenerate all idxs</span>
+            <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">N</span><span class="o">-</span><span class="n">m</span><span class="p">)</span><span class="o">/</span><span class="n">k</span><span class="p">)),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+            <span class="n">Lmk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">m</span><span class="o">+</span><span class="n">idxs</span><span class="o">*</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="n">m</span><span class="o">+</span><span class="n">k</span><span class="o">*</span><span class="p">(</span><span class="n">idxs</span><span class="o">-</span><span class="mi">1</span><span class="p">)]))</span>
+            <span class="n">Lmk</span> <span class="o">=</span> <span class="p">(</span><span class="n">Lmk</span><span class="o">*</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(((</span><span class="n">N</span> <span class="o">-</span> <span class="n">m</span><span class="p">)</span><span class="o">/</span> <span class="n">k</span><span class="p">)</span><span class="o">*</span> <span class="n">k</span><span class="p">))</span> <span class="o">/</span> <span class="n">k</span>
+            <span class="n">Lk</span> <span class="o">+=</span> <span class="n">Lmk</span>
+
+
+        <span class="n">L</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Lk</span><span class="o">/</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span> <span class="n">k</span><span class="p">),</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+
+
+</div>
+<div class="viewcode-block" id="dfa"><a class="viewcode-back" href="../../pyrem.univariate.html#pyrem.univariate.dfa">[docs]</a><span class="k">def</span> <span class="nf">dfa</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Ave</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">sampling</span><span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    WIP on this function. It is basically copied and pasted from [PYEEG]_, without verification of the maths or unittests.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">Ave</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">Ave</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">-=</span> <span class="n">Ave</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">L</span><span class="p">:</span>
+        <span class="n">max_power</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)))</span><span class="o">-</span><span class="mi">4</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="n">max_power</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">L</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Too few values for L. Time series too short?&quot;</span><span class="p">)</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">L</span><span class="p">))</span> <span class="c"># F(n) of different given box length n</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">L</span><span class="p">):</span>
+        <span class="n">sampled</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-</span><span class="n">n</span> <span class="p">,</span><span class="n">n</span><span class="p">):</span>
+
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">sampling</span><span class="p">:</span>
+                <span class="n">F</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="n">n</span><span class="p">),</span> <span class="n">Y</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="n">n</span><span class="p">],</span><span class="mi">1</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">sampled</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">sampled</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">F</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sampled</span><span class="p">)</span>
+
+    <span class="n">LF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">l</span><span class="p">,</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span><span class="p">,</span><span class="n">f</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">L</span><span class="p">,</span><span class="n">F</span><span class="p">)</span> <span class="k">if</span> <span class="n">l</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">LF</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">Alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">LF</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">F</span><span class="p">),</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">Alpha</span>
+</div>
+<div class="viewcode-block" id="hurst"><a class="viewcode-back" href="../../pyrem.univariate.html#pyrem.univariate.hurst">[docs]</a><span class="k">def</span> <span class="nf">hurst</span><span class="p">(</span><span class="n">signal</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    **Experimental**/untested implementation taken from:</span>
+<span class="sd">    http://drtomstarke.com/index.php/calculation-of-the-hurst-exponent-to-test-for-trend-and-mean-reversion/</span>
+
+<span class="sd">    Use at your own risks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="p">[];</span> <span class="n">lagvec</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c">#  Step through the different lags</span>
+    <span class="k">for</span> <span class="n">lag</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">20</span><span class="p">):</span>
+
+    <span class="c">#  produce price difference with lag</span>
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">signal</span><span class="p">[</span><span class="n">lag</span><span class="p">:],</span><span class="n">signal</span><span class="p">[:</span><span class="o">-</span><span class="n">lag</span><span class="p">])</span>
+
+    <span class="c">#  Write the different lags into a vector</span>
+        <span class="n">lagvec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lag</span><span class="p">)</span>
+
+    <span class="c">#  Calculate the variance of the difference vector</span>
+        <span class="n">tau</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">pp</span><span class="p">))</span>
+
+    <span class="c">#  linear fit to double-log graph (gives power)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">lagvec</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">tau</span><span class="p">),</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c"># calculate hurst</span>
+    <span class="n">hurst</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">hurst</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyrem 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Quentin Geissmann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

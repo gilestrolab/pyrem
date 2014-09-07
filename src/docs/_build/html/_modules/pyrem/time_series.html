@@ -1,0 +1,619 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyrem.time_series &mdash; pyrem 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyrem 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyrem 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyrem.time_series</h1><div class="highlight"><pre>
+<span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">============================</span>
+<span class="sd">Biological time series</span>
+<span class="sd">============================</span>
+
+
+<span class="sd">This module provides data structure for two types of time series: :class:`~pyrem.time_series.Signal` and :class:`~pyrem.time_series.Annotation`.</span>
+
+<span class="sd">Both structures extend :class:`~numpy.ndarray` by providing attributes, such as *sampling frequency*, *metadata*, name.</span>
+<span class="sd">More importantly, time series provide specific features such as indexing with time strings.</span>
+
+
+<span class="sd">&gt;&gt;&gt; import pyrem as pr</span>
+<span class="sd">&gt;&gt;&gt; import numpy as np</span>
+<span class="sd">&gt;&gt;&gt; # generate white noise:</span>
+<span class="sd">&gt;&gt;&gt; noise = np.random.normal(size=int(1e6))</span>
+<span class="sd">&gt;&gt;&gt; # a million point sampled at 256 Hz</span>
+
+<span class="sd">Then, to create a time series from this vector of random numbers:</span>
+
+<span class="sd">&gt;&gt;&gt; sig = pr.time_series.Signal(noise, 256.0,</span>
+<span class="sd">&gt;&gt;&gt;                             type=&quot;noise&quot;, name=&quot;channel_1&quot;,</span>
+<span class="sd">&gt;&gt;&gt;                             metadata={&quot;patient&quot;: &quot;John_Doe&quot;})</span>
+
+<span class="sd">Display information about this time series:</span>
+
+<span class="sd">&gt;&gt;&gt; sig</span>
+
+<span class="sd">To resample at 100 Hz:</span>
+
+<span class="sd">&gt;&gt;&gt; sig_short =  sig.resample(100.0)</span>
+<span class="sd">&gt;&gt;&gt; sig_short</span>
+
+<span class="sd">Time series derive from numpy arrays, so you can just use them as such:</span>
+
+<span class="sd">&gt;&gt;&gt; sig_norm = sig - np.mean(sig)</span>
+<span class="sd">Note that the resulting signal is conveniently a time series (not a regular numpy array)</span>
+
+<span class="sd">&gt;&gt;&gt; np.diff(sig)</span>
+
+<span class="sd">============================</span>
+<span class="sd">Indexing time series</span>
+<span class="sd">============================</span>
+
+<span class="sd">----------------------------</span>
+<span class="sd">As numpy arrays</span>
+<span class="sd">----------------------------</span>
+
+<span class="sd">Since time series are derived from numpy array, the numpy indexing rule apply:</span>
+
+<span class="sd">&gt;&gt;&gt; sig[1:1000:3] # one to 999, every 3 values</span>
+<span class="sd">&gt;&gt;&gt; sig[: -100] # from start to 0 to 100 before the end</span>
+
+<span class="sd">See numpy documentation for more info.</span>
+
+<span class="sd">----------------------------</span>
+<span class="sd">With strings and time-deltas</span>
+<span class="sd">----------------------------</span>
+
+<span class="sd">It is common to have to extract a signal between two different time points.</span>
+<span class="sd">Instead of having to tediously calculate index from time, `pyrem`  offers the possibility to use stings and :class:`datetime.timedelta`</span>
+
+<span class="sd">Time strings are represented with the following format:</span>
+
+<span class="sd">`&quot;29h33m1.02s&quot;`</span>
+
+<span class="sd">Where:</span>
+
+<span class="sd">* h is for hour</span>
+<span class="sd">* m for minutes</span>
+<span class="sd">* s for seconds</span>
+
+<span class="sd">Example:</span>
+
+<span class="sd">&gt;&gt;&gt; # string indexing:</span>
+<span class="sd">&gt;&gt;&gt; print sig.duration</span>
+<span class="sd">&gt;&gt;&gt; sig2 = sig[&quot;1h2m2s&quot;:]  # everything after 1 hour, 2 min and 2 seconds</span>
+<span class="sd">&gt;&gt;&gt; print sig2.duration</span>
+<span class="sd">&gt;&gt;&gt; # this should be exactly 1h2m2s</span>
+<span class="sd">&gt;&gt;&gt; print sig.duration - sig2.duration</span>
+<span class="sd">&gt;&gt;&gt; print sig[&quot;1h2m2s&quot;:&quot;1h2m2.1s&quot;]</span>
+
+<span class="sd">.. note::</span>
+
+<span class="sd">    When indexing a signal with time strings, we query the values of a *discrete representation of a continuous signal*.</span>
+<span class="sd">    Therefore, it makes no sense to obtain a signal of length zero.</span>
+<span class="sd">    For instance, imagine a signal of 10 seconds sampled at 1Hz. If we query the value between 1.5 and 1.6s, no points</span>
+<span class="sd">    fall in this interval. However, the signal does have a value.</span>
+<span class="sd">    In this case, `pyrem` returns a signal of length 1 where the unique value is the value of the former neighbour.</span>
+
+<span class="sd">&gt;&gt;&gt; sig = pr.time_series.Signal([3,4,2,6,4,7,4,5,7,9], 10.0,)</span>
+<span class="sd">&gt;&gt;&gt; sig[&quot;0s&quot;:&quot;0.001s&quot;])</span>
+<span class="sd">&gt;&gt;&gt; sig[&quot;0s&quot;:&quot;0.011s&quot;])</span>
+
+<span class="sd">----------------------------</span>
+<span class="sd">Epoch iteration</span>
+<span class="sd">----------------------------</span>
+
+<span class="sd">A common task is to extract successive temporal slices (i.e. epochs) of a signal, for instance, in order to compute features.</span>
+<span class="sd">:func:`~pyrem.time_series.BiologicalTimeSeries.iter_window` iterator facilitates this.</span>
+
+
+<span class="sd">Let us work wit a one minute signal as an example:</span>
+
+<span class="sd">&gt;&gt;&gt; sig1m = sig[:&quot;1m&quot;]</span>
+
+<span class="sd">Get every 5 seconds of a the first minutes of a signal:</span>
+
+<span class="sd">&gt;&gt;&gt; for time, sub_signal in sig1m.iter_window(5,1.0):</span>
+<span class="sd">&gt;&gt;&gt;     print time, sub_signal.duration</span>
+
+<span class="sd">Get 10 second epochs, overlapping of 50% (5s):</span>
+
+<span class="sd">&gt;&gt;&gt; for time, sub_signal in sig1m.iter_window(10,0.5):</span>
+<span class="sd">&gt;&gt;&gt;     print time, sub_signal.duration</span>
+
+<span class="sd">Get 1 second epochs, skipping every other epoch</span>
+
+<span class="sd">&gt;&gt;&gt; for time, sub_signal in sig1m.iter_window(1,2.0):</span>
+<span class="sd">&gt;&gt;&gt;     print time, sub_signal.duration</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;quentin&#39;</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">joblib</span> <span class="kn">as</span> <span class="nn">pkl</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">scikits.samplerate</span> <span class="kn">import</span> <span class="n">resample</span>
+<span class="kn">from</span> <span class="nn">pyrem.utils</span> <span class="kn">import</span> <span class="n">str_to_time</span>
+
+
+
+<span class="k">def</span> <span class="nf">_normalise</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">mat</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+
+
+
+<div class="viewcode-block" id="BiologicalTimeSeries"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries">[docs]</a><span class="k">class</span> <span class="nc">BiologicalTimeSeries</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An abstract class for time series.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#dummy init for doc and editor</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param data: an one-d array like structure (typically, a :class:`~numpy.ndarray`)</span>
+<span class="sd">        :param fs: the sampling frequency</span>
+<span class="sd">        :type fs: float</span>
+<span class="sd">        :param type: the type of time series (e.g. &quot;eeg&quot;, &quot;temperature&quot;, &quot;blood_pH&quot;)</span>
+<span class="sd">        :type type: str</span>
+<span class="sd">        :param name: a unique name to identify a time series contained in a :class:`~pyrem.polygram.Polygram`</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        :param metadata:    a dictionary of additional information (e.g. experimental variables)</span>
+<span class="sd">        :type metadata: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+        <span class="c"># if len(obj.shape) != 1:</span>
+        <span class="c">#     raise ValueError(&quot;A Signal object can only be build from a 1D array&quot;)</span>
+
+        <span class="c"># add the new attribute to the created instance</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">__type</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">__fs</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">__metadata</span> <span class="o">=</span> <span class="n">metadata</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="n">name</span>
+
+        <span class="c"># Finally, we must return the newly created object:</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+
+    <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="n">new_state</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">new_state</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__type</span><span class="p">)</span>
+        <span class="n">new_state</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fs</span><span class="p">)</span>
+        <span class="n">new_state</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__metadata</span><span class="p">)</span>
+        <span class="n">new_state</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">)</span>
+        <span class="n">state</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_state</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">list_state</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="n">list_state</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__metadata</span> <span class="o">=</span> <span class="n">list_state</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fs</span> <span class="o">=</span> <span class="n">list_state</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__type</span> <span class="o">=</span> <span class="n">list_state</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">tuple</span><span class="p">(</span><span class="n">list_state</span><span class="p">))</span>
+    <span class="c">#</span>
+<div class="viewcode-block" id="BiologicalTimeSeries.save"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">compression_level</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Efficiently save a time series using joblib</span>
+
+<span class="sd">        :param filename: the output file name</span>
+<span class="sd">        :type filename: str</span>
+<span class="sd">        :param compression_level: an integer between 1 and 9. More is better, but slower. 5 is generally a good compromise</span>
+<span class="sd">        :type compression_level: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">pkl</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">compression_level</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__array_finalize__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="c"># see InfoArray.__array_finalize__ for comments</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&#39;type&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&#39;fs&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&#39;metadata&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__array_wrap__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_arr</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">__array_wrap__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_arr</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BiologicalTimeSeries.fs"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.fs">[docs]</a>    <span class="k">def</span> <span class="nf">fs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the sampling frequency of the time series</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fs</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BiologicalTimeSeries.type"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.type">[docs]</a>    <span class="k">def</span> <span class="nf">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the user-defined type of time series (e.g. &quot;eeg&quot; or &quot;ecg&quot;)</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__type</span>
+
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BiologicalTimeSeries.metadata"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.metadata">[docs]</a>    <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: a dictionary of metadata (i.e. information about data acquisition)</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__metadata</span>
+</div>
+<div class="viewcode-block" id="BiologicalTimeSeries.rename"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.rename">[docs]</a>    <span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rename the signal</span>
+
+<span class="sd">        :param name: the new name</span>
+<span class="sd">        :type name: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span>  <span class="n">name</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BiologicalTimeSeries.name"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The name of the signal. It is expected to be unique.</span>
+
+<span class="sd">        :return: the user-defined name for this signal</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__name</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BiologicalTimeSeries.duration"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.duration">[docs]</a>    <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the total duration of the time series</span>
+<span class="sd">        :rtype: datetime</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_from_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+<span class="c">#</span>
+</div>
+    <span class="k">def</span> <span class="nf">_idx_from_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="k">return</span>  <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_time_from_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="k">return</span>  <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+<span class="c">#</span>
+<div class="viewcode-block" id="BiologicalTimeSeries.copy"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deep copy a time series.</span>
+
+<span class="sd">        :return: A new time series with identical values and attributes</span>
+<span class="sd">        :rtype: :class:`~pyrem.time_series.BiologicalTimeSeries`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_attrs_to_array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_copy_attrs_to_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<div class="viewcode-block" id="BiologicalTimeSeries.resample"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.resample">[docs]</a>    <span class="k">def</span> <span class="nf">resample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_fs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Abstract method for resampling a time series (behaves differently according to the type of time series)</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            Because time series are digital (i.e. discrete) the resulting sampling rate is expected to be</span>
+<span class="sd">            slightly different from the target sampling rate.</span>
+
+<span class="sd">        :param new_fs: the target time series</span>
+<span class="sd">        :type new_fs: float</span>
+<span class="sd">        :return: a new :class:`~pyrem.time_series.BiologicalTimeSeries`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+
+            <span class="n">metadata</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;</span><span class="se">\t\t</span><span class="si">%s</span><span class="s">:</span><span class="se">\t</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\t\t</span><span class="s">None&quot;</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">+</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+               <span class="s">&quot;Name:</span><span class="se">\t</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+               <span class="s">&quot;Duration:</span><span class="se">\t</span><span class="si">%s</span><span class="s"> (HH:mm:ss)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">duration</span><span class="p">)),</span>
+               <span class="s">&quot;Sampling freq:</span><span class="se">\t</span><span class="si">%f</span><span class="s"> Hz&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span>
+               <span class="s">&quot;Type:</span><span class="se">\t</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">),</span>
+               <span class="s">&quot;N points:</span><span class="se">\t</span><span class="si">%i</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+               <span class="s">&quot;Metadata:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">metadata</span><span class="p">),</span>
+               <span class="p">]</span>
+
+        <span class="k">return</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_time_slice</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">key</span> <span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">:</span>
+            <span class="n">start_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">str_to_time</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+            <span class="n">start_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx_from_time</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">):</span>
+            <span class="n">start_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx_from_time</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">stop</span><span class="p">:</span>
+            <span class="n">stop_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">str_to_time</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+
+            <span class="n">stop_idx</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx_from_time</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">):</span>
+            <span class="n">stop_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx_from_time</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">start_idx</span> <span class="o">&gt;</span> <span class="n">stop_idx</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;The starting time(</span><span class="si">%s</span><span class="s">), MUST be before the end time(</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">start</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">stop</span><span class="p">)))</span>
+
+        <span class="c"># important detail: we never want an empty subchannel.</span>
+        <span class="c"># fixme it would be clever to implement this in the integer indexing engine as well...?</span>
+        <span class="k">if</span> <span class="n">start_idx</span> <span class="o">==</span> <span class="n">stop_idx</span><span class="p">:</span>
+            <span class="n">stop_idx</span> <span class="o">+=</span><span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span> <span class="n">stop_idx</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">key</span> <span class="p">)</span> <span class="p">:</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span> <span class="n">key</span><span class="p">,</span> <span class="nb">slice</span> <span class="p">):</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_time_slice</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BiologicalTimeSeries.iter_window"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.iter_window">[docs]</a>    <span class="k">def</span> <span class="nf">iter_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">lag</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Iterate through an array by successive (possibly overlapping) slices (i.e. epochs).</span>
+<span class="sd">        Conveniently, the central time ot the epoch is also returned.</span>
+
+<span class="sd">        :param lag: the ratio of overlap (1 = no overlap, 0 = completely overlapped, 2 = skip every other epoch)</span>
+<span class="sd">        :type lag: float</span>
+<span class="sd">        :param length: duration of the epochs (in second)</span>
+<span class="sd">        :type length: float</span>
+<span class="sd">        :return: (centre_of_window, :class:`~pyrem.time_series.BiologicalTimeSeries`)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">lag</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;lag has to be  greater than one&quot;</span><span class="p">)</span>
+
+        <span class="n">n_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">*</span> <span class="n">length</span><span class="p">)</span>
+
+
+        <span class="n">lag_in_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_points</span> <span class="o">*</span> <span class="n">lag</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">n_points</span><span class="p">,</span> <span class="n">lag_in_points</span><span class="p">):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">n_points</span><span class="p">]</span>
+            <span class="c">#onset = out._time_from_idx(i)</span>
+            <span class="n">centre</span> <span class="o">=</span> <span class="p">(</span> <span class="n">i</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+            <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="n">n_points</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="k">yield</span> <span class="n">centre</span> <span class="p">,</span> <span class="n">out</span>
+
+</div></div>
+<div class="viewcode-block" id="Signal"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.Signal">[docs]</a><span class="k">class</span> <span class="nc">Signal</span><span class="p">(</span><span class="n">BiologicalTimeSeries</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#dummry init for pycharm completion</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span><span class="n">data</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Data could not be understood as an array of float32&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;A Signal object can only be build from a 1D array&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">BiologicalTimeSeries</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_copy_attrs_to_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">dic</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;type&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+        <span class="s">&quot;fs&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+        <span class="s">&quot;metadata&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="s">&quot;name&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
+        <span class="n">dic</span> <span class="o">=</span>  <span class="nb">dict</span><span class="p">(</span><span class="n">dic</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="o">+</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">dic</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Signal.resample"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.Signal.resample">[docs]</a>    <span class="k">def</span> <span class="nf">resample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_fs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;sinc_best&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resample the signal. One implication of the signal being digital, is that the resulting sampling</span>
+<span class="sd">        frequency is not guaranteed to be exactly at `target_fs`.</span>
+<span class="sd">        This method wraps :func:`~samplerate.resample`</span>
+
+<span class="sd">        :param target_fs: The new sampling frequency</span>
+<span class="sd">        :type target_fs: float</span>
+<span class="sd">        :param mode: to be passed to :func:`~scikits.samplerate.resample`</span>
+<span class="sd">        :type mode: str</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># num = target_fs * self.size / self.fs</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="n">target_fs</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ratio</span><span class="p">,</span><span class="n">mode</span><span class="p">)</span>
+        <span class="n">real_fs</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_attrs_to_array</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">real_fs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+</div></div>
+<div class="viewcode-block" id="Annotation"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.Annotation">[docs]</a><span class="k">class</span> <span class="nc">Annotation</span><span class="p">(</span><span class="n">BiologicalTimeSeries</span><span class="p">):</span>
+
+    <span class="c"># dummy for doc and pycharm</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">observation_probabilities</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Annotations are time series of discrete values associated with a probability/confidence of observing this value.</span>
+<span class="sd">        :class:`~pyrem.time_series.BiologicalTimeSeries` indexing rules apply to them.</span>
+
+<span class="sd">        :param data: a vector representing different states.\</span>
+<span class="sd">            It should be a uint8 one-d array like structure (typically, a :class:`~numpy.ndarray`)</span>
+<span class="sd">        :param fs: the sampling frequency</span>
+<span class="sd">        :param observation_probabilities: an array of confidence/ probability of observation of the states.</span>
+<span class="sd">            it should be a one-d array-like of floats of length `len(data)`.</span>
+<span class="sd">            If `None`, confidence are assumed to be equal to one for all observations.</span>
+
+<span class="sd">        :type fs: float</span>
+<span class="sd">        :param kwargs: key word arguments to be passed to :class:`~pyrem.time_series.BiologicalTimeSeries`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span><span class="n">data</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">observation_probabilities</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">chars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;could not understand input as an array of uint8&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chars</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;An Annotation object can only be build from a 1D array&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">observation_probabilities</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">observation_probabilities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recarray</span><span class="p">((</span><span class="n">chars</span><span class="o">.</span><span class="n">size</span><span class="p">,),</span>
+                          <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s">&quot;values&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span> <span class="p">(</span><span class="s">&quot;probas&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)])</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">&quot;values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chars</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">&quot;probas&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">observation_probabilities</span>
+
+        <span class="k">return</span> <span class="n">BiologicalTimeSeries</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Annotation.resample"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.Annotation.resample">[docs]</a>    <span class="k">def</span> <span class="nf">resample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_fs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resample annotations to a new sampling frequency.</span>
+<span class="sd">        Values are resampled with nearest neighbour interpolation,</span>
+<span class="sd">        while associated probabilities are linearly interpolated.</span>
+
+<span class="sd">        :param target_fs: The target sampling frequency</span>
+<span class="sd">        :type target_fs: float</span>
+<span class="sd">        :return: a new  :class:`~pyrem.time_series.Annotation` object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span> <span class="c">#fixme</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Annotation.values"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.Annotation.values">[docs]</a>    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The values of each annotations.</span>
+
+<span class="sd">        :return: an array of :class:`~numpy.uint8`</span>
+<span class="sd">        :rtype: :class:`~numpy.ndarray`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="s">&quot;values&quot;</span><span class="p">]</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Annotation.probas"><a class="viewcode-back" href="../../pyrem.time_series.html#pyrem.time_series.Annotation.probas">[docs]</a>    <span class="k">def</span> <span class="nf">probas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The probabilities/confidences associated to the annotation values.</span>
+
+<span class="sd">        :return: an array of :class:`~numpy.float32`</span>
+<span class="sd">        :rtype: :class:`~numpy.ndarray`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="s">&quot;probas&quot;</span><span class="p">]</span>
+</div>
+    <span class="k">def</span> <span class="nf">_copy_attrs_to_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">dic</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;type&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+        <span class="s">&quot;fs&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+        <span class="s">&quot;metadata&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="s">&quot;name&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="s">&quot;observation_probabilities&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">probas</span><span class="p">}</span>
+        <span class="n">dic</span> <span class="o">=</span>  <span class="nb">dict</span><span class="p">(</span><span class="n">dic</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="o">+</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">dic</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyrem 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Quentin Geissmann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

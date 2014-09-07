@@ -1,0 +1,81 @@
+\indexentry{pyrem (module)|hyperpage}{1}
+\indexentry{pyrem.time\_series (module)|hyperpage}{3}
+\indexentry{Annotation (class in pyrem.time\_series)|hyperpage}{5}
+\indexentry{probas (pyrem.time\_series.Annotation attribute)|hyperpage}{5}
+\indexentry{resample() (pyrem.time\_series.Annotation method)|hyperpage}{5}
+\indexentry{values (pyrem.time\_series.Annotation attribute)|hyperpage}{5}
+\indexentry{BiologicalTimeSeries (class in pyrem.time\_series)|hyperpage}{5}
+\indexentry{copy() (pyrem.time\_series.BiologicalTimeSeries method)|hyperpage}{5}
+\indexentry{duration (pyrem.time\_series.BiologicalTimeSeries attribute)|hyperpage}{6}
+\indexentry{fs (pyrem.time\_series.BiologicalTimeSeries attribute)|hyperpage}{6}
+\indexentry{iter\_window() (pyrem.time\_series.BiologicalTimeSeries method)|hyperpage}{6}
+\indexentry{metadata (pyrem.time\_series.BiologicalTimeSeries attribute)|hyperpage}{6}
+\indexentry{name (pyrem.time\_series.BiologicalTimeSeries attribute)|hyperpage}{6}
+\indexentry{rename() (pyrem.time\_series.BiologicalTimeSeries method)|hyperpage}{6}
+\indexentry{resample() (pyrem.time\_series.BiologicalTimeSeries method)|hyperpage}{6}
+\indexentry{save() (pyrem.time\_series.BiologicalTimeSeries method)|hyperpage}{6}
+\indexentry{type (pyrem.time\_series.BiologicalTimeSeries attribute)|hyperpage}{7}
+\indexentry{Signal (class in pyrem.time\_series)|hyperpage}{7}
+\indexentry{resample() (pyrem.time\_series.Signal method)|hyperpage}{7}
+\indexentry{pyrem.polygram (module)|hyperpage}{7}
+\indexentry{Polygram (class in pyrem.polygram)|hyperpage}{9}
+\indexentry{annotation\_channels (pyrem.polygram.Polygram attribute)|hyperpage}{9}
+\indexentry{channel\_names (pyrem.polygram.Polygram attribute)|hyperpage}{9}
+\indexentry{channel\_types (pyrem.polygram.Polygram attribute)|hyperpage}{9}
+\indexentry{channels (pyrem.polygram.Polygram attribute)|hyperpage}{9}
+\indexentry{copy() (pyrem.polygram.Polygram method)|hyperpage}{9}
+\indexentry{duration (pyrem.polygram.Polygram attribute)|hyperpage}{10}
+\indexentry{iter\_window() (pyrem.polygram.Polygram method)|hyperpage}{10}
+\indexentry{map\_signal\_channels() (pyrem.polygram.Polygram method)|hyperpage}{10}
+\indexentry{merge() (pyrem.polygram.Polygram method)|hyperpage}{10}
+\indexentry{metadata (pyrem.polygram.Polygram attribute)|hyperpage}{10}
+\indexentry{n\_annotations (pyrem.polygram.Polygram attribute)|hyperpage}{10}
+\indexentry{n\_channels (pyrem.polygram.Polygram attribute)|hyperpage}{10}
+\indexentry{n\_signals (pyrem.polygram.Polygram attribute)|hyperpage}{10}
+\indexentry{save() (pyrem.polygram.Polygram method)|hyperpage}{10}
+\indexentry{show() (pyrem.polygram.Polygram method)|hyperpage}{11}
+\indexentry{signal\_channels (pyrem.polygram.Polygram attribute)|hyperpage}{11}
+\indexentry{pyrem.univariate (module)|hyperpage}{11}
+\indexentry{ap\_entropy() (in module pyrem.univariate)|hyperpage}{11}
+\indexentry{dfa() (in module pyrem.univariate)|hyperpage}{11}
+\indexentry{fisher\_info() (in module pyrem.univariate)|hyperpage}{11}
+\indexentry{hfd() (in module pyrem.univariate)|hyperpage}{12}
+\indexentry{hjorth() (in module pyrem.univariate)|hyperpage}{12}
+\indexentry{hurst() (in module pyrem.univariate)|hyperpage}{13}
+\indexentry{pfd() (in module pyrem.univariate)|hyperpage}{13}
+\indexentry{samp\_entropy() (in module pyrem.univariate)|hyperpage}{14}
+\indexentry{spectral\_entropy() (in module pyrem.univariate)|hyperpage}{14}
+\indexentry{svd\_entropy() (in module pyrem.univariate)|hyperpage}{15}
+\indexentry{pyrem.visualization (module)|hyperpage}{15}
+\indexentry{PolygramDisplay (class in pyrem.visualization)|hyperpage}{15}
+\indexentry{show() (pyrem.visualization.PolygramDisplay method)|hyperpage}{15}
+\indexentry{pyrem.wavelet\_decomposition (module)|hyperpage}{15}
+\indexentry{decompose\_signal() (in module pyrem.wavelet\_decomposition)|hyperpage}{15}
+\indexentry{pyrem.feature\_families (module)|hyperpage}{16}
+\indexentry{AbsoluteFeatures (class in pyrem.feature\_families)|hyperpage}{16}
+\indexentry{prefix (pyrem.feature\_families.AbsoluteFeatures attribute)|hyperpage}{16}
+\indexentry{AnnotationFeatureBase (class in pyrem.feature\_families)|hyperpage}{17}
+\indexentry{EntropyFeatures (class in pyrem.feature\_families)|hyperpage}{17}
+\indexentry{prefix (pyrem.feature\_families.EntropyFeatures attribute)|hyperpage}{17}
+\indexentry{FeatureFamilyBase (class in pyrem.feature\_families)|hyperpage}{17}
+\indexentry{make\_vector() (pyrem.feature\_families.FeatureFamilyBase method)|hyperpage}{17}
+\indexentry{prefix (pyrem.feature\_families.FeatureFamilyBase attribute)|hyperpage}{17}
+\indexentry{FractalFeatures (class in pyrem.feature\_families)|hyperpage}{17}
+\indexentry{prefix (pyrem.feature\_families.FractalFeatures attribute)|hyperpage}{17}
+\indexentry{HjorthFeatures (class in pyrem.feature\_families)|hyperpage}{17}
+\indexentry{prefix (pyrem.feature\_families.HjorthFeatures attribute)|hyperpage}{17}
+\indexentry{NonLinearFeatures (class in pyrem.feature\_families)|hyperpage}{17}
+\indexentry{prefix (pyrem.feature\_families.NonLinearFeatures attribute)|hyperpage}{17}
+\indexentry{PeriodogramFeatures (class in pyrem.feature\_families)|hyperpage}{17}
+\indexentry{prefix (pyrem.feature\_families.PeriodogramFeatures attribute)|hyperpage}{17}
+\indexentry{PowerFeatures (class in pyrem.feature\_families)|hyperpage}{17}
+\indexentry{prefix (pyrem.feature\_families.PowerFeatures attribute)|hyperpage}{17}
+\indexentry{SignalFeatureBase (class in pyrem.feature\_families)|hyperpage}{17}
+\indexentry{VigilState (class in pyrem.feature\_families)|hyperpage}{17}
+\indexentry{prefix (pyrem.feature\_families.VigilState attribute)|hyperpage}{17}
+\indexentry{pyrem.io (module)|hyperpage}{18}
+\indexentry{polygram\_from\_pkl() (in module pyrem.io)|hyperpage}{18}
+\indexentry{polygram\_from\_spike\_matlab\_file() (in module pyrem.io)|hyperpage}{18}
+\indexentry{signal\_from\_pkl() (in module pyrem.io)|hyperpage}{18}
+\indexentry{pyrem.utils (module)|hyperpage}{18}
+\indexentry{str\_to\_time() (in module pyrem.utils)|hyperpage}{18}

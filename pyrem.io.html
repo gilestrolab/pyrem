@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyrem.io module &mdash; pyrem 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyrem 1.0 documentation" href="index.html" />
+    <link rel="next" title="pyrem.utils module" href="pyrem.utils.html" />
+    <link rel="prev" title="pyrem.feature_families module" href="pyrem.feature_families.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyrem.utils.html" title="pyrem.utils module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyrem.feature_families.html" title="pyrem.feature_families module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyrem 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyrem.feature_families.html"
+                        title="previous chapter">pyrem.feature_families module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyrem.utils.html"
+                        title="next chapter">pyrem.utils module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pyrem.io.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pyrem.io">
+<span id="pyrem-io-module"></span><h1>pyrem.io module<a class="headerlink" href="#module-pyrem.io" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pyrem.io.polygram_from_pkl">
+<tt class="descclassname">pyrem.io.</tt><tt class="descname">polygram_from_pkl</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/pyrem/io.html#polygram_from_pkl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.io.polygram_from_pkl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pyrem.io.polygram_from_spike_matlab_file">
+<tt class="descclassname">pyrem.io.</tt><tt class="descname">polygram_from_spike_matlab_file</tt><big>(</big><em>signal_filename</em>, <em>annotation_filename</em>, <em>fs</em>, <em>annotation_fs</em>, <em>channel_names</em>, <em>channel_types</em>, <em>doubt_chars</em>, <em>resample_signals</em>, <em>metadata={}</em><big>)</big><a class="reference internal" href="_modules/pyrem/io.html#polygram_from_spike_matlab_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.io.polygram_from_spike_matlab_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function loads a matlab file exported by spike to
+as a polygraph.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>signal_filename</strong> &#8211; the matlab file name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a polygram</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyrem.io.signal_from_pkl">
+<tt class="descclassname">pyrem.io.</tt><tt class="descname">signal_from_pkl</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/pyrem/io.html#signal_from_pkl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.io.signal_from_pkl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyrem.utils.html" title="pyrem.utils module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyrem.feature_families.html" title="pyrem.feature_families module"
+             >previous</a> |</li>
+        <li><a href="index.html">pyrem 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Quentin Geissmann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

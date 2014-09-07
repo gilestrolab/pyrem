@@ -1,0 +1,544 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyrem.polygram &mdash; pyrem 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyrem 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyrem 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyrem.polygram</h1><div class="highlight"><pre>
+<span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">===========================</span>
+<span class="sd">Polygram</span>
+<span class="sd">===========================</span>
+
+
+<span class="sd">This module provides :class:`~pyrem.polygram.Polygram`; a container for biological time series</span>
+<span class="sd">such as :class:`~pyrem.time_series.Signal` and :class:`~pyrem.time_series.Annotation`.</span>
+<span class="sd">In this respect, it is inspired from pandas :class:`~pandas.TimeSeries` and :class:`~pandas.DataFrame`.</span>
+<span class="sd">You can think about it as a dataframe where each column is a signal, or an annotation, and each row a time point.</span>
+
+<span class="sd">The originality of :`~pyrem.polygram.Polygram` is to be able to deal with **heterogeneous (between signals) sampling rates**.</span>
+<span class="sd">It contains time series with the same approximate duration, but different number of points.</span>
+<span class="sd">This is typical when dealing with physiological time series because different variable will be</span>
+<span class="sd">recorded at different sampling rates (see for instance, the [EDF]_ data format).</span>
+<span class="sd">Another situation it which this could  be useful, is when performing a wavelet decomposition of a signal.</span>
+<span class="sd">Indeed, one would obtain a set of time series (coefficients) of the same duration, but with different sampling rates (i.e. :math:`fs_{D_N} = 2fs_{D_{N+1}}`).</span>
+
+<span class="sd">Systematically resampling signals, and annotations, to the maximal sampling rate is not  trivial, and would impact</span>
+<span class="sd">significantly computational efficiency.</span>
+
+
+<span class="sd">.. [EDF] B. Kemp and J. Olivan, &quot;European data format &#39;plus&#39; (EDF+), an EDF alike standard format for the exchange of physiological data,&quot;</span>
+<span class="sd">        Clinical Neurophysiology, vol. 114, no. 9, pp. 1755-1761, Sep. 2003.</span>
+
+
+
+<span class="sd">----------------------------</span>
+<span class="sd">Constructing a Polygram</span>
+<span class="sd">----------------------------</span>
+
+<span class="sd">First, let us create a couple of :class:`~pyrem.time_series.BiolgicalTimeSeries`:</span>
+
+<span class="sd">&gt;&gt;&gt; import numpy as np</span>
+<span class="sd">&gt;&gt;&gt; from pyrem.time_series import Annotation, Signal</span>
+<span class="sd">&gt;&gt;&gt; from pyrem.polygram import Polygram</span>
+<span class="sd">&gt;&gt;&gt;</span>
+<span class="sd">&gt;&gt;&gt; # create an Annotation with 1000 random values, sampled at 1.0Hz</span>
+<span class="sd">&gt;&gt;&gt; probs = np.random.random_sample(1000)</span>
+<span class="sd">&gt;&gt;&gt; vals = (np.random.random_sample(1000) * 4 +1).astype(np.int)</span>
+<span class="sd">&gt;&gt;&gt; annot = Annotation(vals,fs=1.0, observation_probabilities=probs, type=&quot;vigilance_state&quot;, name=&quot;state&quot;)</span>
+<span class="sd">&gt;&gt;&gt;</span>
+<span class="sd">&gt;&gt;&gt; # now a random walk signal of 100000 points at 100.0Hz</span>
+<span class="sd">&gt;&gt;&gt; rw = np.cumsum(np.random.normal(0,1,100000))</span>
+<span class="sd">&gt;&gt;&gt; sig = Signal(rw, fs=100.0,type=&quot;eeg&quot;, name=&quot;eeg1&quot;)</span>
+<span class="sd">&gt;&gt;&gt;</span>
+<span class="sd">&gt;&gt;&gt; # Once we have our time series, we can just do:</span>
+<span class="sd">&gt;&gt;&gt; pol = Polygram([annot, sig])</span>
+<span class="sd">&gt;&gt;&gt; #printing the object shows the characteristic of each channels</span>
+<span class="sd">&gt;&gt;&gt; pol</span>
+<span class="sd">Polygram</span>
+<span class="sd">-----</span>
+<span class="sd">Duration:	0:16:40 (HH:mm:ss)</span>
+<span class="sd">N signals:	1</span>
+<span class="sd">N annotations:	1</span>
+<span class="sd">Metadata:</span>
+<span class="sd">		None</span>
+<span class="sd">----</span>
+<span class="sd">Channel information:</span>
+<span class="sd">    Name             Type fs(Hz) Duration</span>
+<span class="sd">0   eeg1              eeg  100.0  0:16:40</span>
+<span class="sd">1  state  vigilance_state    1.0  0:16:40</span>
+
+<span class="sd">.. note ::</span>
+<span class="sd">    **Slightly different durations are allowed**</span>
+
+<span class="sd">    The constructor will raise an error if the provided channels do not have the same duration:</span>
+
+<span class="sd">    &gt;&gt;&gt; Polygram([annot[:&quot;11m&quot;], sig[:&quot;10m&quot;]])</span>
+<span class="sd">    ValueError</span>
+<span class="sd">    &#39;Channels must have approximately the same length.</span>
+<span class="sd">    The durations of the input channels are:[&#39;0:10:00&#39;, &#39;0:11:00&#39;]&#39;</span>
+
+<span class="sd">    However, in practice, it is almost impossible to obtain discrete signal of the exact same duration.</span>
+<span class="sd">    Imagine, for instance that you have a first signal of 14 points at 3Hz (~ 4.667s), and a second signal of 5 points at 1Hz (5.0s).</span>
+<span class="sd">    In this case, it is impossible to have exactly 14/3s of signal form a 1Hz signal.</span>
+<span class="sd">    This could be represented by:</span>
+
+<span class="sd">    &gt;&gt;&gt; 0123456789abcd-   #  3Hz =&gt; one symbol/point</span>
+<span class="sd">    &gt;&gt;&gt; AAABBBCCCDDDEEE   # 1Hz =&gt; one LETTER/point</span>
+<span class="sd">    &gt;&gt;&gt; AAABBBCCCDDD---   # 1Hz =&gt; one LETTER/point</span>
+
+<span class="sd">    Here, neither the second nor the third signal match, exactly, the duration of the first, but bot are approximately the same duration as the first.</span>
+
+<span class="sd">    **A Polygram will tolerate this sort of mismatch if and only if all pairs of channels are within one period of the time series  with the channel longest period.**</span>
+
+
+
+<span class="sd">------------------</span>
+<span class="sd">Accessing channels</span>
+<span class="sd">------------------</span>
+<span class="sd">Often, you will want to extract a channel by name:</span>
+
+<span class="sd">&gt;&gt;&gt; pol.channel_names</span>
+<span class="sd">[&#39;eeg1&#39;, &#39;state&#39;]</span>
+<span class="sd">&gt;&gt;&gt; pol[&#39;eeg1&#39;]</span>
+<span class="sd">Signal</span>
+<span class="sd">----</span>
+<span class="sd">Name:	eeg1</span>
+<span class="sd">Duration:	0:16:40 (HH:mm:ss)</span>
+<span class="sd">Sampling freq:	100.000000 Hz</span>
+<span class="sd">Type:	eeg</span>
+<span class="sd">N points:	100000</span>
+<span class="sd">Metadata:</span>
+<span class="sd">		None</span>
+
+<span class="sd">&gt;&gt;&gt; # this is equivalent to</span>
+<span class="sd">&gt;&gt;&gt; pol[0]</span>
+
+<span class="sd">You can also iterate through channels:</span>
+
+<span class="sd">&gt;&gt;&gt; [c.size for c in pol.channels]</span>
+<span class="sd">[100000, 1000]</span>
+
+<span class="sd">----------------------------</span>
+<span class="sd">With strings and time-deltas</span>
+<span class="sd">----------------------------</span>
+
+<span class="sd">Because time series are potentially at different sampling rates, it makes no sense to index a polygram by range of integers:</span>
+
+<span class="sd">&gt;&gt;&gt; #does NOT work</span>
+<span class="sd">&gt;&gt;&gt; # pol[10:20]</span>
+
+<span class="sd">Instead, time string and :class:`datetime.timedelta` can be used for extracting a sub_polygram:</span>
+
+<span class="sd">&gt;&gt;&gt; pol[&quot;1m&quot;:&quot;2m&quot;]</span>
+
+<span class="sd">Indexing rules are similar to :mod:`~pyrem.time_series`</span>
+
+<span class="sd">.. note ::</span>
+<span class="sd">    **Indexing does NOT deep copy**</span>
+
+<span class="sd">    When getting an epoch (temporal slice), of a polygram, the channel in the new polygram are *views* to the underlying data of the original channel.</span>
+<span class="sd">    Like for numpy arrays, *modifying the data in a sub-polygram will modify the parent polygram*. To avoid this behaviour, one can call :func:`~pyrem.polygram.Polygram.copy`</span>
+
+<span class="sd">----------------------------</span>
+<span class="sd">Epoch iteration</span>
+<span class="sd">----------------------------</span>
+
+<span class="sd">If you want to extract features for each epoch and each channel, you may want to use th</span>
+<span class="sd">:func:`~pyrem.polygram.Polygram.iter_window` iterator.</span>
+<span class="sd">It works like the :func:`~pyrem.time_series.BiologicalTimeSeries.iter_window`</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;quentin&#39;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">joblib</span> <span class="kn">as</span> <span class="nn">pkl</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">pyrem.time_series</span> <span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">Annotation</span>
+<span class="kn">from</span> <span class="nn">pyrem.visualization</span> <span class="kn">import</span> <span class="n">PolygramDisplay</span>
+
+
+<div class="viewcode-block" id="Polygram"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram">[docs]</a><span class="k">class</span> <span class="nc">Polygram</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param channels: a list of time series with approximately the same duration</span>
+<span class="sd">        :type channels: list(:class:`~pyrem.time_series.BiolgicalTimeSeries`)</span>
+<span class="sd">        :param metadata:    a dictionary of additional information (e.g. experimental variables)</span>
+<span class="sd">        :type metadata: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="n">annotations_channels</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">channels</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">)]</span>
+        <span class="n">signal_channels</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">channels</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">Signal</span><span class="p">)]</span>
+
+        <span class="n">annotations_channels</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">annotations_channels</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">signal_channels</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">signal_channels</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_channels</span> <span class="o">=</span> <span class="n">signal_channels</span> <span class="o">+</span> <span class="n">annotations_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="o">=</span> <span class="n">metadata</span>
+
+        <span class="n">durations</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">duration</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">]</span>
+
+        <span class="n">max_duration</span> <span class="o">=</span>  <span class="nb">max</span><span class="p">(</span><span class="n">durations</span><span class="p">)</span>
+        <span class="n">fs_max_duration</span> <span class="o">=</span>  <span class="n">channels</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">durations</span><span class="p">)]</span><span class="o">.</span><span class="n">fs</span>
+
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_duration</span><span class="p">(</span> <span class="n">max_duration</span><span class="p">,</span> <span class="n">fs_max_duration</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">duration</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">fs</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Channels must have approximately the same length.&quot;</span>
+                                 <span class="s">&quot;</span><span class="se">\n</span><span class="s">The durations of the input channels are:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="p">])))</span>
+
+        <span class="n">duplicate_names</span>  <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">duplicate_names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Channels CANNOT have the same name. Duplicated names:</span><span class="se">\n</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">duplicate_names</span><span class="p">))))</span>
+
+
+    <span class="k">def</span> <span class="nf">_test_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_duration</span><span class="p">,</span> <span class="n">fs_max_duration</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">fs</span><span class="p">):</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">max_duration</span> <span class="o">-</span> <span class="n">duration</span>
+        <span class="n">smallest_fs</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">fs_max_duration</span><span class="p">,</span> <span class="n">fs</span><span class="p">])</span>
+        <span class="n">longest_period</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">smallest_fs</span>
+
+        <span class="k">if</span> <span class="n">delta</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">longest_period</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="Polygram.copy"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deep copy of an Polygram</span>
+
+<span class="sd">        :return: a new Polygram with the same values</span>
+<span class="sd">        :rtype: :class:`~pyrem.polygram.Polygram`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_channels</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">Polygram</span><span class="p">(</span><span class="n">new_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Polygram.save"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">compression_level</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Efficiently save a Polygram using joblib</span>
+
+<span class="sd">        :param filename: the output file name</span>
+<span class="sd">        :type filename: str</span>
+<span class="sd">        :param compression_level: an integer between 1 and 9. More is better, but slower. 5 is generally a good compromise</span>
+<span class="sd">        :type compression_level: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pkl</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">compression_level</span><span class="p">)</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_get_time_slice</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">key</span> <span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">channel_views</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">:</span> <span class="n">key</span><span class="o">.</span><span class="n">stop</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">Polygram</span><span class="p">(</span><span class="n">channel_views</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">key</span> <span class="p">)</span> <span class="p">:</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span> <span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span> <span class="n">key</span><span class="p">,</span> <span class="nb">set</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Polygram</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">__getitem__</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">key</span><span class="p">],</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span> <span class="n">key</span><span class="p">,</span> <span class="nb">slice</span> <span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_time_slice</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span> <span class="n">key</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span> <span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;`</span><span class="si">%s</span><span class="s">&#39; is not a valid channel names.</span><span class="se">\n</span><span class="s">Channel names are:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span>
+                                 <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">key</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+<div class="viewcode-block" id="Polygram.merge"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">trim_channel</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds channels from a polygram to another polygram, or append a time series to a polygram</span>
+
+<span class="sd">        :param obj: either a polygram or a time series to be added</span>
+<span class="sd">        :type obj:  :class:`~pyrem.polygram.Polygram` or :class:`~pyrem.time_series.BiologicalTimeSeries`</span>
+<span class="sd">        :param trim_channel: whether the new channel(s), if they have a longer duration, would be shortened to match the existing polygram.</span>
+<span class="sd">        :type trim_channel: bool</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">:</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">out</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Polygram</span><span class="p">):</span>
+            <span class="k">print</span> <span class="n">obj</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">print</span> <span class="s">&quot;!!!!&quot;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">duration</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">out</span>
+
+        <span class="n">channel</span>  <span class="o">=</span> <span class="n">obj</span>
+        <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">duration</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">trim_channel</span><span class="p">):</span>
+            <span class="n">appended_channel</span> <span class="o">=</span> <span class="n">channel</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">appended_channel</span> <span class="o">=</span> <span class="n">channel</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">duration</span><span class="p">]</span>
+
+        <span class="n">new_channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_channels</span> <span class="o">+</span> <span class="p">[</span><span class="n">appended_channel</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">Polygram</span><span class="p">(</span><span class="n">new_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Polygram.iter_window"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.iter_window">[docs]</a>    <span class="k">def</span> <span class="nf">iter_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">lag</span><span class="p">):</span>
+    <span class="c">#     &quot;&quot;&quot;</span>
+    <span class="c">#     Iterate through an array by successive overlapping slices.</span>
+    <span class="c">#     Also returns the center of the slice</span>
+    <span class="c">#</span>
+    <span class="c">#     :param lag: the ratio of overlap (1= no overlap, 0= completely overlapped)</span>
+    <span class="c">#     :param length:of the epoch (in second)</span>
+    <span class="c">#     :return: (centre_of_window, sub_signal)</span>
+    <span class="c">#     &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">lag</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;lag has to be  greater than one&quot;</span><span class="p">)</span>
+
+        <span class="n">min_duration</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span> <span class="n">c</span><span class="o">.</span><span class="n">duration</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">])</span>
+        <span class="n">length_td</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">length</span>  <span class="o">*</span> <span class="n">lag</span><span class="p">)</span>
+        <span class="n">lag_td</span> <span class="o">=</span> <span class="n">length_td</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">()</span>
+
+        <span class="k">while</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">min_duration</span> <span class="o">-</span> <span class="n">length_td</span><span class="p">):</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">length_td</span>
+            <span class="n">center</span> <span class="o">=</span> <span class="p">((</span><span class="n">stop</span> <span class="o">+</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+            <span class="k">yield</span> <span class="n">center</span><span class="p">,</span> <span class="n">Polygram</span><span class="p">([</span><span class="n">c</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">+=</span> <span class="n">lag_td</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;</span><span class="se">\t\t</span><span class="si">%s</span><span class="s">:</span><span class="se">\t</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\t\t</span><span class="s">None&quot;</span>
+
+
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">+</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+               <span class="s">&quot;Duration:</span><span class="se">\t</span><span class="si">%s</span><span class="s"> (HH:mm:ss)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">duration</span><span class="p">)),</span>
+               <span class="s">&quot;N signals:</span><span class="se">\t</span><span class="si">%i</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_signals</span><span class="p">),</span>
+               <span class="s">&quot;N annotations:</span><span class="se">\t</span><span class="si">%i</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_annotations</span><span class="p">),</span>
+               <span class="s">&quot;Metadata:</span><span class="se">\n</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">metadata</span><span class="p">),</span>
+               <span class="p">]</span>
+
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Name&quot;</span><span class="p">,</span> <span class="s">&quot;Type&quot;</span><span class="p">,</span> <span class="s">&quot;fs(Hz)&quot;</span><span class="p">,</span> <span class="s">&quot;Duration&quot;</span><span class="p">]</span>
+        <span class="n">detail</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">duration</span><span class="p">]</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">row</span><span class="p">]</span>
+            <span class="n">detail</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+        <span class="n">detail</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">detail</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">detail</span><span class="p">))]))</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">Channel information:</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">+</span> <span class="n">detail</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<div class="viewcode-block" id="Polygram.show"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Interactively displays a polygram using matplotlib. **Very urresponsive and prototypical at the minute**</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">PolygramDisplay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Polygram.channels"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.channels">[docs]</a>    <span class="k">def</span> <span class="nf">channels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An iterator through the all the channels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">c</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Polygram.signal_channels"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.signal_channels">[docs]</a>    <span class="k">def</span> <span class="nf">signal_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An iterator through the all the *signal* channels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">Signal</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">c</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Polygram.annotation_channels"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.annotation_channels">[docs]</a>    <span class="k">def</span> <span class="nf">annotation_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        An iterator through the all the *annotation* channels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">Annotation</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">c</span>
+</div>
+<div class="viewcode-block" id="Polygram.map_signal_channels"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.map_signal_channels">[docs]</a>    <span class="k">def</span> <span class="nf">map_signal_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fun</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies a function to all signal channels and returns a new Polygram with modified channels</span>
+
+<span class="sd">        An example of how to normalise all signal channels</span>
+
+<span class="sd">        &gt;&gt;&gt; pol_norm =  pol.map_signal_channels(</span>
+<span class="sd">        &gt;&gt;&gt;         lambda x: (x - np.mean(x))/np.std(x))</span>
+<span class="sd">        &gt;&gt;&gt; np.mean(pol[0])</span>
+<span class="sd">        &gt;&gt;&gt; np.mean(pol_norm[0])</span>
+
+
+<span class="sd">        :param fun: a function to be applied</span>
+<span class="sd">        :type fun: callable</span>
+<span class="sd">        :return: a new polygram</span>
+<span class="sd">        :rtype:  :class:`~pyrem.polygram.Polygram`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">fun</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;fun must be a function!&quot;</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">_channels</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">Signal</span><span class="p">):</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">_channels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">fun</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Polygram.n_channels"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.n_channels">[docs]</a>    <span class="k">def</span> <span class="nf">n_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: The total number of channels</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_channels</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Polygram.n_signals"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.n_signals">[docs]</a>    <span class="k">def</span> <span class="nf">n_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: The total number of *signal* channels</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">([</span><span class="n">_</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_channels</span><span class="p">])</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Polygram.n_annotations"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.n_annotations">[docs]</a>    <span class="k">def</span> <span class="nf">n_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: The total number of *annotation* channels</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">([</span><span class="n">_</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotation_channels</span><span class="p">])</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Polygram.metadata"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.metadata">[docs]</a>    <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the metadata of this polygram</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Polygram.channel_names"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.channel_names">[docs]</a>    <span class="k">def</span> <span class="nf">channel_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: The list of channel names</span>
+<span class="sd">        :rtype: list(str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">]</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Polygram.channel_types"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.channel_types">[docs]</a>    <span class="k">def</span> <span class="nf">channel_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the types of all channels</span>
+<span class="sd">        :rtype: list(str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">type</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">]</span></div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Polygram.duration"><a class="viewcode-back" href="../../pyrem.polygram.html#pyrem.polygram.Polygram.duration">[docs]</a>    <span class="k">def</span> <span class="nf">duration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: The duration total of the polygram. That is the duration of the channel with the longest duration</span>
+<span class="sd">        :rtype: :class:`datetime.timedelta`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">duration</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">])</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyrem 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Quentin Geissmann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

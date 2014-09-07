@@ -1,0 +1,491 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyrem.polygram module &mdash; pyrem 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyrem 1.0 documentation" href="index.html" />
+    <link rel="next" title="pyrem.univariate module" href="pyrem.univariate.html" />
+    <link rel="prev" title="pyrem.time_series module" href="pyrem.time_series.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyrem.univariate.html" title="pyrem.univariate module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyrem.time_series.html" title="pyrem.time_series module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyrem 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pyrem.polygram module</a><ul>
+<li><a class="reference internal" href="#polygram">Polygram</a><ul>
+<li><a class="reference internal" href="#constructing-a-polygram">Constructing a Polygram</a></li>
+<li><a class="reference internal" href="#accessing-channels">Accessing channels</a></li>
+<li><a class="reference internal" href="#with-strings-and-time-deltas">With strings and time-deltas</a></li>
+<li><a class="reference internal" href="#epoch-iteration">Epoch iteration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyrem.time_series.html"
+                        title="previous chapter">pyrem.time_series module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyrem.univariate.html"
+                        title="next chapter">pyrem.univariate module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pyrem.polygram.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pyrem.polygram">
+<span id="pyrem-polygram-module"></span><h1>pyrem.polygram module<a class="headerlink" href="#module-pyrem.polygram" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="polygram">
+<h2>Polygram<a class="headerlink" href="#polygram" title="Permalink to this headline">¶</a></h2>
+<p>This module provides <a class="reference internal" href="#pyrem.polygram.Polygram" title="pyrem.polygram.Polygram"><tt class="xref py py-class docutils literal"><span class="pre">Polygram</span></tt></a>; a container for biological time series
+such as <a class="reference internal" href="pyrem.time_series.html#pyrem.time_series.Signal" title="pyrem.time_series.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> and <a class="reference internal" href="pyrem.time_series.html#pyrem.time_series.Annotation" title="pyrem.time_series.Annotation"><tt class="xref py py-class docutils literal"><span class="pre">Annotation</span></tt></a>.
+In this respect, it is inspired from pandas <tt class="xref py py-class docutils literal"><span class="pre">TimeSeries</span></tt> and <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.14.1)"><tt class="xref py py-class docutils literal"><span class="pre">DataFrame</span></tt></a>.
+You can think about it as a dataframe where each column is a signal, or an annotation, and each row a time point.</p>
+<p>The originality of :<cite>~pyrem.polygram.Polygram</cite> is to be able to deal with <strong>heterogeneous (between signals) sampling rates</strong>.
+It contains time series with the same approximate duration, but different number of points.
+This is typical when dealing with physiological time series because different variable will be
+recorded at different sampling rates (see for instance, the <a class="reference internal" href="#edf" id="id1">[EDF]</a> data format).
+Another situation it which this could  be useful, is when performing a wavelet decomposition of a signal.
+Indeed, one would obtain a set of time series (coefficients) of the same duration, but with different sampling rates (i.e. <span class="math">\(fs_{D_N} = 2fs_{D_{N+1}}\)</span>).</p>
+<p>Systematically resampling signals, and annotations, to the maximal sampling rate is not  trivial, and would impact
+significantly computational efficiency.</p>
+<table class="docutils citation" frame="void" id="edf" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[EDF]</a></td><td>B. Kemp and J. Olivan, &#8220;European data format &#8216;plus&#8217; (EDF+), an EDF alike standard format for the exchange of physiological data,&#8221;
+Clinical Neurophysiology, vol. 114, no. 9, pp. 1755-1761, Sep. 2003.</td></tr>
+</tbody>
+</table>
+<div class="section" id="constructing-a-polygram">
+<h3>Constructing a Polygram<a class="headerlink" href="#constructing-a-polygram" title="Permalink to this headline">¶</a></h3>
+<p>First, let us create a couple of <tt class="xref py py-class docutils literal"><span class="pre">BiolgicalTimeSeries</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyrem.time_series</span> <span class="kn">import</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">Signal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyrem.polygram</span> <span class="kn">import</span> <span class="n">Polygram</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># create an Annotation with 1000 random values, sampled at 1.0Hz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random_sample</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random_sample</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">annot</span> <span class="o">=</span> <span class="n">Annotation</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span><span class="n">fs</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">observation_probabilities</span><span class="o">=</span><span class="n">probs</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s">&quot;vigilance_state&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;state&quot;</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># now a random walk signal of 100000 points at 100.0Hz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">100000</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">rw</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s">&quot;eeg&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;eeg1&quot;</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Once we have our time series, we can just do:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pol</span> <span class="o">=</span> <span class="n">Polygram</span><span class="p">([</span><span class="n">annot</span><span class="p">,</span> <span class="n">sig</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">#printing the object shows the characteristic of each channels</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pol</span>
+<span class="go">Polygram</span>
+<span class="go">-----</span>
+<span class="go">Duration:       0:16:40 (HH:mm:ss)</span>
+<span class="go">N signals:      1</span>
+<span class="go">N annotations:  1</span>
+<span class="go">Metadata:</span>
+<span class="go">                None</span>
+<span class="go">----</span>
+<span class="go">Channel information:</span>
+<span class="go">    Name             Type fs(Hz) Duration</span>
+<span class="go">0   eeg1              eeg  100.0  0:16:40</span>
+<span class="go">1  state  vigilance_state    1.0  0:16:40</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>Slightly different durations are allowed</strong></p>
+<p>The constructor will raise an error if the provided channels do not have the same duration:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">Polygram</span><span class="p">([</span><span class="n">annot</span><span class="p">[:</span><span class="s">&quot;11m&quot;</span><span class="p">],</span> <span class="n">sig</span><span class="p">[:</span><span class="s">&quot;10m&quot;</span><span class="p">]])</span>
+<span class="go">ValueError</span>
+<span class="go">&#39;Channels must have approximately the same length.</span>
+<span class="go">The durations of the input channels are:[&#39;0:10:00&#39;, &#39;0:11:00&#39;]&#39;</span>
+</pre></div>
+</div>
+<p>However, in practice, it is almost impossible to obtain discrete signal of the exact same duration.
+Imagine, for instance that you have a first signal of 14 points at 3Hz (~ 4.667s), and a second signal of 5 points at 1Hz (5.0s).
+In this case, it is impossible to have exactly 14/3s of signal form a 1Hz signal.
+This could be represented by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="mo">01234567</span><span class="mi">89</span><span class="n">abcd</span><span class="o">-</span>   <span class="c">#  3Hz =&gt; one symbol/point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AAABBBCCCDDDEEE</span>   <span class="c"># 1Hz =&gt; one LETTER/point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AAABBBCCCDDD</span><span class="o">---</span>   <span class="c"># 1Hz =&gt; one LETTER/point</span>
+</pre></div>
+</div>
+<p>Here, neither the second nor the third signal match, exactly, the duration of the first, but bot are approximately the same duration as the first.</p>
+<p class="last"><strong>A Polygram will tolerate this sort of mismatch if and only if all pairs of channels are within one period of the time series  with the channel longest period.</strong></p>
+</div>
+</div>
+<div class="section" id="accessing-channels">
+<h3>Accessing channels<a class="headerlink" href="#accessing-channels" title="Permalink to this headline">¶</a></h3>
+<p>Often, you will want to extract a channel by name:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pol</span><span class="o">.</span><span class="n">channel_names</span>
+<span class="go">[&#39;eeg1&#39;, &#39;state&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pol</span><span class="p">[</span><span class="s">&#39;eeg1&#39;</span><span class="p">]</span>
+<span class="go">Signal</span>
+<span class="go">----</span>
+<span class="go">Name:   eeg1</span>
+<span class="go">Duration:       0:16:40 (HH:mm:ss)</span>
+<span class="go">Sampling freq:  100.000000 Hz</span>
+<span class="go">Type:   eeg</span>
+<span class="go">N points:       100000</span>
+<span class="go">Metadata:</span>
+<span class="go">                None</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># this is equivalent to</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pol</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>You can also iterate through channels:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">pol</span><span class="o">.</span><span class="n">channels</span><span class="p">]</span>
+<span class="go">[100000, 1000]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="with-strings-and-time-deltas">
+<h3>With strings and time-deltas<a class="headerlink" href="#with-strings-and-time-deltas" title="Permalink to this headline">¶</a></h3>
+<p>Because time series are potentially at different sampling rates, it makes no sense to index a polygram by range of integers:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c">#does NOT work</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># pol[10:20]</span>
+</pre></div>
+</div>
+<p>Instead, time string and <a class="reference external" href="http://docs.python.org/2.7/library/datetime.html#datetime.timedelta" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">datetime.timedelta</span></tt></a> can be used for extracting a sub_polygram:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pol</span><span class="p">[</span><span class="s">&quot;1m&quot;</span><span class="p">:</span><span class="s">&quot;2m&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Indexing rules are similar to <a class="reference internal" href="pyrem.time_series.html#module-pyrem.time_series" title="pyrem.time_series"><tt class="xref py py-mod docutils literal"><span class="pre">time_series</span></tt></a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>Indexing does NOT deep copy</strong></p>
+<p class="last">When getting an epoch (temporal slice), of a polygram, the channel in the new polygram are <em>views</em> to the underlying data of the original channel.
+Like for numpy arrays, <em>modifying the data in a sub-polygram will modify the parent polygram</em>. To avoid this behaviour, one can call <a class="reference internal" href="#pyrem.polygram.Polygram.copy" title="pyrem.polygram.Polygram.copy"><tt class="xref py py-func docutils literal"><span class="pre">copy()</span></tt></a></p>
+</div>
+</div>
+<div class="section" id="epoch-iteration">
+<h3>Epoch iteration<a class="headerlink" href="#epoch-iteration" title="Permalink to this headline">¶</a></h3>
+<p>If you want to extract features for each epoch and each channel, you may want to use th
+<a class="reference internal" href="#pyrem.polygram.Polygram.iter_window" title="pyrem.polygram.Polygram.iter_window"><tt class="xref py py-func docutils literal"><span class="pre">iter_window()</span></tt></a> iterator.
+It works like the <a class="reference internal" href="pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries.iter_window" title="pyrem.time_series.BiologicalTimeSeries.iter_window"><tt class="xref py py-func docutils literal"><span class="pre">iter_window()</span></tt></a></p>
+<dl class="class">
+<dt id="pyrem.polygram.Polygram">
+<em class="property">class </em><tt class="descclassname">pyrem.polygram.</tt><tt class="descname">Polygram</tt><big>(</big><em>channels</em>, <em>metadata=None</em><big>)</big><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>channels</strong> (list(<tt class="xref py py-class docutils literal"><span class="pre">BiolgicalTimeSeries</span></tt>)) &#8211; a list of time series with approximately the same duration</li>
+<li><strong>metadata</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; a dictionary of additional information (e.g. experimental variables)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="pyrem.polygram.Polygram.annotation_channels">
+<tt class="descname">annotation_channels</tt><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.annotation_channels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.annotation_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>An iterator through the all the <em>annotation</em> channels</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrem.polygram.Polygram.channel_names">
+<tt class="descname">channel_names</tt><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.channel_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.channel_names" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The list of channel names</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrem.polygram.Polygram.channel_types">
+<tt class="descname">channel_types</tt><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.channel_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.channel_types" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the types of all channels</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list(str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrem.polygram.Polygram.channels">
+<tt class="descname">channels</tt><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.channels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>An iterator through the all the channels</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrem.polygram.Polygram.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deep copy of an Polygram</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a new Polygram with the same values</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#pyrem.polygram.Polygram" title="pyrem.polygram.Polygram"><tt class="xref py py-class docutils literal"><span class="pre">Polygram</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrem.polygram.Polygram.duration">
+<tt class="descname">duration</tt><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.duration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.duration" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The duration total of the polygram. That is the duration of the channel with the longest duration</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="http://docs.python.org/2.7/library/datetime.html#datetime.timedelta" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">datetime.timedelta</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrem.polygram.Polygram.iter_window">
+<tt class="descname">iter_window</tt><big>(</big><em>length</em>, <em>lag</em><big>)</big><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.iter_window"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.iter_window" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyrem.polygram.Polygram.map_signal_channels">
+<tt class="descname">map_signal_channels</tt><big>(</big><em>fun</em><big>)</big><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.map_signal_channels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.map_signal_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a function to all signal channels and returns a new Polygram with modified channels</p>
+<p>An example of how to normalise all signal channels</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pol_norm</span> <span class="o">=</span>  <span class="n">pol</span><span class="o">.</span><span class="n">map_signal_channels</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pol</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pol_norm</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fun</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) &#8211; a function to be applied</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a new polygram</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#pyrem.polygram.Polygram" title="pyrem.polygram.Polygram"><tt class="xref py py-class docutils literal"><span class="pre">Polygram</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrem.polygram.Polygram.merge">
+<tt class="descname">merge</tt><big>(</big><em>obj</em>, <em>trim_channel=True</em><big>)</big><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.merge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds channels from a polygram to another polygram, or append a time series to a polygram</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>obj</strong> (<a class="reference internal" href="#pyrem.polygram.Polygram" title="pyrem.polygram.Polygram"><tt class="xref py py-class docutils literal"><span class="pre">Polygram</span></tt></a> or <a class="reference internal" href="pyrem.time_series.html#pyrem.time_series.BiologicalTimeSeries" title="pyrem.time_series.BiologicalTimeSeries"><tt class="xref py py-class docutils literal"><span class="pre">BiologicalTimeSeries</span></tt></a>) &#8211; either a polygram or a time series to be added</li>
+<li><strong>trim_channel</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; whether the new channel(s), if they have a longer duration, would be shortened to match the existing polygram.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrem.polygram.Polygram.metadata">
+<tt class="descname">metadata</tt><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the metadata of this polygram</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrem.polygram.Polygram.n_annotations">
+<tt class="descname">n_annotations</tt><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.n_annotations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.n_annotations" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The total number of <em>annotation</em> channels</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrem.polygram.Polygram.n_channels">
+<tt class="descname">n_channels</tt><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.n_channels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.n_channels" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The total number of channels</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrem.polygram.Polygram.n_signals">
+<tt class="descname">n_signals</tt><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.n_signals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.n_signals" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The total number of <em>signal</em> channels</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrem.polygram.Polygram.save">
+<tt class="descname">save</tt><big>(</big><em>filename</em>, <em>compression_level=5</em><big>)</big><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Efficiently save a Polygram using joblib</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the output file name</li>
+<li><strong>compression_level</strong> (<a class="reference external" href="http://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; an integer between 1 and 9. More is better, but slower. 5 is generally a good compromise</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyrem.polygram.Polygram.show">
+<tt class="descname">show</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interactively displays a polygram using matplotlib. <strong>Very urresponsive and prototypical at the minute</strong></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrem.polygram.Polygram.signal_channels">
+<tt class="descname">signal_channels</tt><a class="reference internal" href="_modules/pyrem/polygram.html#Polygram.signal_channels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.polygram.Polygram.signal_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>An iterator through the all the <em>signal</em> channels</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyrem.univariate.html" title="pyrem.univariate module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyrem.time_series.html" title="pyrem.time_series module"
+             >previous</a> |</li>
+        <li><a href="index.html">pyrem 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Quentin Geissmann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

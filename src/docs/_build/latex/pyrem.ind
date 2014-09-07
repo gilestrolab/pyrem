@@ -1,0 +1,129 @@
+\begin{theindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+
+  \bigletter A
+  \item AbsoluteFeatures (class in pyrem.feature\_families), \hyperpage{16}
+  \item Annotation (class in pyrem.time\_series), \hyperpage{5}
+  \item annotation\_channels (pyrem.polygram.Polygram attribute), \hyperpage{9}
+  \item AnnotationFeatureBase (class in pyrem.feature\_families), \hyperpage{17}
+  \item ap\_entropy() (in module pyrem.univariate), \hyperpage{11}
+
+  \indexspace
+  \bigletter B
+  \item BiologicalTimeSeries (class in pyrem.time\_series), \hyperpage{5}
+
+  \indexspace
+  \bigletter C
+  \item channel\_names (pyrem.polygram.Polygram attribute), \hyperpage{9}
+  \item channel\_types (pyrem.polygram.Polygram attribute), \hyperpage{9}
+  \item channels (pyrem.polygram.Polygram attribute), \hyperpage{9}
+  \item copy() (pyrem.polygram.Polygram method), \hyperpage{9}
+  \item copy() (pyrem.time\_series.BiologicalTimeSeries method), \hyperpage{5}
+
+  \indexspace
+  \bigletter D
+  \item decompose\_signal() (in module pyrem.wavelet\_decomposition), \hyperpage{15}
+  \item dfa() (in module pyrem.univariate), \hyperpage{11}
+  \item duration (pyrem.polygram.Polygram attribute), \hyperpage{10}
+  \item duration (pyrem.time\_series.BiologicalTimeSeries attribute), \hyperpage{6}
+
+  \indexspace
+  \bigletter E
+  \item EntropyFeatures (class in pyrem.feature\_families), \hyperpage{17}
+
+  \indexspace
+  \bigletter F
+  \item FeatureFamilyBase (class in pyrem.feature\_families), \hyperpage{17}
+  \item fisher\_info() (in module pyrem.univariate), \hyperpage{11}
+  \item FractalFeatures (class in pyrem.feature\_families), \hyperpage{17}
+  \item fs (pyrem.time\_series.BiologicalTimeSeries attribute), \hyperpage{6}
+
+  \indexspace
+  \bigletter H
+  \item hfd() (in module pyrem.univariate), \hyperpage{12}
+  \item hjorth() (in module pyrem.univariate), \hyperpage{12}
+  \item HjorthFeatures (class in pyrem.feature\_families), \hyperpage{17}
+  \item hurst() (in module pyrem.univariate), \hyperpage{13}
+
+  \indexspace
+  \bigletter I
+  \item iter\_window() (pyrem.polygram.Polygram method), \hyperpage{10}
+  \item iter\_window() (pyrem.time\_series.BiologicalTimeSeries method), \hyperpage{6}
+
+  \indexspace
+  \bigletter M
+  \item make\_vector() (pyrem.feature\_families.FeatureFamilyBase method), \hyperpage{17}
+  \item map\_signal\_channels() (pyrem.polygram.Polygram method), \hyperpage{10}
+  \item merge() (pyrem.polygram.Polygram method), \hyperpage{10}
+  \item metadata (pyrem.polygram.Polygram attribute), \hyperpage{10}
+  \item metadata (pyrem.time\_series.BiologicalTimeSeries attribute), \hyperpage{6}
+
+  \indexspace
+  \bigletter N
+  \item n\_annotations (pyrem.polygram.Polygram attribute), \hyperpage{10}
+  \item n\_channels (pyrem.polygram.Polygram attribute), \hyperpage{10}
+  \item n\_signals (pyrem.polygram.Polygram attribute), \hyperpage{10}
+  \item name (pyrem.time\_series.BiologicalTimeSeries attribute), \hyperpage{6}
+  \item NonLinearFeatures (class in pyrem.feature\_families), \hyperpage{17}
+
+  \indexspace
+  \bigletter P
+  \item PeriodogramFeatures (class in pyrem.feature\_families), \hyperpage{17}
+  \item pfd() (in module pyrem.univariate), \hyperpage{13}
+  \item Polygram (class in pyrem.polygram), \hyperpage{9}
+  \item polygram\_from\_pkl() (in module pyrem.io), \hyperpage{18}
+  \item polygram\_from\_spike\_matlab\_file() (in module pyrem.io), \hyperpage{18}
+  \item PolygramDisplay (class in pyrem.visualization), \hyperpage{15}
+  \item PowerFeatures (class in pyrem.feature\_families), \hyperpage{17}
+  \item prefix (pyrem.feature\_families.AbsoluteFeatures attribute), \hyperpage{16}
+  \item prefix (pyrem.feature\_families.EntropyFeatures attribute), \hyperpage{17}
+  \item prefix (pyrem.feature\_families.FeatureFamilyBase attribute), \hyperpage{17}
+  \item prefix (pyrem.feature\_families.FractalFeatures attribute), \hyperpage{17}
+  \item prefix (pyrem.feature\_families.HjorthFeatures attribute), \hyperpage{17}
+  \item prefix (pyrem.feature\_families.NonLinearFeatures attribute), \hyperpage{17}
+  \item prefix (pyrem.feature\_families.PeriodogramFeatures attribute), \hyperpage{17}
+  \item prefix (pyrem.feature\_families.PowerFeatures attribute), \hyperpage{17}
+  \item prefix (pyrem.feature\_families.VigilState attribute), \hyperpage{17}
+  \item probas (pyrem.time\_series.Annotation attribute), \hyperpage{5}
+  \item pyrem (module), \hyperpage{1}
+  \item pyrem.feature\_families (module), \hyperpage{16}
+  \item pyrem.io (module), \hyperpage{18}
+  \item pyrem.polygram (module), \hyperpage{7}
+  \item pyrem.time\_series (module), \hyperpage{3}
+  \item pyrem.univariate (module), \hyperpage{11}
+  \item pyrem.utils (module), \hyperpage{18}
+  \item pyrem.visualization (module), \hyperpage{15}
+  \item pyrem.wavelet\_decomposition (module), \hyperpage{15}
+
+  \indexspace
+  \bigletter R
+  \item rename() (pyrem.time\_series.BiologicalTimeSeries method), \hyperpage{6}
+  \item resample() (pyrem.time\_series.Annotation method), \hyperpage{5}
+  \item resample() (pyrem.time\_series.BiologicalTimeSeries method), \hyperpage{6}
+  \item resample() (pyrem.time\_series.Signal method), \hyperpage{7}
+
+  \indexspace
+  \bigletter S
+  \item samp\_entropy() (in module pyrem.univariate), \hyperpage{14}
+  \item save() (pyrem.polygram.Polygram method), \hyperpage{10}
+  \item save() (pyrem.time\_series.BiologicalTimeSeries method), \hyperpage{6}
+  \item show() (pyrem.polygram.Polygram method), \hyperpage{11}
+  \item show() (pyrem.visualization.PolygramDisplay method), \hyperpage{15}
+  \item Signal (class in pyrem.time\_series), \hyperpage{7}
+  \item signal\_channels (pyrem.polygram.Polygram attribute), \hyperpage{11}
+  \item signal\_from\_pkl() (in module pyrem.io), \hyperpage{18}
+  \item SignalFeatureBase (class in pyrem.feature\_families), \hyperpage{17}
+  \item spectral\_entropy() (in module pyrem.univariate), \hyperpage{14}
+  \item str\_to\_time() (in module pyrem.utils), \hyperpage{18}
+  \item svd\_entropy() (in module pyrem.univariate), \hyperpage{15}
+
+  \indexspace
+  \bigletter T
+  \item type (pyrem.time\_series.BiologicalTimeSeries attribute), \hyperpage{7}
+
+  \indexspace
+  \bigletter V
+  \item values (pyrem.time\_series.Annotation attribute), \hyperpage{5}
+  \item VigilState (class in pyrem.feature\_families), \hyperpage{17}
+
+\end{theindex}

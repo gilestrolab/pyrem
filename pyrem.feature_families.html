@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyrem.feature_families module &mdash; pyrem 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyrem 1.0 documentation" href="index.html" />
+    <link rel="next" title="pyrem.io module" href="pyrem.io.html" />
+    <link rel="prev" title="pyrem.wavelet_decomposition module" href="pyrem.wavelet_decomposition.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyrem.io.html" title="pyrem.io module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pyrem.wavelet_decomposition.html" title="pyrem.wavelet_decomposition module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pyrem 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyrem.wavelet_decomposition.html"
+                        title="previous chapter">pyrem.wavelet_decomposition module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pyrem.io.html"
+                        title="next chapter">pyrem.io module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pyrem.feature_families.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pyrem.feature_families">
+<span id="pyrem-feature-families-module"></span><h1>pyrem.feature_families module<a class="headerlink" href="#module-pyrem.feature_families" title="Permalink to this headline">¶</a></h1>
+<p>The goal of this submodule is to provide a flexible interface to compute arbitrary features on each channel and epoch (temporal slices) of a multivariate time series (Polygraph).
+Features are grouped in families of several features (e.g. Power Features may contain mean power, variance of power, ...).
+Feature factory computes features for arbitrary feature families and group them in a data.frame</p>
+<dl class="class">
+<dt id="pyrem.feature_families.AbsoluteFeatures">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">AbsoluteFeatures</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#AbsoluteFeatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.AbsoluteFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrem.feature_families.SignalFeatureBase" title="pyrem.feature_families.SignalFeatureBase"><tt class="xref py py-class docutils literal"><span class="pre">pyrem.feature_families.SignalFeatureBase</span></tt></a></p>
+<dl class="attribute">
+<dt id="pyrem.feature_families.AbsoluteFeatures.prefix">
+<tt class="descname">prefix</tt><em class="property"> = 'abs'</em><a class="headerlink" href="#pyrem.feature_families.AbsoluteFeatures.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrem.feature_families.AnnotationFeatureBase">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">AnnotationFeatureBase</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#AnnotationFeatureBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.AnnotationFeatureBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrem.feature_families.FeatureFamilyBase" title="pyrem.feature_families.FeatureFamilyBase"><tt class="xref py py-class docutils literal"><span class="pre">pyrem.feature_families.FeatureFamilyBase</span></tt></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrem.feature_families.EntropyFeatures">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">EntropyFeatures</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#EntropyFeatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.EntropyFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrem.feature_families.SignalFeatureBase" title="pyrem.feature_families.SignalFeatureBase"><tt class="xref py py-class docutils literal"><span class="pre">pyrem.feature_families.SignalFeatureBase</span></tt></a></p>
+<dl class="attribute">
+<dt id="pyrem.feature_families.EntropyFeatures.prefix">
+<tt class="descname">prefix</tt><em class="property"> = 'entropy'</em><a class="headerlink" href="#pyrem.feature_families.EntropyFeatures.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrem.feature_families.FeatureFamilyBase">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">FeatureFamilyBase</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#FeatureFamilyBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.FeatureFamilyBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A feature family object is a process returning a vector of features upon analysis of some data.
+Features are returned as a pandas DataFrame object, with column names for features. Each feature name is prefixed by the name of the
+feature family. This is an abstract class designed to be derived by:</p>
+<ol class="arabic simple">
+<li>Defining a <tt class="docutils literal"><span class="pre">prefix</span></tt> attribute. It will add the name of the family to the name of the features.</li>
+<li>Overriding the <tt class="docutils literal"><span class="pre">_make_feature_vec</span></tt> method. It should return a dictionary of scalars, each being a feature.</li>
+</ol>
+<dl class="method">
+<dt id="pyrem.feature_families.FeatureFamilyBase.make_vector">
+<tt class="descname">make_vector</tt><big>(</big><em>signal</em><big>)</big><a class="reference internal" href="_modules/pyrem/feature_families.html#FeatureFamilyBase.make_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.FeatureFamilyBase.make_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute one vector of features from polygraph.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<tt class="xref py py-class docutils literal"><span class="pre">Polygraph</span></tt>) &#8211; A signal</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a one-row dataframe</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v0.14.1)"><tt class="xref py py-class docutils literal"><span class="pre">DataFrame</span></tt></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyrem.feature_families.FeatureFamilyBase.prefix">
+<tt class="descname">prefix</tt><em class="property"> = None</em><a class="headerlink" href="#pyrem.feature_families.FeatureFamilyBase.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrem.feature_families.FractalFeatures">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">FractalFeatures</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#FractalFeatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.FractalFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrem.feature_families.SignalFeatureBase" title="pyrem.feature_families.SignalFeatureBase"><tt class="xref py py-class docutils literal"><span class="pre">pyrem.feature_families.SignalFeatureBase</span></tt></a></p>
+<dl class="attribute">
+<dt id="pyrem.feature_families.FractalFeatures.prefix">
+<tt class="descname">prefix</tt><em class="property"> = 'fractal'</em><a class="headerlink" href="#pyrem.feature_families.FractalFeatures.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrem.feature_families.HjorthFeatures">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">HjorthFeatures</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#HjorthFeatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.HjorthFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrem.feature_families.SignalFeatureBase" title="pyrem.feature_families.SignalFeatureBase"><tt class="xref py py-class docutils literal"><span class="pre">pyrem.feature_families.SignalFeatureBase</span></tt></a></p>
+<dl class="attribute">
+<dt id="pyrem.feature_families.HjorthFeatures.prefix">
+<tt class="descname">prefix</tt><em class="property"> = 'hjorth'</em><a class="headerlink" href="#pyrem.feature_families.HjorthFeatures.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrem.feature_families.NonLinearFeatures">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">NonLinearFeatures</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#NonLinearFeatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.NonLinearFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrem.feature_families.SignalFeatureBase" title="pyrem.feature_families.SignalFeatureBase"><tt class="xref py py-class docutils literal"><span class="pre">pyrem.feature_families.SignalFeatureBase</span></tt></a></p>
+<dl class="attribute">
+<dt id="pyrem.feature_families.NonLinearFeatures.prefix">
+<tt class="descname">prefix</tt><em class="property"> = 'nl'</em><a class="headerlink" href="#pyrem.feature_families.NonLinearFeatures.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrem.feature_families.PeriodogramFeatures">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">PeriodogramFeatures</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#PeriodogramFeatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.PeriodogramFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrem.feature_families.SignalFeatureBase" title="pyrem.feature_families.SignalFeatureBase"><tt class="xref py py-class docutils literal"><span class="pre">pyrem.feature_families.SignalFeatureBase</span></tt></a></p>
+<dl class="attribute">
+<dt id="pyrem.feature_families.PeriodogramFeatures.prefix">
+<tt class="descname">prefix</tt><em class="property"> = 'spectr'</em><a class="headerlink" href="#pyrem.feature_families.PeriodogramFeatures.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrem.feature_families.PowerFeatures">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">PowerFeatures</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#PowerFeatures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.PowerFeatures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrem.feature_families.SignalFeatureBase" title="pyrem.feature_families.SignalFeatureBase"><tt class="xref py py-class docutils literal"><span class="pre">pyrem.feature_families.SignalFeatureBase</span></tt></a></p>
+<dl class="attribute">
+<dt id="pyrem.feature_families.PowerFeatures.prefix">
+<tt class="descname">prefix</tt><em class="property"> = 'power'</em><a class="headerlink" href="#pyrem.feature_families.PowerFeatures.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrem.feature_families.SignalFeatureBase">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">SignalFeatureBase</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#SignalFeatureBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.SignalFeatureBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrem.feature_families.FeatureFamilyBase" title="pyrem.feature_families.FeatureFamilyBase"><tt class="xref py py-class docutils literal"><span class="pre">pyrem.feature_families.FeatureFamilyBase</span></tt></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyrem.feature_families.VigilState">
+<em class="property">class </em><tt class="descclassname">pyrem.feature_families.</tt><tt class="descname">VigilState</tt><a class="reference internal" href="_modules/pyrem/feature_families.html#VigilState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyrem.feature_families.VigilState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyrem.feature_families.AnnotationFeatureBase" title="pyrem.feature_families.AnnotationFeatureBase"><tt class="xref py py-class docutils literal"><span class="pre">pyrem.feature_families.AnnotationFeatureBase</span></tt></a></p>
+<dl class="attribute">
+<dt id="pyrem.feature_families.VigilState.prefix">
+<tt class="descname">prefix</tt><em class="property"> = 'vigil'</em><a class="headerlink" href="#pyrem.feature_families.VigilState.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyrem.io.html" title="pyrem.io module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pyrem.wavelet_decomposition.html" title="pyrem.wavelet_decomposition module"
+             >previous</a> |</li>
+        <li><a href="index.html">pyrem 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Quentin Geissmann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

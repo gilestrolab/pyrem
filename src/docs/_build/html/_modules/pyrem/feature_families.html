@@ -1,0 +1,515 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyrem.feature_families &mdash; pyrem 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="pyrem 1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyrem 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyrem.feature_families</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The goal of this submodule is to provide a flexible interface to compute arbitrary features on each channel and epoch (temporal slices) of a multivariate time series (Polygraph).</span>
+<span class="sd">Features are grouped in families of several features (e.g. Power Features may contain mean power, variance of power, ...).</span>
+<span class="sd">Feature factory computes features for arbitrary feature families and group them in a data.frame</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;quentin&#39;</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="kn">as</span> <span class="nn">stats</span>
+<span class="kn">import</span> <span class="nn">scipy.signal</span> <span class="kn">as</span> <span class="nn">signal</span>
+
+<span class="kn">from</span> <span class="nn">pyrem.univariate</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pyrem.time_series</span> <span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span><span class="n">Annotation</span>
+
+
+<div class="viewcode-block" id="FeatureFamilyBase"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.FeatureFamilyBase">[docs]</a><span class="k">class</span> <span class="nc">FeatureFamilyBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">    A feature family object is a process returning a vector of features upon analysis of some data.</span>
+<span class="sd">    Features are returned as a pandas DataFrame object, with column names for features. Each feature name is prefixed by the name of the</span>
+<span class="sd">    feature family. This is an abstract class designed to be derived by:</span>
+
+<span class="sd">    1. Defining a ``prefix`` attribute. It will add the name of the family to the name of the features.</span>
+<span class="sd">    2. Overriding the ``_make_feature_vec`` method. It should return a dictionary of scalars, each being a feature.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="bp">None</span>
+<div class="viewcode-block" id="FeatureFamilyBase.make_vector"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.FeatureFamilyBase.make_vector">[docs]</a>    <span class="k">def</span> <span class="nf">make_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute one vector of features from polygraph.</span>
+
+<span class="sd">        :param data: A signal</span>
+<span class="sd">        :type data: :class:`~pyrem.signal.polygraph.Polygraph`</span>
+<span class="sd">        :return: a one-row dataframe</span>
+<span class="sd">        :rtype: :class:`~pandas.DataFrame`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_channel_type</span><span class="p">(</span><span class="n">signal</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">feature_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_feature_vec</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+        <span class="n">data_frame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">feature_dict</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="bp">None</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_dict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;More than one features in this group. You need a prefix to identify this group&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">:</span>
+            <span class="n">data_frame</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span><span class="s">&quot;.&quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.&quot;</span> <span class="o">+</span> <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">data_frame</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">data_frame</span>
+</div>
+    <span class="k">def</span> <span class="nf">_check_channel_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">_make_feature_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="SignalFeatureBase"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.SignalFeatureBase">[docs]</a><span class="k">class</span> <span class="nc">SignalFeatureBase</span><span class="p">(</span><span class="n">FeatureFamilyBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_check_channel_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">channel</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">Signal</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AnnotationFeatureBase"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.AnnotationFeatureBase">[docs]</a><span class="k">class</span> <span class="nc">AnnotationFeatureBase</span><span class="p">(</span><span class="n">FeatureFamilyBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_check_channel_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">channel</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="VigilState"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.VigilState">[docs]</a><span class="k">class</span> <span class="nc">VigilState</span><span class="p">(</span><span class="n">AnnotationFeatureBase</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s">&quot;vigil&quot;</span>
+    <span class="k">def</span> <span class="nf">_make_feature_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">uniqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">probas</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">uniqs</span><span class="p">:</span>
+            <span class="n">eqs</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span> <span class="o">==</span> <span class="n">u</span><span class="p">)</span>
+            <span class="n">probs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="n">eqs</span><span class="p">]))</span>
+
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">probs</span><span class="p">)</span>
+
+        <span class="n">probs</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">max_prob_idx</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">probs</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">uniqs</span><span class="p">[</span><span class="n">max_prob_idx</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[</span><span class="s">&quot;proba&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[</span><span class="s">&quot;proba&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">probs</span><span class="p">[</span><span class="n">max_prob_idx</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+
+</div>
+<div class="viewcode-block" id="PeriodogramFeatures"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.PeriodogramFeatures">[docs]</a><span class="k">class</span> <span class="nc">PeriodogramFeatures</span><span class="p">(</span><span class="n">SignalFeatureBase</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s">&quot;spectr&quot;</span>
+    <span class="k">def</span> <span class="nf">_make_feature_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="n">f</span><span class="p">,</span> <span class="n">Pxx_den</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">welch</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">channel</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">nperseg</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>
+
+        <span class="n">posden</span> <span class="o">=</span> <span class="n">Pxx_den</span>
+
+
+        <span class="n">posden</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">posden</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">25</span><span class="p">])</span>
+        <span class="n">orders</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">posden</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">d</span>  <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">orders</span><span class="p">):</span>
+            <span class="n">out</span><span class="p">[</span><span class="s">&quot;</span><span class="si">%03d</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="n">d</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+</div>
+<div class="viewcode-block" id="AbsoluteFeatures"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.AbsoluteFeatures">[docs]</a><span class="k">class</span> <span class="nc">AbsoluteFeatures</span><span class="p">(</span><span class="n">SignalFeatureBase</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s">&quot;abs&quot;</span>
+    <span class="k">def</span> <span class="nf">_make_feature_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">absol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">absol</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;sd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">absol</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;median&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">absol</span><span class="p">)</span>
+        <span class="c"># out[&quot;skew&quot;] = stats.skew(absol)</span>
+        <span class="c"># out[&quot;kurt&quot;] = stats.kurtosis(absol)</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">absol</span><span class="p">)</span>
+        <span class="c"># out[&quot;max&quot;] = np.min(absol)</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+</div>
+<div class="viewcode-block" id="PowerFeatures"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.PowerFeatures">[docs]</a><span class="k">class</span> <span class="nc">PowerFeatures</span><span class="p">(</span><span class="n">SignalFeatureBase</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s">&quot;power&quot;</span>
+    <span class="k">def</span> <span class="nf">_make_feature_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">powers</span> <span class="o">=</span> <span class="n">channel</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">powers</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;sd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">powers</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;median&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">powers</span><span class="p">)</span>
+        <span class="c"># out[&quot;skew&quot;] = stats.skew(powers)</span>
+        <span class="c"># out[&quot;kurt&quot;] = stats.skew(powers)</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">powers</span><span class="p">)</span>
+        <span class="c"># out[&quot;max&quot;] = np.min(powers)</span>
+
+
+        <span class="k">return</span> <span class="n">out</span>
+
+<span class="c">#</span></div>
+<div class="viewcode-block" id="NonLinearFeatures"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.NonLinearFeatures">[docs]</a><span class="k">class</span> <span class="nc">NonLinearFeatures</span><span class="p">(</span><span class="n">SignalFeatureBase</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s">&quot;nl&quot;</span>
+    <span class="k">def</span> <span class="nf">_make_feature_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">channel</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;hurst&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hurst</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="c">#out[&quot;dfa&quot;] = dfa(data)</span>
+        <span class="k">return</span> <span class="n">out</span>
+<span class="c">#</span>
+</div>
+<div class="viewcode-block" id="FractalFeatures"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.FractalFeatures">[docs]</a><span class="k">class</span> <span class="nc">FractalFeatures</span><span class="p">(</span><span class="n">SignalFeatureBase</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s">&quot;fractal&quot;</span>
+    <span class="k">def</span> <span class="nf">_make_feature_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">channel</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;hfd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hfd</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;pfd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pfd</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+
+<span class="c">#</span></div>
+<div class="viewcode-block" id="HjorthFeatures"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.HjorthFeatures">[docs]</a><span class="k">class</span> <span class="nc">HjorthFeatures</span><span class="p">(</span><span class="n">SignalFeatureBase</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s">&quot;hjorth&quot;</span>
+    <span class="k">def</span> <span class="nf">_make_feature_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="n">a</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">c</span> <span class="o">=</span> <span class="n">hjorth</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;morbidity&quot;</span><span class="p">:</span><span class="n">m</span><span class="p">,</span> <span class="s">&quot;complexity&quot;</span><span class="p">:</span><span class="n">c</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">out</span>
+</div>
+<div class="viewcode-block" id="EntropyFeatures"><a class="viewcode-back" href="../../pyrem.feature_families.html#pyrem.feature_families.EntropyFeatures">[docs]</a><span class="k">class</span> <span class="nc">EntropyFeatures</span><span class="p">(</span><span class="n">SignalFeatureBase</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s">&quot;entropy&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_make_feature_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">channel</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="c">#out[&quot;spectral&quot;] = spectral_entropy(data,np.arange(0,50), channel.sampling_freq) # fixme magic number here</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;svd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">svd_entropy</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="c"># fixme magic number here</span>
+        <span class="n">out</span><span class="p">[</span><span class="s">&quot;fisher&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fisher_info</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+        <span class="c">#out[&quot;apent&quot;] = ap_entropy(data, 2,5000)</span>
+        <span class="k">for</span> <span class="n">scale</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">]:</span>
+                <span class="n">out</span><span class="p">[</span><span class="s">&quot;sample_</span><span class="si">%i</span><span class="s">_</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">scale</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))]</span> <span class="o">=</span> <span class="n">samp_entropy</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+
+
+        <span class="k">return</span> <span class="n">out</span>
+
+<span class="c"># class FeatureFactory(object):</span>
+<span class="c">#</span>
+<span class="c">#     def __init__(self, feature_groups):</span>
+<span class="c">#         self._feature_group = feature_groups</span>
+<span class="c">#</span>
+<span class="c">#     def _make_features(self,signal):</span>
+<span class="c">#         dfs = [ group.make_vector(signal) for group in self._feature_group]</span>
+<span class="c">#         return pd.concat(dfs, axis=1)</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#     def make_vector(self, signal, t=np.NaN):</span>
+<span class="c">#         return self._make_features(signal)</span>
+<span class="c">#</span>
+<span class="c">#     def major_annotations(self, annotations):</span>
+<span class="c">#         a = annotations.flatten()</span>
+<span class="c">#         r = np.real(a)</span>
+<span class="c">#         uniqs = np.unique(r)</span>
+<span class="c">#         i = np.imag(a)</span>
+<span class="c">#         probs = []</span>
+<span class="c">#         for u in uniqs:</span>
+<span class="c">#             eqs = (r == u)</span>
+<span class="c">#             probs.append(np.sum(i[eqs]))</span>
+<span class="c">#</span>
+<span class="c">#         probs = np.array(probs)</span>
+<span class="c">#         probs /= np.sum(i)</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#         max_prob_idx =  np.argmax(probs)</span>
+<span class="c">#</span>
+<span class="c">#         return uniqs[max_prob_idx] + probs[max_prob_idx]* 1j</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#     def make_features_for_epochs(self, data, length, lag, add_major_annotations=False, processes=1):</span>
+<span class="c">#         r&quot;&quot;&quot;</span>
+<span class="c">#         Compute features, for all channels and all epochs, of a polygraph.</span>
+<span class="c">#</span>
+<span class="c">#         :param data: A polygraph</span>
+<span class="c">#         :type data: :class:`~pyrem.signal.polygraph.Polygraph`</span>
+<span class="c">#</span>
+<span class="c">#         :param length: the length of the epoch in seconds (see :meth:`~pyrem.signal.polygraph.Polygraph.embed_seq`)</span>
+<span class="c">#         :type length: float</span>
+<span class="c">#         :param lag: the lag of the epoch in seconds (see :meth:`~pyrem.signal.polygraph.Polygraph.embed_seq`)</span>
+<span class="c">#         :type lag: float</span>
+<span class="c">#         :return: a dataframe</span>
+<span class="c">#         :rtype: :class:`~pandas.DataFrame`</span>
+<span class="c">#         &quot;&quot;&quot;</span>
+<span class="c">#         rows = []</span>
+<span class="c">#         for t, s in data.embed_seq(length, lag):</span>
+<span class="c">#             if add_major_annotations:</span>
+<span class="c">#                 majors = [self.major_annotations(a) for a in s.annotations()]</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#             for c in s.channels():</span>
+<span class="c">#                 row = self._make_features(c)</span>
+<span class="c">#</span>
+<span class="c">#                 row[&quot;channel&quot;] = [c.channel_types[0]]</span>
+<span class="c">#                 if add_major_annotations:</span>
+<span class="c">#                     for ann, maj  in zip(s.annotation_types, majors):</span>
+<span class="c">#                         row[ann+&quot;_value&quot;] = np.real(maj)</span>
+<span class="c">#                         row[ann+&quot;_prob&quot;] = np.imag(maj)</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#                 row.index = [t]</span>
+<span class="c">#                 rows.append(row)</span>
+<span class="c">#</span>
+<span class="c">#         features = pd.concat(rows)</span>
+<span class="c">#         return features</span>
+<span class="c">#</span>
+<span class="c"># class FeatureFamilyBase(object):</span>
+<span class="c">#     r&quot;&quot;&quot;</span>
+<span class="c">#     A feature family object is a process returning a vector of features upon analysis of some data.</span>
+<span class="c">#     Features are returned as a pandas DataFrame object, with column names for features. Each feature name is prefixed by the name of the</span>
+<span class="c">#     feature family. This is an abstract class designed to be derived by:</span>
+<span class="c">#</span>
+<span class="c">#     1. Defining a ``prefix`` attribute. It will add the name of the family to the name of the features.</span>
+<span class="c">#     2. Overriding the ``_make_feature_vec`` method. It should return a dictionary of scalars, each being a feature.</span>
+<span class="c">#</span>
+<span class="c">#     &quot;&quot;&quot;</span>
+<span class="c">#     prefix = None</span>
+<span class="c">#     def make_vector(self, data):</span>
+<span class="c">#         &quot;&quot;&quot;</span>
+<span class="c">#         Compute one vector of features from polygraph.</span>
+<span class="c">#</span>
+<span class="c">#         :param data: A polygraph</span>
+<span class="c">#         :type data: :class:`~pyrem.signal.polygraph.Polygraph`</span>
+<span class="c">#         :return: a one-row dataframe</span>
+<span class="c">#         :rtype: :class:`~pandas.DataFrame`</span>
+<span class="c">#         &quot;&quot;&quot;</span>
+<span class="c">#         if data.n_channels != 1:</span>
+<span class="c">#             raise NotImplementedError(&quot;Only data with one channel can be analysed&quot;)</span>
+<span class="c">#         feature_dict = self._make_feature_vec(data)</span>
+<span class="c">#</span>
+<span class="c">#         data_frame = pd.DataFrame(feature_dict, index=[None])</span>
+<span class="c">#</span>
+<span class="c">#         if len(feature_dict) &gt; 1 and self.prefix is None:</span>
+<span class="c">#             raise Exception(&quot;More than one features in this group. You need a prefix to identify this group&quot;)</span>
+<span class="c">#</span>
+<span class="c">#         if self.prefix:</span>
+<span class="c">#             data_frame.columns = [self.prefix + &quot;_&quot; + c for c in data_frame .columns]</span>
+<span class="c">#         return data_frame</span>
+<span class="c">#</span>
+<span class="c">#     def _make_feature_vec(self,data):</span>
+<span class="c">#         raise NotImplementedError</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c"># class PowerFeatures(FeatureFamilyBase):</span>
+<span class="c">#     prefix = &quot;power&quot;</span>
+<span class="c">#     def _make_feature_vec(self, channel):</span>
+<span class="c">#         data = channel.data.flatten()</span>
+<span class="c">#         out = dict()</span>
+<span class="c">#</span>
+<span class="c">#         powers = data ** 2</span>
+<span class="c">#         out[&quot;mean&quot;] = np.mean(powers)</span>
+<span class="c">#         out[&quot;sd&quot;] = np.std(powers)</span>
+<span class="c">#         out[&quot;median&quot;] = np.median(powers)</span>
+<span class="c">#         out[&quot;skew&quot;] = stats.skew(powers)</span>
+<span class="c">#         out[&quot;kurtosis&quot;] = stats.kurtosis(powers)</span>
+<span class="c">#</span>
+<span class="c">#         return out</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c"># class NonLinearFeatures(FeatureFamilyBase):</span>
+<span class="c">#     prefix = &quot;nl&quot;</span>
+<span class="c">#     def _make_feature_vec(self,channel):</span>
+<span class="c">#         data = channel.data.flatten()</span>
+<span class="c">#         out = dict()</span>
+<span class="c">#         out[&quot;hurst&quot;] = hurst(data)</span>
+<span class="c">#         #out[&quot;dfa&quot;] = dfa(data)</span>
+<span class="c">#         return out</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c"># class HjorthFeatures(FeatureFamilyBase):</span>
+<span class="c">#     prefix = &quot;hjorth&quot;</span>
+<span class="c">#     def _make_feature_vec(self, channel):</span>
+<span class="c">#         data = channel.data.flatten()</span>
+<span class="c">#         a,m,c = hjorth(data)</span>
+<span class="c">#         out = {&quot;activity&quot;:a, &quot;morbidity&quot;:m, &quot;complexity&quot;:c}</span>
+<span class="c">#         return out</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c"># class EntropyFeatures(FeatureFamilyBase):</span>
+<span class="c">#     prefix = &quot;entropy&quot;</span>
+<span class="c">#</span>
+<span class="c">#     def _make_feature_vec(self,channel):</span>
+<span class="c">#         data = channel.data.flatten()</span>
+<span class="c">#         out = dict()</span>
+<span class="c">#         #out[&quot;spectral&quot;] = spectral_entropy(data,np.arange(0,50), channel.sampling_freq) # fixme magic number here</span>
+<span class="c">#         out[&quot;svd&quot;] = svd_entropy(data, 3,3) # fixme magic number here</span>
+<span class="c">#         out[&quot;fisher&quot;] = fisher_info(data, 3,3)</span>
+<span class="c">#         #out[&quot;apent&quot;] = ap_entropy(data, 2,5000)</span>
+<span class="c">#         out[&quot;sample_2_1000&quot;] = samp_entropy(data, 2, 1000)</span>
+<span class="c">#         out[&quot;sample_2_2000&quot;] = samp_entropy(data, 2, 2000)</span>
+<span class="c">#         out[&quot;sample_2_5000&quot;] = samp_entropy(data, 2, 5000)</span>
+<span class="c">#         out[&quot;sample_3_1000&quot;] = samp_entropy(data, 3, 1000)</span>
+<span class="c">#         out[&quot;sample_3_2000&quot;] = samp_entropy(data, 3, 2000)</span>
+<span class="c">#         out[&quot;sample_3_5000&quot;] = samp_entropy(data, 3, 5000)</span>
+<span class="c">#         out[&quot;sample_4_1000&quot;] = samp_entropy(data, 4, 1000)</span>
+<span class="c">#         out[&quot;sample_4_2000&quot;] = samp_entropy(data, 4, 2000)</span>
+<span class="c">#         out[&quot;sample_4_5000&quot;] = samp_entropy(data, 4, 5000)</span>
+<span class="c">#</span>
+<span class="c">#         return out</span>
+<span class="c">#</span>
+<span class="c"># class MSEFeatures(FeatureFamilyBase):</span>
+<span class="c">#     prefix = &quot;mse&quot;</span>
+<span class="c">#</span>
+<span class="c">#     def _make_feature_vec(self,channel):</span>
+<span class="c">#         data = channel.data.flatten()</span>
+<span class="c">#         out = dict()</span>
+<span class="c">#         #out[&quot;spectral&quot;] = spectral_entropy(data,np.arange(0,50), channel.sampling_freq) # fixme magic number here</span>
+<span class="c">#         r = 0.15</span>
+<span class="c">#         for i in range(1,4):</span>
+<span class="c">#</span>
+<span class="c">#             name = &quot;%i_%i&quot; %(i, int(r*100))</span>
+<span class="c">#             out[name] = samp_entropy(data,2,r,i)</span>
+<span class="c">#             # print i, int(r*100), out[name]</span>
+<span class="c">#</span>
+<span class="c">#         return out</span>
+<span class="c">#</span>
+<span class="c"># class WaveletsFeaturesBase(FeatureFamilyBase):</span>
+<span class="c">#     prefix = &quot;wavelets&quot;</span>
+<span class="c">#     _max_level = 5</span>
+<span class="c">#     _wavelet =  None</span>
+<span class="c">#     def __init__(self):</span>
+<span class="c">#         if self._wavelet is None:</span>
+<span class="c">#             raise NotImplementedError</span>
+<span class="c">#         self.prefix = self.prefix + &quot;.&quot; + self._wavelet</span>
+<span class="c">#</span>
+<span class="c">#     def _make_feature_vec(self,channel):</span>
+<span class="c">#         data = channel.data.flatten()</span>
+<span class="c">#         coeffs = pywt.wavedec(data, self._wavelet, level=self._max_level)</span>
+<span class="c">#         coeff_names = [&quot;_cA_%i&quot; % (len(coeffs) -1 ) ]</span>
+<span class="c">#         for n in range(len(coeffs) -1, 0, -1):</span>
+<span class="c">#              coeff_names.append(&quot;_cD_%i&quot; % (n))</span>
+<span class="c">#         out = dict()</span>
+<span class="c">#         for c, n in zip(coeffs, coeff_names):</span>
+<span class="c">#             c =  np.abs(c)</span>
+<span class="c">#             out[&quot;mean&quot; + n] = np.mean(c)</span>
+<span class="c">#             out[&quot;sd&quot;+ n] = np.std(c)</span>
+<span class="c">#             # out[&quot;median&quot;+ n] = np.median(c)</span>
+<span class="c">#             # out[&quot;skew&quot;+ n] = stats.skew(c)</span>
+<span class="c">#             # out[&quot;kurtosis&quot;+ n] = stats.kurtosis(c)</span>
+<span class="c">#         return out</span>
+<span class="c">#</span>
+<span class="c"># class WaveletsFeaturesDB1(WaveletsFeaturesBase): _wavelet =  &quot;db1&quot;</span>
+<span class="c"># class WaveletsFeaturesDB2(WaveletsFeaturesBase): _wavelet =  &quot;db2&quot;</span>
+<span class="c"># class WaveletsFeaturesDB3(WaveletsFeaturesBase): _wavelet =  &quot;db3&quot;</span>
+<span class="c"># class WaveletsFeaturesDB4(WaveletsFeaturesBase): _wavelet =  &quot;db4&quot;</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c"># class PeriodFeatures(FeatureFamilyBase):</span>
+<span class="c">#     prefix = &quot;welch&quot;</span>
+<span class="c">#</span>
+<span class="c">#     def _make_feature_vec(self, channel):</span>
+<span class="c">#         data = channel.data.flatten()</span>
+<span class="c">#</span>
+<span class="c">#         freqs, pow = sig.welch(data, channel.sampling_freq)</span>
+<span class="c">#</span>
+<span class="c">#         pow_f = freqs * pow/np.sum(pow)</span>
+<span class="c">#</span>
+<span class="c">#         out = dict()</span>
+<span class="c">#</span>
+<span class="c">#         out[&quot;mode&quot;] = freqs[np.argmax(pow)]</span>
+<span class="c">#         out[&quot;mean&quot;] = np.mean(pow_f) * freqs.size</span>
+<span class="c">#         out[&quot;sd&quot;] = np.std(pow_f) * freqs.size</span>
+<span class="c">#         out[&quot;mean&quot;] = np.mean(pow_f) * freqs.size</span>
+<span class="c">#         out[&quot;median&quot;] = np.median(pow_f)  * freqs.size</span>
+<span class="c">#         out[&quot;skew&quot;] = stats.skew(pow_f)  * freqs.size</span>
+<span class="c">#         out[&quot;kurtosis&quot;] = stats.kurtosis(pow_f)  * freqs.size</span>
+<span class="c">#         # out[&quot;entropy&quot;] = stats.entropy(pow_f)  * freqs.size #TODO</span>
+<span class="c">#</span>
+<span class="c">#         return out</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pyrem 1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Quentin Geissmann.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,226 @@
+\begin{thebibliography}{10}
+
+\bibitem{siegel_all_2008}
+J.~M. Siegel, ``Do all animals sleep?,'' {\em Trends in Neurosciences},
+  vol.~31, pp.~208--213, Apr. 2008.
+
+\bibitem{cirelli_is_2008}
+C.~Cirelli and G.~Tononi, ``Is sleep essential?,'' {\em {PLoS} Biol}, vol.~6,
+  p.~e216, Aug. 2008.
+
+\bibitem{loomis_distribution_1938}
+A.~L. Loomis, E.~N. Harvey, and G.~A. Hobart, ``Distribution of
+  disturbance-patterns in the human electroencephalogram with special reference
+  to sleep.,'' {\em Journal of Neurophysiology}, 1938.
+
+\bibitem{aserinsky_regularly_1953}
+E.~Aserinsky and N.~Kleitman, ``Regularly occurring periods of eye motility,
+  and concomitant phenomena, during sleep,'' {\em Science}, vol.~118, no.~3062,
+  pp.~273--274, 1953.
+
+\bibitem{toth_animal_2013}
+L.~A. Toth and P.~Bhargava, ``Animal models of sleep disorders,'' {\em
+  Comparative Medicine}, vol.~63, pp.~91--104, Apr. 2013.
+
+\bibitem{costa-miserachs_automated_2003}
+D.~Costa-Miserachs, I.~Portell-Cortés, M.~Torras-Garcia, and
+  I.~Morgado-Bernal, ``Automated sleep staging in rat with a standard
+  spreadsheet,'' {\em Journal of Neuroscience Methods}, vol.~130, pp.~93--101,
+  Nov. 2003.
+
+\bibitem{sen_comparative_2014}
+B.~Şen, M.~Peker, A.~Çavuşoğlu, and F.~V. Çelebi, ``A comparative study on
+  classification of sleep stage based on {EEG} signals using feature selection
+  and classification algorithms,'' {\em Journal of Medical Systems}, vol.~38,
+  pp.~1--21, Mar. 2014.
+
+\bibitem{chouvet_automatic_1980}
+G.~Chouvet, P.~Odet, J.-L. Valatx, and J.-F. Pujol, ``An automatic sleep
+  classifier for laboratory rodents,'' {\em Waking \& Sleeping}, vol.~4, no.~1,
+  pp.~9--31, 1980.
+
+\bibitem{haustein_automatic_1986}
+W.~Haustein, J.~Pilcher, J.~Klink, and H.~Schulz, ``Automatic analysis
+  overcomes limitations of sleep stage scoring,'' {\em Electroencephalography
+  and Clinical Neurophysiology}, vol.~64, pp.~364--374, Oct. 1986.
+
+\bibitem{langkvist_sleep_2012}
+M.~Längkvist, L.~Karlsson, and A.~Loutfi, ``Sleep stage classification using
+  unsupervised feature learning,'' {\em Advances in Artificial Neural Systems},
+  vol.~2012, p.~5, 2012.
+
+\bibitem{sunagawa_faster:_2013}
+G.~A. Sunagawa, H.~Séi, S.~Shimba, Y.~Urade, and H.~R. Ueda, ``{FASTER}: an
+  unsupervised fully automated sleep staging method for mice,'' {\em Genes to
+  Cells}, vol.~18, pp.~502--518, June 2013.
+
+\bibitem{crisler_sleep-stage_2008}
+S.~Crisler, M.~J. Morrissey, A.~M. Anch, and D.~W. Barnett, ``Sleep-stage
+  scoring in the rat using a support vector machine,'' {\em Journal of
+  Neuroscience Methods}, vol.~168, pp.~524--534, Mar. 2008.
+
+\bibitem{ventouras_performance_2012}
+E.~M. Ventouras, N.-T. Economou, I.~Kritikou, H.~Tsekou, T.~J. Paparrigopoulos,
+  and P.~Y. Ktonas, ``Performance evaluation of an artificial neural network
+  automatic spindle detection system,'' {\em Conference proceedings: ... Annual
+  International Conference of the {IEEE} Engineering in Medicine and Biology
+  Society. {IEEE} Engineering in Medicine and Biology Society. Conference},
+  vol.~2012, pp.~4328--4331, 2012.
+
+\bibitem{doroshenkov_classification_2007}
+L.~G. Doroshenkov, V.~A. Konyshev, and S.~V. Selishchev, ``Classification of
+  human sleep stages based on {EEG} processing using hidden markov models,''
+  {\em Biomedical Engineering}, vol.~41, pp.~25--28, Jan. 2007.
+
+\bibitem{pan_transition-constrained_2012}
+S.-T. Pan, C.-E. Kuo, J.-H. Zeng, and S.-F. Liang, ``A transition-constrained
+  discrete hidden markov model for automatic sleep staging,'' {\em {BioMedical}
+  Engineering {OnLine}}, vol.~11, p.~52, Aug. 2012.
+
+\bibitem{breiman_random_2001}
+L.~Breiman, ``Random forests,'' {\em Machine Learning}, vol.~45, pp.~5--32,
+  Oct. 2001.
+
+\bibitem{dietterich_machine_2002}
+T.~G. Dietterich, ``Machine learning for sequential data: A review,'' in {\em
+  Structural, Syntactic, and Statistical Pattern Recognition} (T.~Caelli,
+  A.~Amin, R.~P.~W. Duin, D.~d. Ridder, and M.~Kamel, eds.), no.~2396 in
+  Lecture Notes in Computer Science, pp.~15--30, Springer Berlin Heidelberg,
+  Jan. 2002.
+
+\bibitem{deng_time_2013}
+H.~Deng, G.~Runger, E.~Tuv, and M.~Vladimir, ``A time series forest for
+  classification and feature extraction,'' {\em Information Sciences},
+  vol.~239, pp.~142--153, Aug. 2013.
+
+\bibitem{ding_querying_2008}
+H.~Ding, G.~Trajcevski, P.~Scheuermann, X.~Wang, and E.~Keogh, ``Querying and
+  mining of time series data: Experimental comparison of representations and
+  distance measures,'' {\em Proc. {VLDB} Endow.}, vol.~1, pp.~1542--1552, Aug.
+  2008.
+
+\bibitem{vyssotski_miniature_2006}
+A.~L. Vyssotski, A.~N. Serkov, P.~M. Itskov, G.~Dell'Omo, A.~V. Latanov, D.~P.
+  Wolfer, and H.-P. Lipp, ``Miniature neurologgers for flying pigeons:
+  Multichannel {EEG} and action and field potentials in combination with {GPS}
+  recording,'' {\em Journal of Neurophysiology}, vol.~95, pp.~1263--1273, Feb.
+  2006.
+
+\bibitem{putnam_design_1997}
+W.~Putnam and J.~Smith, ``Design of fractional delay filters using convex
+  optimization,'' in {\em Applications of Signal Processing to Audio and
+  Acoustics, 1997. 1997 {IEEE} {ASSP} Workshop on}, pp.~4--pp, {IEEE}, 1997.
+
+\bibitem{vyazovskiy_nrem_2014}
+V.~V. Vyazovskiy and A.~Delogu, ``{NREM} and {REM} sleep: Complementary roles
+  in recovery after wakefulness,'' {\em The Neuroscientist}, vol.~20,
+  pp.~203--219, June 2014.
+
+\bibitem{prabhakar_application_2002}
+S.~Prabhakar, A.~R. Mohanty, and A.~S. Sekhar, ``Application of discrete
+  wavelet transform for detection of ball bearing race faults,'' {\em Tribology
+  International}, vol.~35, pp.~793--800, Dec. 2002.
+
+\bibitem{hjorth_eeg_1970}
+B.~Hjorth, ``{EEG} analysis based on time domain properties,'' {\em
+  Electroencephalography and Clinical Neurophysiology}, vol.~29, pp.~306--310,
+  Sept. 1970.
+
+\bibitem{petrosian_kolmogorov_1995}
+A.~Petrosian, ``Kolmogorov complexity of finite sequences and recognition of
+  different preictal {EEG} patterns,'' in {\em , Proceedings of the Eighth
+  {IEEE} Symposium on Computer-Based Medical Systems, 1995}, pp.~212--217, June
+  1995.
+
+\bibitem{higuchi_approach_1988}
+T.~Higuchi, ``Approach to an irregular time series on the basis of the fractal
+  theory,'' {\em Physica D: Nonlinear Phenomena}, vol.~31, pp.~277--283, June
+  1988.
+
+\bibitem{richman_physiological_2000}
+J.~S. Richman and J.~R. Moorman, ``Physiological time-series analysis using
+  approximate entropy and sample entropy,'' {\em American Journal of Physiology
+  - Heart and Circulatory Physiology}, vol.~278, pp.~H2039--H2049, June 2000.
+
+\bibitem{boulesteix_overview_2012}
+A.-L. Boulesteix, S.~Janitza, J.~Kruppa, and I.~R. König, ``Overview of random
+  forest methodology and practical guidance with emphasis on computational
+  biology and bioinformatics,'' {\em Wiley Interdisciplinary Reviews: Data
+  Mining and Knowledge Discovery}, vol.~2, no.~6, pp.~493--507, 2012.
+
+\bibitem{r_core_team_r:_2014}
+{R Core Team}, {\em R: A Language and Environment for Statistical Computing}.
+\newblock Vienna, Austria: R Foundation for Statistical Computing, 2014.
+
+\bibitem{liaw_classification_2002}
+A.~Liaw and M.~Wiener, ``Classification and regression by {randomForest},''
+  {\em R News}, vol.~2, no.~3, pp.~18--22, 2002.
+
+\bibitem{bao_pyeeg:_2011}
+F.~S. Bao, X.~Liu, and C.~Zhang, ``{PyEEG}: An open source python module for
+  {EEG}/{MEG} feature extraction,'' {\em Computational Intelligence and
+  Neuroscience}, vol.~2011, p.~e406391, Mar. 2011.
+
+\bibitem{cribari-neto_beta_2009}
+F.~Cribari-Neto and A.~Zeileis, ``Beta regression in r,'' 2009.
+
+\bibitem{bates_lme4:_2014}
+D.~Bates, M.~Maechler, B.~Bolker, and S.~Walker, {\em lme4: Linear
+  mixed-effects models using Eigen and S4}.
+\newblock 2014.
+\newblock R package version 1.1-6.
+
+\bibitem{walt_numpy_2011}
+S.~v.~d. Walt, S.~C. Colbert, and G.~Varoquaux, ``The {NumPy} array: A
+  structure for efficient numerical computation,'' {\em Computing in Science \&
+  Engineering}, vol.~13, pp.~22--30, Mar. 2011.
+
+\bibitem{menze_comparison_2009}
+B.~H. Menze, M.~B. Kelm, R.~Masuch, U.~Himmelreich, P.~Bachert, W.~Petrich, and
+  F.~A. Hamprecht, ``A comparison of random forest and its gini importance with
+  standard chemometric methods for the feature selection and classification of
+  spectral data,'' {\em {BMC} Bioinformatics}, vol.~10, pp.~1--16, Dec. 2009.
+
+\bibitem{pang_unexpected_2009}
+D.~S.~J. Pang, C.~J. Robledo, D.~R. Carr, T.~C. Gent, A.~L. Vyssotski,
+  A.~Caley, A.~Y. Zecharia, W.~Wisden, S.~G. Brickley, and N.~P. Franks, ``An
+  unexpected role for {TASK}-3 potassium channels in network oscillations with
+  implications for sleep mechanisms and anesthetic action,'' {\em Proceedings
+  of the National Academy of Sciences}, vol.~106, pp.~17546--17551, Oct. 2009.
+
+\bibitem{bezanson_julia:_2012}
+J.~Bezanson, S.~Karpinski, V.~B. Shah, and A.~Edelman, ``Julia: A fast dynamic
+  language for technical computing,'' {\em {arXiv}:1209.5145 [cs]}, Sept. 2012.
+\newblock {arXiv}: 1209.5145.
+
+\bibitem{morin_shining_2012}
+A.~Morin, J.~Urban, P.~D. Adams, I.~Foster, A.~Sali, D.~Baker, and P.~Sliz,
+  ``Shining light into black boxes,'' {\em Science}, vol.~336, pp.~159--160,
+  Apr. 2012.
+\newblock Cited by 0031.
+
+\bibitem{crick_can_2014}
+T.~Crick, B.~A. Hall, and S.~Ishtiaq, ``"can i implement your algorithm?": A
+  model for reproducible research software,'' {\em {arXiv}:1407.5981 [cs]},
+  July 2014.
+\newblock {arXiv}: 1407.5981.
+
+\bibitem{strobl_conditional_2008}
+C.~Strobl, A.-L. Boulesteix, T.~Kneib, T.~Augustin, and A.~Zeileis,
+  ``Conditional variable importance for random forests,'' {\em {BMC}
+  Bioinformatics}, vol.~9, p.~307, July 2008.
+
+\bibitem{ebrahimi_automatic_2008}
+F.~Ebrahimi, M.~Mikaeili, E.~Estrada, and H.~Nazeran, ``Automatic sleep stage
+  classification based on {EEG} signals by using neural networks and wavelet
+  packet coefficients,'' in {\em 30th Annual International Conference of the
+  {IEEE} Engineering in Medicine and Biology Society, 2008. {EMBS} 2008},
+  pp.~1151--1154, Aug. 2008.
+
+\bibitem{chapotot_automated_2010}
+F.~Chapotot and G.~Becq, ``Automated sleep–wake staging combining robust
+  feature extraction, artificial neural network classification, and flexible
+  decision rules,'' {\em International Journal of Adaptive Control and Signal
+  Processing}, vol.~24, pp.~409--423, May 2010.
+
+\end{thebibliography}

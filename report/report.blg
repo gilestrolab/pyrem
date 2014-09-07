@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2013/Arch Linux)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: report.aux
+The style file: ieeetr.bst
+Database file #1: report.bib.bib
+Warning--empty publisher in bates_lme4:_2014
+You've used 42 entries,
+            1876 wiz_defined-function locations,
+            733 strings with 12161 characters,
+and the built_in function-call counts, 12894 in all, are:
+= -- 1321
+> -- 520
+< -- 0
++ -- 189
+- -- 147
+* -- 986
+:= -- 1807
+add.period$ -- 48
+call.type$ -- 42
+change.case$ -- 40
+chr.to.int$ -- 0
+cite$ -- 43
+duplicate$ -- 625
+empty$ -- 1104
+format.name$ -- 147
+if$ -- 3111
+int.to.chr$ -- 0
+int.to.str$ -- 42
+missing$ -- 43
+newline$ -- 135
+num.names$ -- 44
+pop$ -- 88
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 514
+stack$ -- 0
+substring$ -- 983
+swap$ -- 307
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 1
+while$ -- 141
+width$ -- 44
+write$ -- 421
+(There was 1 warning)

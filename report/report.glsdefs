@@ -1,0 +1,210 @@
+\ifglsentryexists{rem}{}%
+{%
+\gls@defglossaryentry{rem}%
+{%
+name={REM},%
+sort={REM},%
+type={acronym},%
+first={Rapid Eye Movement (REM)},%
+firstplural={Rapid Eye Movements(REMs)},%
+text={REM},%
+plural={REMs},%
+description={Rapid Eye Movement},%
+descriptionplural={Rapid Eye Movement\acrpluralsuffix },%
+symbol={\relax },%
+symbolplural={\relax },%
+user1={},%
+user2={},%
+user3={},%
+user4={},%
+user5={},%
+user6={},%
+long={Rapid Eye Movement},%
+longplural={Rapid Eye Movements},%
+short={REM},%
+shortplural={REMs},%
+counter={page},%
+parent={},%
+%
+}%
+}%
+\ifglsentryexists{nrem}{}%
+{%
+\gls@defglossaryentry{nrem}%
+{%
+name={NREM},%
+sort={NREM},%
+type={acronym},%
+first={Non-Rapid Eye Movement (NREM)},%
+firstplural={Non-Rapid Eye Movements(NREMs)},%
+text={NREM},%
+plural={NREMs},%
+description={Non-Rapid Eye Movement},%
+descriptionplural={Non-Rapid Eye Movement\acrpluralsuffix },%
+symbol={\relax },%
+symbolplural={\relax },%
+user1={},%
+user2={},%
+user3={},%
+user4={},%
+user5={},%
+user6={},%
+long={Non-Rapid Eye Movement},%
+longplural={Non-Rapid Eye Movements},%
+short={NREM},%
+shortplural={NREMs},%
+counter={page},%
+parent={},%
+%
+}%
+}%
+\ifglsentryexists{eeg}{}%
+{%
+\gls@defglossaryentry{eeg}%
+{%
+name={EEG},%
+sort={EEG},%
+type={acronym},%
+first={ElectroEncephaloGram (EEG)},%
+firstplural={ElectroEncephaloGrams(EEGs)},%
+text={EEG},%
+plural={EEGs},%
+description={ElectroEncephaloGram},%
+descriptionplural={ElectroEncephaloGram\acrpluralsuffix },%
+symbol={\relax },%
+symbolplural={\relax },%
+user1={},%
+user2={},%
+user3={},%
+user4={},%
+user5={},%
+user6={},%
+long={ElectroEncephaloGram},%
+longplural={ElectroEncephaloGrams},%
+short={EEG},%
+shortplural={EEGs},%
+counter={page},%
+parent={},%
+%
+}%
+}%
+\ifglsentryexists{emg}{}%
+{%
+\gls@defglossaryentry{emg}%
+{%
+name={EMG},%
+sort={EMG},%
+type={acronym},%
+first={ElectroMyoGram (EMG)},%
+firstplural={ElectroMyoGrams(EMGs)},%
+text={EMG},%
+plural={EMGs},%
+description={ElectroMyoGram},%
+descriptionplural={ElectroMyoGram\acrpluralsuffix },%
+symbol={\relax },%
+symbolplural={\relax },%
+user1={},%
+user2={},%
+user3={},%
+user4={},%
+user5={},%
+user6={},%
+long={ElectroMyoGram},%
+longplural={ElectroMyoGrams},%
+short={EMG},%
+shortplural={EMGs},%
+counter={page},%
+parent={},%
+%
+}%
+}%
+\ifglsentryexists{svm}{}%
+{%
+\gls@defglossaryentry{svm}%
+{%
+name={SVM},%
+sort={SVM},%
+type={acronym},%
+first={Support Vector Machine (SVM)},%
+firstplural={Support Vector Machines(SVMs)},%
+text={SVM},%
+plural={SVMs},%
+description={Support Vector Machine},%
+descriptionplural={Support Vector Machine\acrpluralsuffix },%
+symbol={\relax },%
+symbolplural={\relax },%
+user1={},%
+user2={},%
+user3={},%
+user4={},%
+user5={},%
+user6={},%
+long={Support Vector Machine},%
+longplural={Support Vector Machines},%
+short={SVM},%
+shortplural={SVMs},%
+counter={page},%
+parent={},%
+%
+}%
+}%
+\ifglsentryexists{ann}{}%
+{%
+\gls@defglossaryentry{ann}%
+{%
+name={ANN},%
+sort={ANN},%
+type={acronym},%
+first={Artificial Neural Network (ANN)},%
+firstplural={Artificial Neural Networks(ANNs)},%
+text={ANN},%
+plural={ANNs},%
+description={Artificial Neural Network},%
+descriptionplural={Artificial Neural Network\acrpluralsuffix },%
+symbol={\relax },%
+symbolplural={\relax },%
+user1={},%
+user2={},%
+user3={},%
+user4={},%
+user5={},%
+user6={},%
+long={Artificial Neural Network},%
+longplural={Artificial Neural Networks},%
+short={ANN},%
+shortplural={ANNs},%
+counter={page},%
+parent={},%
+%
+}%
+}%
+\ifglsentryexists{hmm}{}%
+{%
+\gls@defglossaryentry{hmm}%
+{%
+name={HMM},%
+sort={HMM},%
+type={acronym},%
+first={Hidden Markov Model (HMM)},%
+firstplural={Hidden Markov Models(HMMs)},%
+text={HMM},%
+plural={HMMs},%
+description={Hidden Markov Model},%
+descriptionplural={Hidden Markov Model\acrpluralsuffix },%
+symbol={\relax },%
+symbolplural={\relax },%
+user1={},%
+user2={},%
+user3={},%
+user4={},%
+user5={},%
+user6={},%
+long={Hidden Markov Model},%
+longplural={Hidden Markov Models},%
+short={HMM},%
+shortplural={HMMs},%
+counter={page},%
+parent={},%
+%
+}%
+}%
