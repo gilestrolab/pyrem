@@ -2,12 +2,14 @@
 \section{Results} \label{results}
 
 \subsection{A new efficient \texttt{python} package}
-Several algorithms to extract features from univariate time series had already been implemented in the \py{} package \pyeeg{}\citationneeded{}.
+Several algorithms to extract features from univariate time series had already
+been implemented in the \py{} package \pyeeg{}\cite{bao_pyeeg:_2011}.
 Unfortunately, some of them were critically slow, and could therefore not realistically have been used in the present study.
 Preliminary investigation of \pyeeg{} source code revealed that runtimes may be improved mainly by vectorising expressions and pre-allocating of temporary arrays.
 Therefore, systematic reimplementation of all algorithms in \pyeeg{} was undertaken.
 Very significant improvement in performance were achieved for almost all functions(table~\ref{tab:benchmark}).
-Critically, sample \citationneeded{} and absolute \citationneeded{} entropy became usable in reasonable time.
+Critically, sample and approximate entropies\cite{richman_physiological_2000} became usable in
+reasonable time.
 For instance, 40h of CPU time were originally  requiered to compute sample entropy on a all 5 second epochs in a 24h recording.
 The improved implementation cut this down to 55min.
 \input{./tables/benchmark}
@@ -19,7 +21,8 @@ Numerical results for the three  functions were consistent throughout optimisati
 
 In order to facilitate feature extraction, several data structures and routines were also implemented
 in a new \py{} package named \pr{}.
-Briefly, extensions of \texttt{numpy} arrays providing meta-data, sampling frequency, and other attributes were used to represent time series.
+Briefly, extensions of \texttt{numpy} arrays\cite{walt_numpy_2011} providing
+meta-data, sampling frequency, and other attributes were used to represent time series.
 User friendly indexing with string representing time was also developed.
 In addition, a container for time series of discrete annotation levels, each linked to a confidence level, was built.
 Importantly, a container for multiple time series, which supports heterogeneous (between time series) sampling frequencies was implemented.
@@ -83,10 +86,14 @@ for \gls{rem} epochs, the specificity is only 0.74, and the false detection rate
 In order to investigate the structural differences between ground truth and the predicted states,
 three metrics describing physiological properties of sleep were computed (fig.~\ref{fig:struct_assess}).
 
-Prevalence(fig.~\ref{fig:struct_assess}A) of states appears to be the most widely used metric to describe sleep patterns\citationneeded{}.
+Prevalence(fig.~\ref{fig:struct_assess}A) of states is a widely used metric to
+describe sleep patterns.
 No significant difference was found between the ground truth and predicted prevalences ($p-value > 0.13$ for all, z test on the interaction terms of $\beta$ regression).
 
-Sleep fragmentation is often assessed by a combination of two variables: number of episodes of a given state (fig.~\ref{fig:struct_assess}B) and average duration of all episodes per state (fig.~\ref{fig:struct_assess}C) \citationneeded{}.
+Sleep fragmentation is often assessed by a combination of two variables: number of episodes of a given state 
+and average duration of all episodes per state\cite{pang_unexpected_2009}. The
+effect of prediction on both variables were therefore studied (fig.~\ref{fig:struct_assess}B and C,
+respectively).
 
 Large differences were observed between the number of \gls{rem} sleep and awake episodes between the ground truth and the predicted data
 ($p-value < 10^{-15}$ for both, t test on the interaction terms of Poisson GLMM).
