@@ -10,7 +10,7 @@ Therefore, systematic reimplementation of all algorithms in \pyeeg{} was underta
 Very significant improvement in performance were achieved for almost all functions(table~\ref{tab:benchmark}).
 Critically, sample and approximate entropies\cite{richman_physiological_2000} became usable in
 reasonable time.
-For instance, 40h of CPU time were originally  requiered to compute sample entropy on a all 5 second epochs in a 24h recording.
+For instance, 40h of CPU time were originally required to compute sample entropy on a all 5 second epochs in a 24h recording.
 The improved implementation cut this down to 55min.
 \input{./tables/benchmark}
 
@@ -59,7 +59,7 @@ A comparison of both approaches is proposed in figure \ref{fig:temporal_integrat
 Significant improvement was achieved by both methods by including even little temporal information ($\tau = 1$, $n=\{1,3\}$, $p-value < 5.10^{-3}$).
 Although both methods improve performance, it appears that the inter-recording variablility is systematically lower using convolution method.
 For instance, the standard variation in error between all recordings is always lower than 0.03 for convolutions of window size greater than two,
-whilst it is systematicaly above 0.031 for all the values of $\tau$.
+whilst it is systematically above 0.031 for all the values of $\tau$.
 The most significant difference with the original set of variables was achieved using $n = \{1,3,7,15,31\}$ ($p-value < 10^{-6}$).
 Therefore, this new set of 105 variables was used to train the final predictor.
 Combining both convolution and lag approaches did not improve prediction any further (data not shown).
