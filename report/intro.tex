@@ -7,16 +7,19 @@
 \TODO{wake vs awake}
 \TODO{conclusion should do more  justice}
 
-Sleep is considered to be a ubiquitous and necessary behaviour amongst animals.
+Sleep is considered to be a ubiquitous and necessary behaviour amongst
+animals\cite{siegel_all_2008,cirelli_is_2008}.
 However, its real physiological functions remain debated.
 In vertebrate, electrophysiological recordings, in particular, \gls{eeg};
 the recording of the global electrical activity in the brain,
 but also \gls{emg}, which records muscular activity,
-have extensively used to study the structure of sleep during the last century.
+have extensively used to study the structure of sleep during the last
+century\cite{loomis_distribution_1938,aserinsky_regularly_1953}.
 They have the advantage of being non-invasive an relatively high throughput.
 Today, \gls{eeg} remains one of the main asset in the study sleep physiology.
 
-Rodents, in particular mice and rats, have proved very successful model for understanding of the mechanisms of sleep in mammals.
+Rodents, in particular mice and rats, have proved very successful model for
+understanding of the mechanisms of sleep in mammals\cite{toth_animal_2013}.
 Classically, three main distinct types of sleep related behaviours: wakefulness, \gls{nrem} sleep and \gls{rem} 
 sleep are referred as \emph{vigilance states}.
 Vigilance states are usually defined on the basis of \gls{eeg} and \gls{emg} (fig.~\ref{fig:sleep_description}).
@@ -42,28 +45,40 @@ Such manual annotation is very time consuming; several hours of work have been r
 This severely limits data throughput, and human subjectivity is likely to introduce systematic bias.
 Indeed, it is expected that scoring will be performed differently by each expert, making result difficult to reproduce independently.
 Often, two experts score the same data, in order to ensure satisfying agreement.
-Although, manual scorers are generally reported as being very consensual with each other\citationneeded{},
-it can be argued that experts most likely work in the same laboratory and trained one another, or were trained by the same third person.
+Although, manual scorers are generally reported as being very consensual with
+each other\cite{costa-miserachs_automated_2003,sen_comparative_2014}, it can be
+argued that experts most likely work in the same laboratory and trained one another, or were trained by the same third person.
 In this context, agreement between experts does not account for the variability between communities of researchers, and cannot be used to assess reproducibility.
 
-In order to overcome both speed and subjectivity limitations, efforts have been directed towards automation of sleep scoring.
+In order to overcome both speed and subjectivity limitations, efforts have long
+been directed towards automation of sleep
+scoring\cite{chouvet_automatic_1980, haustein_automatic_1986}.
 However, little adoption has occurred and very few available implementations, in the form of software that biologists could use, have been developed.
 Typically, two different approaches to classification have been followed: unsupervised or supervised learning.
 
-Unsupervised learning has the advantage of making no assumption about the nature of the different vigilance states, and how they should be defined.
+Unsupervised learning \cite{l&xe4_sleep_2012,sunagawa_faster:_2013} has the
+advantage of making no assumption about the nature of the different vigilance states, and how they should be defined.
 Therefore, this approach can lead to the discovery of truly new states.
-One issue is that the choice of the variables used for clustering is very critical.
-Often, variables such as frequency domain variables are in fact chosen in order to generate clusters that will match human defined clusters.
-In addition, unsupervised methods may lack robustness in so far as the cannot easily include covariates explaining, for instance, variability between recording equipments.
+One issue is that the choice of the variables used for clustering is very
+critical.
+Often, variables such as frequency domain variables are in fact chosen in order
+to generate clusters that will match human defined clusters.
+In addition, unsupervised methods may lack robustness\cite{sunagawa_faster:_2013} in so far as the
+cannot easily include covariates explaining, for instance, variability between recording equipments.
 
 Another approach is to assume human annotations are, although imperfect, biologically relevant and generally consistent,
- and therefore to use supervised learning techniques.
-Of course, if human decisions were biased, such a method may suffer from the same bias.
+ and therefore to use supervised learning
+ techniques\cite{crisler_sleep-stage_2008,ventouras_performance_2012,doroshenkov_classification_2007,pan_transition-constrained_2012,sen_comparative_2014}.
+  Of course, if human decisions were biased, such a method may suffer from the same bias.
 However, a vast corpus of experimental work has provided hypothesis about function of these states which tends to validate the actual `existence' of these discrete vigilance states.
 Building a classifier that would produce a consensual prediction of vigilance states could be seen as an attempt to formalised and rationalise the definition of such states.
 This would improve future research without denying decades of sleep neurobiology.
 
-Many supervised learning techniques such as from \glspl{svm}, \glspl{ann}, to \glspl{hmm} have been investigated.
+Many supervised learning techniques such as from
+\glspl{svm}\cite{crisler_sleep-stage_2008},
+\glspl{ann}\cite{ventouras_performance_2012},
+to
+\glspl{hmm}\cite{doroshenkov_classification_2007,pan_transition-constrained_2012} have been investigated.
 In general, the first step is to compute features on consecutive segments of annotated electrophysiological signals know as epochs.
 Then, the relation between the response variable(annotation) and the independent variables (features) can be modelled.
 Either epochs are considered to be independent from one another or time-dependent structures are explicitly modelled (\eg{} using \glspl{hmm}).
@@ -71,12 +86,17 @@ Time aware modelling has the advantage of accounting for the interdependence of 
 However, it generally does not model non-linear relationships between large numbers of predictors as well as classical classifiers.
 
 Recently, promising results were obtained for automatic scoring of human sleep stages by performing an exhaustive
-feature extraction, including variables resulting from discrete wavelet decomposition.
-Then, the authors compared several classifiers and found that random forest were, overall, the most accurate predictors.
+feature extraction, including variables resulting from discrete wavelet
+decomposition\cite{sen_comparative_2014}.
+Then, the authors compared several classifiers and found that random
+forest\cite{breiman_random_2001} were, overall, the most accurate predictors.
 
 The study herein bases itself on these promising results by computing an even larger number of features.
-An important addition was the computation of time-aware features which significantly improved accuracy.
-Furthermore, rigorous stratified cross-validation procedure and comparisons of sleep structure were performed.
+An important addition was the computation of time-aware
+features\cite{dietterich_machine_2002,deng_time_2013} which significantly improved
+accuracy.
+Furthermore, rigorous stratified cross-validation\cite{ding_querying_2008} procedure and
+comparisons of sleep structure were performed.
 These improvement altogether contributed to achieve a very satisfying overall accuracy of 92\%.
 In order to pave the way to an implementation of an ubiquitous sleep scoring software.
 \pr, a new \py{} package was also build to facilitate efficient feature extraction.
