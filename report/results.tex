@@ -33,7 +33,8 @@ A complete documentation of \pr{} is provided as an appendix to the report herei
 
 \subsection{Twenty variables can generate accurate predictions}
 Including temporal information (see next section) wil result in multiplication of the number of variable, rendering computation difficult, and prediction potentially less accurate.
-Therefore, recursive elimination of variables based on their importance was undertaken.
+Therefore, recursive feature elimination\cite{menze_comparison_2009} based on
+Gini variable importance was undertaken.
 Starting with all 164 variables, random forests were trained, and the number of features was reduced by a factor $1.5$  by eliminating the least important variables.
 For each iteration, the stratified cross-validation error (see material and methods) was computed (fig.~\ref{fig:variable_elimination}). Five replicates were performed.
 

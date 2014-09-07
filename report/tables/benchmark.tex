@@ -24,22 +24,32 @@ Significance levels: $^{***}$, $p-value < 10^{-3}$; $^{**}$, $p-value < 10^{-2}$
  
   \hline
   \hline
-\specialcell{Approximate\\Entropy} & \texttt{ap\_ent} &                                     9970 & 4288 & $487^{***}$ & $3478^{***}(-)$ & No\\
+Spectral Entropy\cite{bao_pyeeg:_2011} & \texttt{spectral\_entropy} &           
+0.309 & 11459 & $0.227^{***}$ & $22133^{***}$ & Yes\\
 \hline
-Fisher Information & \texttt{fisher\_info} &                                 3.24 & 8673 & $0.121^{***}$ & $12427^{***}$ & No\\
+\specialcell{Petrosian\\Fractal Dimension\cite{petrosian_kolmogorov_1995}} & \texttt{pfd} &                
+2.66 & 8606 & 2.65 & 8579 & Yes\\
 \hline
-\specialcell{Higuchi\\Fractal Dimension} & \texttt{hfd} &                     11.7 & 8833 & $1.39^{***}$ & $28329^{***}$ & Yes\\
+Fisher Information\cite{bao_pyeeg:_2011} & \texttt{fisher\_info} &                                
+3.24 & 8673 & $0.121^{***}$ & $12427^{***}$ & No\\
 \hline
-Hjorth parameters & \texttt{hjorth} &                                         5.14 & 8633 & $0.088^{***}$ & $36354^{***}$ & Yes\\
-\hline
-\specialcell{Petrosian\\Fractal Dimension} & \texttt{pfd} &                 2.66 & 8606 & 2.65 & 8579 & Yes\\
-\hline
-Sample Entropy & \texttt{samp\_ent} &                                         8305 & 4276 & $188^{***}$ & $5483^{***}(-)$ & No\\
-\hline
-Spectral Entropy & \texttt{spectral\_entropy} &                                 0.309 & 11459 & $0.227^{***}$ & $22133^{***}$ & Yes\\
-\hline
-\specialcell[l]{Singular Value \\Decomposition\\ entropy} & \texttt{svd\_ent} &     3.25 & 8663 & $0.113^{***}$ & $11774^{**}$ & Yes\\
+\specialcell[l]{Singular Value \\Decomposition\\ entropy\cite{bao_pyeeg:_2011}}
+& \texttt{svd\_ent} &     3.25 & 8663 & $0.113^{***}$ & $11774^{**}$ & Yes\\
  \hline
+Hjorth parameters\cite{hjorth_eeg_1970} & \texttt{hjorth} &                                        
+5.14 & 8633 & $0.088^{***}$ & $36354^{***}$ & Yes\\
+\hline
+\specialcell{Higuchi\\Fractal Dimension\cite{higuchi_approach_1988}} & \texttt{hfd} &                    
+11.7 & 8833 & $1.39^{***}$ & $28329^{***}$ & Yes\\
+\hline
+ 
+Sample Entropy\cite{richman_physiological_2000} & \texttt{samp\_ent} &          
+8305 & 4276 & $188^{***}$ & $5483^{***}(-)$ & No\\
+\hline
+
+\specialcell{Approximate\\Entropy\cite{richman_physiological_2000}} &
+\texttt{ap\_ent} & 9970 & 4288 & $487^{***}$ & $3478^{***}(-)$ & No\\
+\hline
 \end{tabular}
 \end{center}
 \end{table}

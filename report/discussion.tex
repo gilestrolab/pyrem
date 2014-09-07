@@ -6,15 +6,16 @@ In order to train statistical learning methods to classify vigilance states,
 it was necessary to compute an exhaustive set of features for all consecutive five second epochs
 over long (24h) time series.
 For this purpose, \pr{}, a new \py{} package was developed based on
-\texttt{PyEEG}\citationneeded{},  which already implements several algorithms often used to study \gls{eeg}.
+\texttt{PyEEG}\cite{bao_pyeeg:_2011},  which already implements several
+algorithms often used to study \gls{eeg}.
 Very significant improvements in performance were achieved for almost all functions implemented in \texttt{PyEEG}
 (table~\ref{tab:benchmark}). These improvements will considerably speed-up prototyping of feature extraction
 and may be essential in order to build real time classifiers.
 In addition, such modifications will make it possible to compute features for a large number
 of recordings in reasonable time.
 Further improvements are possible, for instance,
-sample entropy was tentatively implemented in Julia programming language and performed 25 times faster than
-\pr{}'s implementation\footnote{implementation available at
+sample entropy was tentatively implemented in Julia programming language\cite{bezanson_julia:_2012}
+and performed 25 times faster than \pr{}'s implementation\footnote{Implementation available at
 \href{https://github.com/qgeissmann/Physiology.jl/blob/master/src/univariate.jl}{https://github.com/qgeissmann/Physiology.jl/blob/master/src/univariate.jl}.}
 Interestingly, it appears that the new implementation of sample and
 absolute entropy does not scale as well as the original implementation.
@@ -25,7 +26,8 @@ Several \texttt{PyEEG} functions were also found to be inconsistent with mathema
 definitions (see \pr{} documentation, appendix).
 This unfortunatly apperas to be a common issue for academic software.
 The general status of the peer-review process and the reproducibility of programs and algorithms have
-recently drawn attention (see \citationneeded{Black-box; Can I reproduce your algo} for discussions about this issue).
+recently drawn attention (see \cite{morin_shining_2012,crick_can_2014} for
+discussions about this issue).
 
 \subsection{Exhaustive feature extraction}
 
@@ -36,15 +38,18 @@ Then, new variables were created to account for temporal consistency of vigilanc
 
 Discrete wavelet decomposition is an extremely fast an accurate algorithm to filter a periodic
 signal into complementary and exclusive frequency sub-bands (fig.~\ref{fig:dwd}).
-XXX et al.(cite) \citationneeded{} obtained very promising results by computing a large number of features on the raw \gls{eeg} signal
-and a limited subset of features (\ie{} mean power and absolute values) in some wavelet coefficients.
+\c{S}en et al.\cite{sen_comparative_2014} obtained very promising results by
+computing a large number of features on the raw \gls{eeg} signal and a limited subset of features (\ie{} mean power and absolute values) in some wavelet coefficients.
 In contrast, in the present study, all features were computed on all frequency sub-bands.
 Interestingly, some of the features that are the most important for prediction would not have
 been discovered otherwise (see table~\ref{tab:importances}).
 
+
+
 Many authors have modelled time series of epochs as if each epoch was statistically independent from each other.
 This assumption makes it straightforward to use classical machine learning techniques such as
-\glspl{svm}(\citationneeded{}), \glspl{ann}(\citationneeded{}), random forests(\citationneeded{}) and others.
+\glspl{ann}, \glspl{svm}\cite{crisler_sleep-stage_2008},
+random forests\cite{breiman_random_2001} and others.
 They have the advantage coping very well with non-linearity, can handle a large number of predictors and have many optimised implementations.
 
 However, working with this assumption generally does not allow to account for temporal consistency of vigilance states.
@@ -52,16 +57,18 @@ Indeed, prior knowledge of, for instance, the state transition probabilities can
 Manual scorers use contextual information to make decisions.
 For example, if a given epoch has ambiguous features between \gls{rem} and awake,
 it is likely to be classified as awake given surrounding epochs are, less ambiguously, awake.
-For this reason, explicit temporal modelling, using, for instance, Hidden Markov Models has been investigated\citationneeded{}.
+For this reason, explicit temporal modelling, using, for instance, Hidden Markov Models has been investigated\cite{doroshenkov_classification_2007,pan_transition-constrained_2012}.
 
 In order to benefit from the classical machine learning
 framework whist including temporal information,
-it is possible to create, new variables, accounting for the temporal variation\citationneeded{}.
+it is possible to create, new variables, accounting for the temporal
+variation\cite{dietterich_machine_2002}.
 This study demonstrated that addition of temporal context significantly improved predictive accuracy (fig.\ref{fig:temporal_integration}).
 The convolution approach (eq.\ref{eq:window}) appeared to provide better results.
 Instead of averaging feature after calculation, it may be advantageous to compute features over epochs of different length in a first place.
 Thus, the accuracy of local of non additive features, such as median, will be improved. In addition to local mean of feature, other variables, such as local
-slope and local variance of each feature may improve classification \citationneeded{(Deng 2013).}
+slope and local variance of each feature may improve
+classification\cite{deng_time_2013}.
 
 Although addition of time-dependent variables improved accuracy over a time-unaware model, their use can be seen as controversial.
 Indeed, including prior information about sleep structure will cause problems if the aim is to find differences in sleep structure.
@@ -79,15 +86,16 @@ they are more likely to be generalisable.
 
 \subsection{Random forest classification}
 
-In this study, random forest\citationneeded{} classifiers were exclusively used.
+In this study, random forest classifiers\cite{breiman_random_2001} were exclusively used.
 In addition to their capacity to model non-linearity, they are very efficient at handling very large number of variables.
-Recently very promising classification of sleep stages in human were generated using this algorithm\citationneeded{}.
+Recently very promising classification of sleep stages in human were generated
+using this algorithm\cite{sen_comparative_2014}.
 A very interesting feature of random forest is their
 natural ability to generate relative values of importance for the different predictors.
 These values quantifies how much each variables contributes to the predictive power of the model.
 This feature is extremely useful because it allows using random forests for variable selection.
 This can be used to reduce dimensionality of the variable space without losing predictive power (fig.\ref{fig:variable_elimination}),
-but also to study conditional variable importance, or, for instance,
+but also to study conditional variable importance\cite{strobl_conditional_2008}, or, for instance,
 determine which variables are important to segregate pairs of classes.
 Whilst random forests are not guaranteed to be the best predictor, they allow fast and in-depth preliminary investigation.
 Finally, underlying mechanisms of random forest (\ie{} how  variables are combined) is relatively simple to understand in terms of binary logic.
@@ -99,7 +107,8 @@ This ``white box'' property is an advantage when trying to provide more rational
 
 Previous research, using classical statistical learning framework,
 have often assessed their classifier through cross-validation.
-It often unclear how sampling was performed to generate training and testing sets.
+It however often unclear how sampling was performed to generate training and
+testing sets\cite{ebrahimi_automatic_2008, chapotot_automated_2010, sen_comparative_2014}.
 Time series of epochs are dense and, in general,
 the features (and labels) at a given time are very correlated with surrounding features.
 Therefore, if random sampling of even 50\% of all epochs, from all time series, was performed,
@@ -111,7 +120,8 @@ with all the even hours (from start of the experiment) and testing it with all t
 There are several way to reduce overfitting including limiting the maximal number of splits when growing classification trees, or pruning trees.
 However, it never possible to unsure a model will not overfit \emph{a priori}.
 Thus it remain necessary to assess the model fairly.
-In this study, systematic stratified cross-validation was performed.
+In this study, systematic stratified cross-validation was
+performed \cite{ding_querying_2008}.
 As a result, all predictions made on any 24h time series are generated by models
 that did not use any point originating from this same time series. This precaution simulate the the behaviour of the predictor with new recordings.
 Cross-validation was not only used to generate overall value of accuracy, but also, to further assess differences in sleep patterns (fig. \ref{fig:struct_assess}).
@@ -127,7 +137,9 @@ The assessment of prediction doubt (fig.~\ref{fig:error}, fourth row) illustrate
 The ground truth labels used in this study has been generated by a two pass semi-automatic method.
 In a first place, an automatic annotation is performed based on a human-defined variable threshold.
 Then, the expert visually inspect the result and correct ambiguities.
-The first pass was originally designed to combine, through logical rules, four epochs of five seconds to produce 20s epochs\citationneeded{}.
+The first pass was originally designed to combine, through logical rules, four
+epochs of five seconds to produce 20s
+epochs\cite{costa-miserachs_automated_2003}.
 However, it was simplified in-house in order to produce
 only five second epochs, ignoring the last step, and has since not been reassessed against manual scoring.
 It is expected that this simplification increased divergence with manual scorers.
@@ -142,8 +154,8 @@ When training a model, this uncertainty can be included, for instance, as a weig
 
 \subsection{Overall results}
 The predictions of the classifier presented in this research agreed with ground truth for 92\% of epochs (table~\ref{tab:confus}).
-Although the limitation of the ground truth annotation make it is hard to put this result into perspective,
-this score is very promising.
+Although the limitation of the ground truth annotation makes it is difficult to
+put this result into perspective, this score is very promising.
 In addition, prediction did not result in significant difference in prevalences.
 However, there were, on average, much less \gls{rem} episodes in the predicted time series.
 The duration of \gls{rem} episodes was also over-estimated by prediction (though this is only marginally significant).
