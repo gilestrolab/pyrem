@@ -15,22 +15,16 @@ understand the mechanisms of sleep in mammals\cite{toth_animal_2013}.
 Classically, there are three distinct main types of sleep-related behaviours: wakefulness, \gls{nrem} sleep and \gls{rem} 
 sleep which are collectively referred to as \emph{vigilance states}.
 Vigilance states are usually defined on the basis of \gls{eeg} and \gls{emg} (fig.~\ref{fig:sleep_description}).
-When awake (WAKE), animals tend to have a high muscular activity which translates to high amplitude voltage changes in the \gls{emg}.
-____________________________________________________________________________
-[SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING]
+When awake (WAKE), animals tend to have a high muscular activity which translates to high amplitude voltage changes in the \gls{emg}\cite{crisler_sleep-stage_2008}.
 During wakefulness, \gls{eeg} is dominated by relatively low amplitude oscillations of frequencies
 between six and ten hertz often referred to as theta waves. 
-____________________________________________________________________________
-[SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING]
 In contrast, \gls{nrem} sleep, also called slow wave sleep, is a period of muscular inactivity (low \gls{emg})
 dominated by slow oscillations (below 4Hz) of high amplitude named delta waves.
-____________________________________________________________________________
-[SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING]
+\cite{vyazovskiy_nrem_2014}
 The third state, \gls{rem} sleep, is characterised by a complete lack of muscular activity (atony) and an \gls{eeg} activity very similar to the awake state.
 \gls{rem} sleep is the least prevalent of all three stages, and represents generally  20\% of all sleeping time.
 The prevalence of these three states as well as their temporal organisation are extremely important observations in sleep research
-____________________________________________________________________________
-[SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING]
+\cite{mieda_orexin_2004,pang_unexpected_2009}
 
 \input{./figures/sleep_description}
 
@@ -92,16 +86,16 @@ Then, the authors compared several classifiers and found that random
 forests\cite{breiman_random_2001} were, overall, the most accurate predictors.
 
 The study herein bases itself on these promising results by computing an even larger number of features.
-An important addition was the computation of time-aware
-features\cite{dietterich_machine_2002,deng_time_2013} which significantly improved
+An important addition was the computation of interval
+features (\ie{} time aware)
+\cite{dietterich_machine_2002,rodriguez_support_2005,deng_time_2013} which significantly improved
 accuracy. 
 Indeed, since manual scorers usually use contextual information to make a decision concerning a given state (personal communications),
 it was highly relevant to build a time-aware predictor.
 Furthermore, as opposed to previous work, stratified cross-validation\cite{ding_querying_2008} procedures and
 comparisons of resulting sleep patterns were performed.
 These improvements altogether contributed to achieving a very satisfying overall accuracy of 92\% 
-_____________________________________________________________________
-[IN COMPARISON TO WHAT? IN COMPARISON TO WHAT? IN COMPARISON TO WHAT?] compared to manual scoring.
+compared to manual scoring.
 
 
 In order to pave the way for the implementation of a ubiquitous sleep scoring software,
