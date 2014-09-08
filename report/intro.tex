@@ -63,7 +63,7 @@ Another approach is to assume human annotations are, although imperfect, biologi
  and therefore to use supervised learning
  techniques\cite{crisler_sleep-stage_2008,ventouras_performance_2012,doroshenkov_classification_2007,pan_transition-constrained_2012,sen_comparative_2014}.
   Of course, if human decisions were biased, such a method may suffer from the same bias.
-However, a vast corpus of experimental work has provided hypothesis about function of these states which tends to validate the actual `existence' of these discrete vigilance states.
+However, a vast corpus of experimental work has provided hypothesis about function of these states which tends to validate the actual `existence' of these discrete vigilance states\cite{diekelmann_memory_2010}.
 Building a classifier that would produce a consensual prediction of vigilance states could be seen as an attempt to formalised and rationalise the definition of such states.
 This would improve future research without denying decades of sleep neurobiology.
 
@@ -87,11 +87,15 @@ forest\cite{breiman_random_2001} were, overall, the most accurate predictors.
 The study herein bases itself on these promising results by computing an even larger number of features.
 An important addition was the computation of time-aware
 features\cite{dietterich_machine_2002,deng_time_2013} which significantly improved
-accuracy.
-Furthermore, rigorous stratified cross-validation\cite{ding_querying_2008} procedure and
-comparisons of sleep structure were performed.
-These improvement altogether contributed to achieve a very satisfying overall accuracy of 92\%.
+accuracy. 
+Indeed, since manual scorers usually use contextual information (personal communications) to make a decision concerning a given state,
+it was important to build a predictor that could be time-aware.
+Furthermore, as opposed to previous work, stratified cross-validation\cite{ding_querying_2008} procedure and
+comparisons of resulting sleep patterns were performed.
+These improvement altogether contributed to achieve a very satisfying overall accuracy of 92\% compared to manual scoring.
+
+
 In order to pave the way to an implementation of an ubiquitous sleep scoring software.
 \pr, a new \py{} package was also build to facilitate efficient feature extraction.
-This new package is here demonstrated to be significantly more performance than alternative implementation.
-
+This new package is here demonstrated to perform significantly better than \pyeeg{}\cite{bao_pyeeg:_2011}; an alternative implementation.
+In addition, inconsistencies in the implementations of some algorithms were corrected, and many new features were developed.

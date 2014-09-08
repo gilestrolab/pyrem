@@ -1,7 +1,7 @@
 
 \section{Results} \label{results}
 
-\subsection{A new efficient \texttt{python} package}
+\subsection{A new efficient \py{} package}
 Several algorithms to extract features from univariate time series had already
 been implemented in the \py{} package \pyeeg{}\cite{bao_pyeeg:_2011}.
 Unfortunately, some of them were critically slow, and could therefore not realistically have been used in the present study.
@@ -19,7 +19,9 @@ This affected five of the eight reimplemented functions(table~\ref{tab:benchmark
 Detail of the corrections performed are provided, as notes, in the documentation of the new package (see appendix, section 2.3).
 Numerical results for the three  functions were consistent throughout optimisation.
 
-In order to facilitate feature extraction, several data structures and routines were also implemented
+In order to facilitate feature extraction, several data structures and routines, which were not 
+available in \pyeeg{},
+were also implemented
 in a new \py{} package named \pr{}.
 Briefly, extensions of \texttt{numpy} arrays\cite{walt_numpy_2011} providing
 meta-data, sampling frequency, and other attributes were used to represent time series.
@@ -47,11 +49,12 @@ For further investigation, $p=21$ was considered to be a good compromise between
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Including temporal information improves prediction}
-Manual scorer usually use contextual information in order to make a decision concerning a given state.
-For instance, implicit assumptions are made on the temporal consistency of the states.
-Therefore, it seems important to account for contextual information when building a predictor.
-In this study, two different approaches were pursued.
-Either the local means of features over different ranges were added to the features
+%~ Manual scorer usually use contextual information in order to make a decision concerning a given state.
+%~ For instance, implicit assumptions are made on the temporal consistency of the states.
+%~ Therefore, it seems important to account for contextual information when building a predictor.
+%~ In this study, two different approaches were pursued.
+Two distinct strategies were used to include temporal information in the feature space:
+either the local means of features over different ranges were added to the features
 of each epochs (eq.~\ref{eq:window}),
 or the features of neighbouring time points were included (eq.~\ref{eq:tau}).
 

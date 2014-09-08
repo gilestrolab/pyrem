@@ -54,8 +54,8 @@ As a result, a total of 14 time series was generated for each recording.
 For all time series, a list of 16 features (see table~\ref{tab:features}) was computed in each subsequent non-overlapping five seconds epochs.
 Thus, resulting in a total of $p=192$ variables. 
 For each recording ($\simeq 24h$) there were approximately $17000$ epochs.
-Some combinations of variables and signals were however incalculable.
-These were therefore removed; resulting in an actual number of variables $p=164$.
+Any combination of variable and signal that generated, at list, one incalculable value (\eg{} division by zero) was removed.
+28 variables were deleted this way resulting in a number of variable of $p=164$.
 
 \input{./tables/features}
 
