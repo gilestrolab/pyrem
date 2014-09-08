@@ -64,15 +64,11 @@ framework whist including temporal information,
 it is possible to create new variables to account for the temporal
 variation\cite{dietterich_machine_2002}.
 This study demonstrated that the addition of temporal context significantly improved predictive accuracy (fig.\ref{fig:temporal_integration}).
-The convolution approach (eq.\ref{eq:window}) provided better results. 
-%_____________________________________________________________
-%[REFER TO RESULTS FOR THIS CLAIM].
+The convolution approach (eq.\ref{eq:window}) provided better results (fig.\ref{fig:temporal_integration}). 
 Instead of averaging features after calculation, it may be advantageous to compute features over epochs of different lengths in the first place.
-Thus, the accuracy of local of non-additive features, such as median, would be improved. In addition to the local mean of features, other variables, such as local
-slope and local variance of each feature, may improve
-classification\cite{deng_time_2013}.
-%______________________________________________________________
-%DID YOU INCLUDE THAT IN YOUR ALGORITHM, THEN REFER TO YOUR RESULTS, OR PHRASE IT AS AN OUTLOOK
+Thus, the accuracy of local of non-additive features, such as median, would be improved.
+It would be interesting to investigate the effect of other interval of features, such as slope and variance\cite{deng_time_2013},
+on classification accuracy.
 
 Although addition of time-dependent variables improved accuracy over a time-unaware model, their use can be seen as controversial.
 Indeed, including prior information about sleep structure will cause problems if the aim is to find differences in sleep structure.
@@ -178,10 +174,8 @@ difference is found using automatic scoring.
 The aim of the study herein was to build a classifier that could accurately predict vigilance states from \gls{eeg} and \gls{emg} data
 and serve as a basis for an efficient and flexible software implementation.
 In the first place, \pr{}, a new python package was designed to efficiently extract a large number of features from electrophysiological recordings.
-% ___________________________________________________________________
-% ...MENTION TIME-AWARE MODELING IF THAT'S THE OTHER NEW POINT OF YOUR APPROACH
 Then, a random forest approach was used to eliminate irrelevant variables.
-Importantly, this study shows that prediction accuracy can then be improved by including features derived from restricted local averages.
+Importantly, this study shows that prediction accuracy can then be improved by including features derived from interval means.
 The overall achieved accuracy was as high as 92\%, and although some significant structural differences were induced by prediction,
 the classifier was overall satisfying.
 In addition, the presented classifier can generate confidence values that can be used to moderate each prediction, and ultimately decide whether to trust them.
