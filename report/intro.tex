@@ -3,40 +3,47 @@
 Sleep is considered to be a ubiquitous and necessary behaviour amongst
 animals\cite{siegel_all_2008,cirelli_is_2008}.
 However, its real physiological functions remain debated.
-In vertebrate, electrophysiological recordings, in particular, \gls{eeg};
-the recording of the global electrical activity in the brain,
-but also \gls{emg}, which records muscular activity,
-have extensively used to study the structure of sleep during the last
-century\cite{loomis_distribution_1938,aserinsky_regularly_1953}.
-They have the advantage of being non-invasive an relatively high throughput.
-Today, \gls{eeg} remains one of the main asset in the study sleep physiology.
+In vertebrates, electrophysiological recordings (\gls{eeg}), and in particular recordings of the global electrical activity in the brain,
+and electromyogram recordings (\gls{emg}) of muscular activity,
+have been extensively used in the last
+century to study the structure of sleep \cite{loomis_distribution_1938,aserinsky_regularly_1953}.
+They have the advantage of being non-invasive and relatively high throughput.
+Today, \gls{eeg} remains one of the main assets in the study of sleep physiology.
 
-Rodents, in particular mice and rats, have proved very successful model for
-understanding of the mechanisms of sleep in mammals\cite{toth_animal_2013}.
-Classically, three main distinct types of sleep related behaviours: wakefulness, \gls{nrem} sleep and \gls{rem} 
-sleep are referred as \emph{vigilance states}.
+Rodents, in particular mice and rats, have proven to be very successful models to
+understand the mechanisms of sleep in mammals\cite{toth_animal_2013}.
+Classically, there are three distinct main types of sleep-related behaviours: wakefulness, \gls{nrem} sleep and \gls{rem} 
+sleep which are collectively referred to as \emph{vigilance states}.
 Vigilance states are usually defined on the basis of \gls{eeg} and \gls{emg} (fig.~\ref{fig:sleep_description}).
-When awake (WAKE), animals tend to have a high muscular activity which translates as a high amplitude voltage changes in the \gls{emg}.
-During wakefulness, \gls{eeg} is dominated by a relatively low amplitude oscillations of frequency
-between six and ten hertz often referred as theta waves.
+When awake (WAKE), animals tend to have a high muscular activity which translates to high amplitude voltage changes in the \gls{emg}.
+____________________________________________________________________________
+[SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING]
+During wakefulness, \gls{eeg} is dominated by relatively low amplitude oscillations of frequencies
+between six and ten hertz often referred to as theta waves. 
+____________________________________________________________________________
+[SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING]
 In contrast, \gls{nrem} sleep, also called slow wave sleep, is a period of muscular inactivity (low \gls{emg})
 dominated by slow oscillations (below 4Hz) of high amplitude named delta waves.
+____________________________________________________________________________
+[SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING]
 The third state, \gls{rem} sleep, is characterised by a complete lack of muscular activity (atony) and an \gls{eeg} activity very similar to the awake state.
 \gls{rem} sleep is the least prevalent of all three stages, and represents generally  20\% of all sleeping time.
 The prevalence of these three states as well as their temporal organisation are extremely important observations in sleep research
+____________________________________________________________________________
+[SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING SOURCE MISSING]
 
 \input{./figures/sleep_description}
 
 
-Although definitions of sleep stages appear straightforward, in practice, many cases are ambiguous.
+Although definitions of sleep stages appear straightforward, many cases are ambiguous in practice.
 For instance, it is difficult to characterise transitions between two states.
 In addition, there are many sources of variability including how surgery was performed, the type of instrument used and inter-animal variability.
-The quality of the acquisition can also be made considerably worst by noisy signals or by the presence of artefacts.
+The quality of the acquisition can also be made considerably worse by noisy signals or by the presence of artefacts.
 For these reasons, sleep scoring, \ie{} the attribution of discrete vigilance states to electrophysiological time series,
 is traditionally performed by trained human experts.
 Such manual annotation is very time consuming; several hours of work have been reported in order to score 24h of recording\cite{sunagawa_faster:_2013}.
 This severely limits data throughput, and human subjectivity is likely to introduce systematic bias.
-Indeed, it is expected that scoring will be performed differently by each expert, making result difficult to reproduce independently.
+Indeed, it is expected that scoring will be performed differently by each expert, making results difficult to reproduce independently.
 Often, two experts score the same data, in order to ensure satisfying agreement.
 Although, manual scorers are generally reported as being very consensual with
 each other\cite{costa-miserachs_automated_2003,sen_comparative_2014}, it can be
@@ -56,11 +63,11 @@ One issue is that the choice of the variables used for clustering is very
 critical.
 Often, variables such as frequency domain variables are in fact chosen in order
 to generate clusters that will match human defined clusters.
-In addition, unsupervised methods may lack robustness\cite{sunagawa_faster:_2013} in so far as the
+In addition, unsupervised methods may lack robustness\cite{sunagawa_faster:_2013} in so far as they
 cannot easily include covariates explaining, for instance, variability between recording equipments.
 
-Another approach is to assume human annotations are, although imperfect, biologically relevant and generally consistent,
- and therefore to use supervised learning
+Another approach is to assume that human annotations are, although imperfect, biologically relevant and generally consistent,
+ and to therefore use supervised learning
  techniques\cite{crisler_sleep-stage_2008,ventouras_performance_2012,doroshenkov_classification_2007,pan_transition-constrained_2012,sen_comparative_2014}.
   Of course, if human decisions were biased, such a method may suffer from the same bias.
 However, a vast corpus of experimental work has provided hypothesis about function of these states which tends to validate the actual `existence' of these discrete vigilance states\cite{diekelmann_memory_2010}.
@@ -71,31 +78,33 @@ Many supervised learning techniques such as from
 \glspl{svm}\cite{crisler_sleep-stage_2008},
 \glspl{ann}\cite{ventouras_performance_2012},
 to
-\glspl{hmm}\cite{doroshenkov_classification_2007,pan_transition-constrained_2012} have been investigated.
-In general, the first step is to compute features on consecutive segments of annotated electrophysiological signals know as epochs.
-Then, the relation between the response variable(annotation) and the independent variables (features) can be modelled.
-Either epochs are considered to be independent from one another or time-dependent structures are explicitly modelled (\eg{} using \glspl{hmm}).
-Time aware modelling has the advantage of accounting for the interdependence of consecutive epochs (see fig.~\ref{fig:sleep_description}B).
+\glspl{hmm}\cite{doroshenkov_classification_2007,pan_transition-constrained_2012} have been implemented.
+In general, the first step is to compute features on consecutive segments of annotated electrophysiological signals known as epochs.
+Then, the relation between the response variable (annotation) and the independent variables (features) can be modelled.
+Either epochs are considered to be independent from one another or to be time-dependent structures that are explicitly modelled (\eg{} using \glspl{hmm}).
+Time-aware modelling has the advantage of accounting for the interdependence of consecutive epochs (see fig.~\ref{fig:sleep_description}B).
 However, it generally does not model non-linear relationships between large numbers of predictors as well as classical classifiers.
 
 Recently, promising results were obtained for automatic scoring of human sleep stages by performing an exhaustive
 feature extraction, including variables resulting from discrete wavelet
 decomposition\cite{sen_comparative_2014}.
 Then, the authors compared several classifiers and found that random
-forest\cite{breiman_random_2001} were, overall, the most accurate predictors.
+forests\cite{breiman_random_2001} were, overall, the most accurate predictors.
 
 The study herein bases itself on these promising results by computing an even larger number of features.
 An important addition was the computation of time-aware
 features\cite{dietterich_machine_2002,deng_time_2013} which significantly improved
 accuracy. 
 Indeed, since manual scorers usually use contextual information to make a decision concerning a given state (personal communications),
-it was important to build a predictor that could be time-aware.
-Furthermore, as opposed to previous work, stratified cross-validation\cite{ding_querying_2008} procedure and
+it was highly relevant to build a time-aware predictor.
+Furthermore, as opposed to previous work, stratified cross-validation\cite{ding_querying_2008} procedures and
 comparisons of resulting sleep patterns were performed.
-These improvement altogether contributed to achieve a very satisfying overall accuracy of 92\% compared to manual scoring.
+These improvements altogether contributed to achieving a very satisfying overall accuracy of 92\% 
+_____________________________________________________________________
+[IN COMPARISON TO WHAT? IN COMPARISON TO WHAT? IN COMPARISON TO WHAT?] compared to manual scoring.
 
 
-In order to pave the way to the implementation of an ubiquitous sleep scoring software.
+In order to pave the way for the implementation of a ubiquitous sleep scoring software,
 \pr, a new \py{} package was also build to facilitate efficient feature extraction.
-This new package is here demonstrated to perform significantly better than \pyeeg{}\cite{bao_pyeeg:_2011}; an alternative implementation.
-In addition, inconsistencies in the implementations of some algorithms were corrected, and many new features were developed.
+This new package is here demonstrated to perform significantly better than \pyeeg{}\cite{bao_pyeeg:_2011}, an alternative implementation.
+In addition, inconsistencies in the implementations of some algorithms in \pyeeg{} were corrected, and many new features were developed.
