@@ -2,30 +2,28 @@
 \section{Results} \label{results}
 
 \subsection{A new efficient \py{} package}
-Several algorithms to extract features from univariate time series had already
+Several algorithms to extract features from univariate time series have already
 been implemented in the \py{} package \pyeeg{}\cite{bao_pyeeg:_2011}.
-Unfortunately, some of them were critically slow, and could therefore not realistically have been used in the present study.
+Unfortunately, some of them were critically slow, and could therefore not realistically be used in the present study.
 Preliminary investigation of \pyeeg{} source code revealed that runtimes may be improved mainly by vectorising expressions and pre-allocating of temporary arrays.
 Therefore, systematic reimplementation of all algorithms in \pyeeg{} was undertaken.
-Very significant improvement in performance were achieved for almost all functions(table~\ref{tab:benchmark}).
+Very significant improvements in performance were achieved for almost all functions(table~\ref{tab:benchmark}).
 Critically, sample and approximate entropies\cite{richman_physiological_2000} became usable in
 reasonable time.
 For instance, 40h of CPU time were originally required to compute sample entropy on a all 5 second epochs in a 24h recording.
 The improved implementation cut this down to 55min.
 \input{./tables/benchmark}
 
-Importantly, several mathematical inconsistencies between the original code and the mathematical definitions were also noticed.
+Importantly, several mathematical inconsistencies between the original code and the mathematical definitions were also detected.
 This affected five of the eight reimplemented functions(table~\ref{tab:benchmark}, rightmost column).
-Detail of the corrections performed are provided, as notes, in the documentation of the new package (see appendix, section 2.3).
-Numerical results for the three  functions were consistent throughout optimisation.
+Details of the corrections performed are provided, as notes, in the documentation of the new package (see appendix, section 2.3).
+Numerical results for the three functions were consistent throughout optimisation.
 
 In order to facilitate feature extraction, several data structures and routines, which were not 
-available in \pyeeg{},
-were also implemented
-in a new \py{} package named \pr{}.
+available in \pyeeg{}, were also implemented in a new \py{} package named \pr{}.
 Briefly, extensions of \texttt{numpy} arrays\cite{walt_numpy_2011} providing
 meta-data, sampling frequency, and other attributes were used to represent time series.
-User friendly indexing with string representing time was also developed.
+User friendly indexing with strings representing time was also developed.
 In addition, a container for time series of discrete annotation levels, each linked to a confidence level, was built.
 Importantly, a container for multiple time series, which supports heterogeneous (between time series) sampling frequencies was implemented.
 The new package also provides visualization, input/output, and wrappers for resampling and discrete wavelet decomposition.
@@ -34,7 +32,7 @@ A complete documentation of \pr{} is provided as an appendix to the report herei
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Twenty variables can generate accurate predictions}
-Including temporal information (see next section) wil result in multiplication of the number of variable, rendering computation difficult, and prediction potentially less accurate.
+Including temporal information (see next section) will result in multiplication of the number of variables, rendering computation difficult, and prediction potentially less accurate.
 Therefore, recursive feature elimination\cite{menze_comparison_2009} based on
 Gini variable importance was undertaken.
 Starting with all 164 variables, random forests were trained, and the number of features was reduced by a factor $1.5$  by eliminating the least important variables.
@@ -42,9 +40,9 @@ For each iteration, the stratified cross-validation error (see material and meth
 
 \input{./figures/variable_elimination}
 The predictive accuracy globally increases with the number of variables.
-Interestingly, using only the two most important variable already results in less that 20\% average error.
-However, this increase is very moderate for ($p>9$) this indicates that dimensionality can be considerably reduced without largely impacting accuracy.
-For further investigation, $p=21$ was considered to be a good compromise between error and computational load. Their relative importances are listed in table~\ref{tab:importances}.
+Interestingly, using only the two most important variables already results in less that 20\% average error.
+Additionally, this increase in predictive accuracy is very moderate for ($p>9$). This indicates that dimensionality can be considerably reduced without largely impacting accuracy.
+For further investigation, $p=21$ was considered to be a good compromise between error and computational load. Their relative importance is listed in table~\ref{tab:importances}.
 \input{./tables/importances}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -83,14 +81,14 @@ the training set did not contain any point from this time series.
 
 \input{./tables/confus}
 
-The global confusion matrix is presented in table \ref{tab:confus}. The overall accuracy was 0.92.
-For \gls{nrem} and wake, both specificity and positive predictive value were above 0.92. However
+The global confusion matrix is presented in table \ref{tab:confus}. The overall accuracy compared to manual scoring was 0.92.
+For \gls{nrem} and wake, both specificity and positive predictive value were above 0.92. However,
 for \gls{rem} epochs, the specificity is only 0.74, and the false detection rate is 15\%.
 
 In order to investigate the structural differences between ground truth and the predicted states,
 three metrics describing physiological properties of sleep were computed (fig.~\ref{fig:struct_assess}).
 
-Prevalence(fig.~\ref{fig:struct_assess}A) of states is a widely used metric to
+Prevalence of states (fig.~\ref{fig:struct_assess}A) is a widely used metric to
 describe sleep patterns.
 No significant difference was found between the ground truth and predicted prevalences ($p-value > 0.13$ for all, z test on the interaction terms of $\beta$ regression).
 
@@ -106,16 +104,17 @@ In addition, significant structural differences were found between methods for t
 (t test on the interaction terms of linear mixed model). 
 
 \subsection{Attribution of confidence score to predictions}
+
 Since classification may be inaccurate, it would be interesting to associate `confidence' score to each prediction.
-A entropy based confidence metric $c$ (eq. \ref{eq:entropy}) was defined for this purpose.
-In order to validate it, the average cross-validation error was computed for different ranges of confidence (fig\ref{fig:error}A).
+An entropy-based confidence metric $c$ (eq. \ref{eq:entropy}) was defined for this purpose.
+In order to validate it, the average cross-validation error was computed for different range of confidence (fig\ref{fig:error}A).
 
 \input{./figures/error}
 
 As expected, the probability of misclassification decreases monotonically with $c$.
-In addition, error rate seem to tend to zero when the confidence value is one, and, for confidences close to zero, the predictor is very inaccurate.
-These characteristics indicate that $c$ can be used to as a supporting value for predictions.
-One application of such a confidence level could be to provide user with an overall quality assessment.
+In addition, error rates tend to zero when the confidence value is one, and, for confidences close to zero, the predictor is very inaccurate.
+These characteristics indicate that $c$ can be used as a supporting value for predictions.
+One application of such a confidence level could be to provide users with an overall quality assessment.
 In addition, it  makes it possible to display confidence while visually inspecting a recording (fig\ref{fig:error}C) in order to facilitate resolution of ambiguities.
 
 
